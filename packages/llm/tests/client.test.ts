@@ -75,11 +75,9 @@ function okBody(overrides: {
       {
         message: {
           role: "assistant",
-          content:
-            "content" in overrides ? (overrides.content ?? "ok") : "ok",
+          content: "content" in overrides ? overrides.content : "ok",
         },
-        finish_reason:
-          "finish" in overrides ? (overrides.finish ?? "stop") : "stop",
+        finish_reason: "finish" in overrides ? overrides.finish : "stop",
       },
     ],
     usage: {
