@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Ottawa Public Library",
+    "kind": "ics",
+    "url": "https://biblioottawalibrary.ca/en/program",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Art Gallery",
+    "kind": "ics",
+    "url": "https://oaggao.ca/events/?ical=1",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Canadian Museum of Nature",
+    "kind": "html",
+    "url": "https://nature.ca/en/visit-us/whats-on/",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Canadian War Museum",
+    "kind": "html",
+    "url": "https://www.warmuseum.ca/events-and-programming",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Farmers' Market",
+    "kind": "ics",
+    "url": "https://ottawafarmersmarket.ca/events/?ical=1",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Great Canadian Theatre Company",
+    "kind": "html",
+    "url": "https://www.gctc.ca/events",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Chamberfest",
+    "kind": "html",
+    "url": "https://www.chamberfest.com/event/",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Canadian Museum of History",
+    "kind": "html",
+    "url": "https://www.historymuseum.ca/events-and-programming",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Little Theatre",
+    "kind": "html",
+    "url": "https://www.ottawalittletheatre.com/calendar/",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Diefenbunker",
+    "kind": "ics",
+    "url": "https://diefenbunker.ca/events/?ical=1",
+    "city": "Ottawa"
+  }
+]

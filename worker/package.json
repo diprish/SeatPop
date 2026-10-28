@@ -5,6 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
+    "ingest": "tsx src/ingest/run.ts",
+    "probe": "tsx src/ingest/probe.ts",
+    "seed-sources": "tsx src/ingest/seed.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@seatpop/shared": "*",
+    "zod": "^4.1.12"
   }
 }

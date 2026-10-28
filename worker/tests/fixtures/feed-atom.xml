@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Test Atom</title>
+  <entry>
+    <title>November Run</title>
+    <link href="https://example.test/run" rel="alternate"/>
+    <published>2026-11-05T09:00:00Z</published>
+    <summary>A fun run.</summary>
+  </entry>
+  <entry>
+    <title>December Swim</title>
+    <link href="https://example.test/swim"/>
+    <updated>2026-12-01T09:00:00Z</updated>
+    <content>Pool session.</content>
+  </entry>
+</feed>
