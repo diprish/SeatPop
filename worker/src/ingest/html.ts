@@ -1,18 +1,25 @@
+import {
+  extractEventsFromPage,
+  type ExtractionPage,
+} from "./extract";
 import { extractMatchingLinks, fetchIndexPages } from "./linkindex";
 import {
   type Adapter,
   type AdapterContext,
+  type AdapterLlm,
   type EventDraft,
   type SourceConfig,
 } from "./types";
 
 /**
- * Tier 2: generic HTML page adapter. Fetches a page and returns its visible
- * text; a later phase sends that text to the extraction task. The extraction
- * call is stubbed: collect() returns no drafts yet.
+ * Tier 2: generic HTML page adapter. Fetches a page, sends its visible text
+ * to the listing_extraction task (contributor model, evidence-checked), and
+ * returns the extracted drafts. Without LLM access in the context, yields
+ * nothing.
  */
 
-function decodeEntities(value: string): string {
+/** Decode the entities our adapters care about (shared with probes). */
+export function decodeEntities(value: string): string {
   return value
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -40,12 +47,49 @@ export function visibleText(html: string): string {
     .join("\n");
 }
 
-export interface HtmlPage {
-  url: string;
-  text: string;
+export type HtmlPage = ExtractionPage;
+
+/**
+ * Same-host anchor links (text + absolute URL), in page order. The model
+ * picks per-event official links from this set; membership is validated.
+ */
+export function extractPageLinks(html: string, baseUrl: string): { text: string; url: string }[] {
+  const links: { text: string; url: string }[] = [];
+  const seen = new Set<string>();
+  let base: URL;
+  try {
+    base = new URL(baseUrl);
+  } catch {
+    return links;
+  }
+  const re = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html)) !== null) {
+    const raw = match[1] as string;
+    if (raw.startsWith("#")) continue;
+    let absolute: URL;
+    try {
+      absolute = new URL(raw, baseUrl);
+    } catch {
+      continue;
+    }
+    if (absolute.host !== base.host) continue;
+    if (absolute.protocol !== "http:" && absolute.protocol !== "https:") {
+      continue;
+    }
+    if (seen.has(absolute.href)) continue;
+    seen.add(absolute.href);
+    const text = decodeEntities(
+      (match[2] ?? "").replace(/<[^>]*>/g, " "),
+    )
+      .replace(/\s+/g, " ")
+      .trim();
+    links.push({ text, url: absolute.href });
+  }
+  return links;
 }
 
-/** Fetch a page through the polite fetcher and return its visible text. */
+/** Fetch a page through the polite fetcher: visible text + same-host links. */
 export async function fetchVisibleText(
   url: string,
   ctx: AdapterContext,
@@ -55,18 +99,29 @@ export async function fetchVisibleText(
     console.log(`html: ${url} not modified since last fetch`);
     return null;
   }
-  return { url: page.url, text: visibleText(page.text) };
+  return {
+    url: page.url,
+    text: visibleText(page.text),
+    links: extractPageLinks(page.text, page.url),
+  };
 }
 
 /**
- * Stub for the phase-N extraction task (model call over page text).
- * Returns no drafts until that phase lands.
+ * Tier-2 extraction over one page: public listing text to the
+ * listing_extraction task (contributor model), evidence-checked.
  */
 export async function extractEventsFromText(
-  _page: HtmlPage,
-  _source: SourceConfig,
+  page: HtmlPage,
+  source: SourceConfig,
+  llm: AdapterLlm,
+  now?: Date,
 ): Promise<EventDraft[]> {
-  return [];
+  return extractEventsFromPage(page, source, {
+    config: llm.config,
+    fetchImpl: llm.fetchImpl,
+    chatFn: llm.chatFn,
+    now,
+  });
 }
 
 export const HtmlAdapter: Adapter = {
@@ -75,10 +130,17 @@ export const HtmlAdapter: Adapter = {
     source: SourceConfig,
     ctx: AdapterContext,
   ): Promise<EventDraft[]> {
+    const llm = ctx.llm;
+    if (!llm) {
+      console.warn(
+        `html: no LLM access for ${source.url}; skipping extraction`,
+      );
+      return [];
+    }
     if (!source.linkPattern) {
       const page = await fetchVisibleText(source.url, ctx);
       if (!page) return [];
-      return extractEventsFromText(page, source);
+      return extractEventsFromText(page, source, llm, ctx.now);
     }
     const pages = await fetchIndexPages(
       ctx.fetcher,
@@ -99,7 +161,7 @@ export const HtmlAdapter: Adapter = {
       try {
         const page = await fetchVisibleText(link, ctx);
         if (!page) continue;
-        drafts.push(...(await extractEventsFromText(page, source)));
+        drafts.push(...(await extractEventsFromText(page, source, llm, ctx.now)));
       } catch (error) {
         console.warn(
           `html index skipping ${link}: ${error instanceof Error ? error.message : String(error)}`,

@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import type { LlmConfig } from "@seatpop/llm";
+import { resolveExtractionConfig } from "./extract";
 import {
   Fetcher,
   HttpNoRetry,
@@ -67,6 +69,7 @@ interface RunOptions {
   store: StoreConfig | undefined;
   fetchImpl?: typeof fetch;
   now?: Date;
+  llmConfig?: LlmConfig;
 }
 
 function loadEnvFile(): void {
@@ -148,6 +151,7 @@ async function ingestSource(
       fetcher,
       now,
       windowDays: 90,
+      ...(options.llmConfig ? { llm: { config: options.llmConfig } } : {}),
     });
   } catch (error) {
     if (error instanceof RobotsDisallowed) {
@@ -294,7 +298,9 @@ export async function runIngest(options: RunOptions): Promise<IngestReport> {
 function printUsage(): void {
   console.log(`seatpop ingest: fetch enabled sources into the events tables.
 usage: npm run ingest --workspace @seatpop/worker -- [--dry-run] [--full] [--source NAME]
-  --dry-run     fetch and parse only; print counts, write nothing.
+  --dry-run     fetch and parse only; print counts, write nothing to the
+                database (html extraction still runs and may spend model
+                budget up to $2 on cache misses).
   --full        ignore the ETag cache and re-crawl everything.
   --source NAME ingest one source by name.`);
 }
@@ -333,6 +339,9 @@ async function main(): Promise<number> {
     console.error("dry-run needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to list sources");
     return 2;
   }
+  // Tier-2 extraction runs in dry-runs too (counts need it) with the same
+  // $2 budget and the same content-hash cache, so a dry-run warms the cache
+  // and the real run after it makes zero new model calls.
   const report = await runIngest({
     dryRun,
     full,
@@ -340,6 +349,7 @@ async function main(): Promise<number> {
     contactUrl,
     stateDir,
     store: { url: supabaseUrl, serviceKey },
+    llmConfig: resolveExtractionConfig(),
   });
   const totals = report.sources.reduce(
     (acc, s) => ({

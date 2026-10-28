@@ -6,6 +6,18 @@
     "city": "Ottawa"
   },
   {
+    "name": "Ottawa Public Library (English)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_event_language_value_i18n=en",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Adults)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1147",
+    "city": "Ottawa"
+  },
+  {
     "name": "Ottawa Art Gallery",
     "kind": "ics",
     "url": "https://oaggao.ca/events/?ical=1",
@@ -50,7 +62,7 @@
   {
     "name": "Ottawa Little Theatre",
     "kind": "html",
-    "url": "https://www.ottawalittletheatre.com/calendar/",
+    "url": "https://www.ottawalittletheatre.com/2026-season/",
     "city": "Ottawa"
   },
   {

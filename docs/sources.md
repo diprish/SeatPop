@@ -64,6 +64,33 @@ Conditions:
 - Category ceiling without extraction: 4 (library, arts, markets, museums).
   A 5th category needs tier-2 extraction on a stub source or another feed.
 
+## OPL filter experiment (2026-10-28, `probe:opl`, honest UA)
+
+- Robots re-checked first: booking `crawl-delay 10`, listing and filtered
+  query URLs both allow; nothing disallowed. Fetcher honors the 10 s delay.
+- Baseline: "Displaying 1 - 20 of 563", 20 per-event links. Filter form is
+  GET with 6 selects (category, series, branch, language, age group, date).
+- Tried (one URL each, bounded): branch "Other Locations" → 1 event titled
+  "Register" (junk slice, skipped); language English → 1-20 of 385,
+  different titles (**kept**); age group Adult → 1-20 of 328, different
+  titles (**kept**); category 2SLGBTQIA+ → 0 events (empty now, skipped).
+- Configured as two extra tier-1 ICS-index sources (same handling as OPL).
+  Overlap with the baseline slice is absorbed by dedupe. Cost: each OPL
+  slice fetches ~20 ICS files at crawl-delay 10 (~4 min per slice).
+
+## Extraction fixes (2026-10-28)
+
+- OLT seed URL `/calendar/` → `/2026-season/`: the calendar page is an empty
+  JS shell (menus only, 1,118 text chars); the season page lists 9 dated
+  shows (2 in-window). Same approved source, real listing — same fix class
+  as GCTC `/season` → `/events`. Existing DB row needs its URL updated
+  (seed matches by URL, so re-seeding would duplicate the row).
+- Chamberfest listing page yields 0 correctly: dated entries are past posts,
+  upcoming concerts are dateless links, and the evidence rule refuses to
+  invent dates. Detail-page extraction (`linkPattern /event/20\d\d/`,
+  ~9 pages, same $2 budget and evidence rules) explicitly approved to
+  unlock the music category.
+
 ## Table
 
 | # | Name | URL | Feed type | Robots result | Terms-of-use link | Tier | Recommended, and why |

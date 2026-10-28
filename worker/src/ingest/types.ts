@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { EventCategorySchema, type EventCategory } from "@seatpop/shared";
+import type {
+  ChatOptions,
+  ChatRequest,
+  ChatResult,
+  LlmConfig,
+} from "@seatpop/llm";
 import type { Fetcher } from "./fetcher";
 
 export const SourceKindSchema = z.enum([
@@ -70,12 +76,20 @@ export interface SourceConfig {
   extraIndexPages?: { template: string; from: number; to: number };
 }
 
-/** What adapters may use: polite fetching, clock, and run window. */
+/** Model access for the tier-2 html adapter (absent: html yields nothing). */
+export interface AdapterLlm {
+  config: LlmConfig;
+  fetchImpl?: typeof fetch;
+  chatFn?: (request: ChatRequest, options?: ChatOptions) => Promise<ChatResult>;
+}
+
+/** What adapters may use: polite fetching, clock, run window, model access. */
 export interface AdapterContext {
   fetcher: Fetcher;
   now: Date;
   /** Upcoming-only window in days. Default: 90. */
   windowDays?: number;
+  llm?: AdapterLlm;
 }
 
 export interface Adapter {

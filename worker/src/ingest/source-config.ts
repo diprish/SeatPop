@@ -26,12 +26,28 @@ export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
     icsIndex: true,
     includeSubdomains: true,
   },
+  // Filter-experiment winners (2026-10-28): single-filter listing slices
+  // that return different page-1 results to a stateless fetch. Same
+  // tier-1 ICS-index handling; booking crawl-delay 10 applies.
+  "Ottawa Public Library (English)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+  },
+  "Ottawa Public Library (Adults)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+  },
   "Ottawa Art Gallery": { category: "arts" },
   "Canadian Museum of Nature": { category: "museums" },
   "Canadian War Museum": { category: "museums" },
   "Ottawa Farmers' Market": { category: "markets" },
   "Great Canadian Theatre Company": { category: "arts" },
-  "Ottawa Chamberfest": { category: "music" },
+  // Listing page carries no quotable dates (upcoming concerts are
+  // dateless links); follow per-event detail pages instead (approved
+  // 2026-10-28 — beyond listing-text scope, same evidence rules).
+  "Ottawa Chamberfest": { category: "music", linkPattern: "/event/20\\d\\d/" },
   "Canadian Museum of History": { category: "museums" },
   "Ottawa Little Theatre": { category: "arts" },
   // Event pages state UTC-4 while the feed tags America/Halifax (verified
