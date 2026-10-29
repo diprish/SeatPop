@@ -70,6 +70,11 @@ const SQL6 = readFileSync(
   "utf8",
 );
 
+const SQL7 = readFileSync(
+  new URL("../../supabase/migrations/0007_price_basis_public.sql", import.meta.url),
+  "utf8",
+);
+
 describe("migration 0004", () => {
   it("adds policy columns, scope and basis without touching RLS or views", () => {
     for (const fragment of [
@@ -104,6 +109,24 @@ describe("migration 0006", () => {
     expect(SQL6).not.toContain("'Adult'");
     expect(SQL6.toLowerCase()).not.toContain("create policy");
     expect(SQL6.toLowerCase()).not.toContain("create or replace view");
+  });
+});
+
+describe("migration 0007", () => {
+  it("exposes price_basis while policy material stays internal", () => {
+    expect(SQL7).toContain("pr.price_basis");
+    const views = SQL7.slice(SQL7.indexOf("create or replace view"));
+    for (const hidden of [
+      "raw_text",
+      "raw_hash",
+      "evidence_quote",
+      "pricing_policy_quote",
+      "pricing_policy_url",
+      "pricing_policy_scope",
+      "pricing_policy_kind",
+    ]) {
+      expect(views).not.toContain(hidden);
+    }
   });
 });
 

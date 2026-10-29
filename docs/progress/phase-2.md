@@ -151,6 +151,13 @@ when filters show which fields matter.
 - Merge rule (runner): event fee text always wins; a scoped policy
   needs an overlapping facet label; basis recorded per row
   (`event_text` | `source_policy`).
+- Display rule (migration 0007 + `priceDisplayLabel` in shared):
+  policy-derived prices render attributed — "free (per OPL)" —
+  never as a plain "Free", because the evidence is the source's
+  policy, not the event's text. Enforced for every kind by unit
+  test. `price_basis` is now in `public_events` (reversing 0004's
+  internal-only basis); the policy quote/URL/scope stay internal.
+  No price UI exists yet — phase-3 UI must use the helper.
 
 ### OPL age-group facets
 

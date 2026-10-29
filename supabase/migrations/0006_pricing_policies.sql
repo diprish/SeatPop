@@ -1,8 +1,8 @@
 -- Phase 2b: source-level pricing policies (data).
--- Version 0006, not 0005: remote already carries a 0005 row from earlier
--- work, which shadows any local 0005 content (db push matches versions,
--- not content). This UPDATE is idempotent: a no-op if the policy below
--- is already live, corrective if the remote 0005 set anything else.
+-- Numbered 0006: version 0005 is marked reverted in the remote
+-- migration history, and db push matches versions, not content.
+-- This UPDATE is idempotent: it converges the policy columns to
+-- the values below whether or not a previous migration set them.
 -- OPL children's programs are officially free (verbatim, Children's
 -- Programs section):
 --   "These programs are free and offered at branches throughout the city."

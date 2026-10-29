@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+export * from "./pricing";
 export * from "./verify";
 
 /** Response shape of GET /health in apps/web. Contains status and build info, never secrets. */
