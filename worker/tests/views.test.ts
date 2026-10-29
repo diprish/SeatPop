@@ -54,3 +54,56 @@ describe("migration 0002", () => {
     expect(SQL).toContain("grant select on public.public_venues to anon");
   });
 });
+
+const SQL3 = readFileSync(
+  new URL("../../supabase/migrations/0003_enrichment.sql", import.meta.url),
+  "utf8",
+);
+
+describe("migration 0003", () => {
+  it("enables RLS on the new tables with no policies", () => {
+    const rls = SQL3.match(/enable row level security/g) ?? [];
+    expect(rls).toHaveLength(2);
+    expect(SQL3.toLowerCase()).not.toContain("create policy");
+  });
+
+  it("keeps evidence, model metadata and embeddings out of public_events", () => {
+    const views = SQL3.slice(SQL3.indexOf("create or replace view"));
+    for (const hidden of [
+      "raw_text",
+      "raw_hash",
+      "evidence",
+      "model",
+      "prompt_version",
+      "source_hash",
+      "confidence",
+      "embedding",
+      "enriched_at",
+    ]) {
+      expect(views).not.toContain(hidden);
+    }
+    for (const exposed of [
+      "age_min",
+      "age_max",
+      "needs_adult",
+      "setting",
+      "energy",
+      "crowd",
+      "duration_min",
+      "language",
+      "accessibility",
+      "registration_hint",
+      "registration_opens_at",
+      "summary_short",
+      "tags",
+      "price_kind",
+      "amount_min_cents",
+      "amount_max_cents",
+      "currency",
+      "price_text",
+      "fee_notes",
+    ]) {
+      expect(views).toContain(exposed);
+    }
+  });
+});

@@ -2,6 +2,8 @@
  * SeatPop worker skeleton. Scheduled jobs (crawls, extraction, reminders)
  * land here in later phases; every script runs with tsx.
  */
+import { isDirectExecution } from "./script-entry";
+
 function main(): number {
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) {
@@ -13,4 +15,6 @@ function main(): number {
   return 0;
 }
 
-process.exit(main());
+if (isDirectExecution(import.meta.url)) {
+  process.exit(main());
+}

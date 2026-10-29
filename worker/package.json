@@ -9,11 +9,13 @@
     "probe": "tsx src/ingest/probe.ts",
     "probe:opl": "tsx src/ingest/probe-opl.ts",
     "seed-sources": "tsx src/ingest/seed.ts",
+    "enrich": "tsx src/enrich/run.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@seatpop/llm": "*",
     "@seatpop/shared": "*",
+    "@xenova/transformers": "^2.17.2",
     "zod": "^4.1.12"
   }
 }

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { isDirectExecution } from "../script-entry";
 import {
   Fetcher,
   HttpNoRetry,
@@ -293,12 +293,7 @@ async function main(): Promise<number> {
   return 0;
 }
 
-// Only run when executed directly: importing the parsers (tests) must not
-// probe the network or exit the process.
-const invokedAsScript =
-  process.argv[1] !== undefined &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (invokedAsScript) {
+if (isDirectExecution(import.meta.url)) {
   const exitCode = await main().catch((error: unknown) => {
     console.error(
       `probe:opl failed: ${error instanceof Error ? error.message : String(error)}`,

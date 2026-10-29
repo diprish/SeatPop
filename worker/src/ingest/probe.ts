@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { isDirectExecution } from "../script-entry";
 import {
   Fetcher,
   HttpNoRetry,
@@ -273,10 +274,12 @@ async function main(): Promise<number> {
   return 0;
 }
 
-const exitCode = await main().catch((error: unknown) => {
-  console.error(
-    `probe failed: ${error instanceof Error ? error.message : String(error)}`,
-  );
-  return 1;
-});
-process.exit(exitCode);
+if (isDirectExecution(import.meta.url)) {
+  const exitCode = await main().catch((error: unknown) => {
+    console.error(
+      `probe failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return 1;
+  });
+  process.exit(exitCode);
+}
