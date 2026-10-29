@@ -11,6 +11,9 @@ export type TaskKind =
   | "smoke"
   | "custom";
 
+/** Model providers the client can route to. */
+export type LlmProvider = "meta" | "baseten";
+
 /** Reasoning depths from https://dev.meta.ai/docs/reasoning (`none` 400s on Spark/Wonder). */
 export type ReasoningEffort =
   | "minimal"
@@ -36,6 +39,9 @@ export const ChatCompletionResponseSchema = z.object({
         message: z.object({
           role: z.string(),
           content: z.string().nullable(),
+          // Baseten reasoning models answer here AND in content; the
+          // client reads content only and never mixes the two.
+          reasoning_content: z.string().nullable().optional(),
         }),
         finish_reason: z.string().nullable(),
       }),
@@ -59,7 +65,7 @@ export const LedgerRowSchema = z.object({
   ts: z.string().datetime(),
   run_id: z.string().min(1),
   task: z.string().min(1),
-  provider: z.literal("meta"),
+  provider: z.enum(["meta", "baseten"]),
   model: z.string().min(1),
   tokens_in: z.number().int().nonnegative(),
   tokens_cached: z.number().int().nonnegative(),
@@ -109,7 +115,7 @@ export type ChatResult =
   | { ok: true; value: ChatSuccess }
   | { ok: false; error: LlmError };
 
-export type BudgetLimit = "total" | "per_run" | "daily_live";
+export type BudgetLimit = "total" | "per_run" | "daily_live" | "baseten_total";
 
 /** Thrown when a spend limit from the environment is reached. Totals come from the ledger. */
 export class BudgetExceeded extends Error {

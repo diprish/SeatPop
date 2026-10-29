@@ -1,9 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { ReasoningEffort, TaskKind } from "./types";
+import type { LlmProvider, ReasoningEffort, TaskKind } from "./types";
 
 export const DEFAULT_API_BASE = "https://api.meta.ai/v1";
+
+/** Second provider: Baseten Model APIs (OpenAI-compatible). */
+export const BASETEN_API_BASE = "https://inference.baseten.co/v1";
+export const BASETEN_MODEL = "meta-models/muse-spark-open-1026";
 
 /** Floor for max_tokens on every task: Spark spends part of it on reasoning. */
 export const MIN_MAX_TOKENS = 512;
@@ -32,6 +36,14 @@ export interface ModelPrice {
 }
 
 export const PRICE_TABLE: Record<string, ModelPrice> = {
+  // Real Baseten Model API prices for Muse Spark Open, per 1M tokens,
+  // read 2026-10-28 from https://www.baseten.co/library/muse-spark-open/
+  // (Input $1.25, Cache input $0.15, Output $4.25). No estimates here.
+  "meta-models/muse-spark-open-1026": {
+    inputPer1M: 1.25,
+    cachedInputPer1M: 0.15,
+    outputPer1M: 4.25,
+  },
   "muse-wonder-1.0": { inputPer1M: 4.0, cachedInputPer1M: 0.2, outputPer1M: 20.0 },
   "muse-spark-1.3": { inputPer1M: 1.25, cachedInputPer1M: 0.15, outputPer1M: 4.25 },
   "muse-spark-1.2": { inputPer1M: 1.25, cachedInputPer1M: 0.15, outputPer1M: 4.25 },
@@ -58,6 +70,9 @@ const FALLBACK_SPARK_STANDARD: ModelPrice = {
 export function priceFor(model: string): ModelPrice {
   const exact = PRICE_TABLE[model];
   if (exact) return exact;
+  if (model.includes("muse-spark-open")) {
+    return PRICE_TABLE[BASETEN_MODEL] ?? FALLBACK_SPARK_STANDARD;
+  }
   if (model.includes("contributor")) {
     return PRICE_TABLE["muse-spark-1.3-contributor"] ?? FALLBACK_SPARK_STANDARD;
   }
@@ -82,6 +97,20 @@ export const TASK_REASONING: Record<TaskKind, ReasoningEffort> = {
   smoke: "minimal",
   custom: "minimal",
 };
+
+/**
+ * Tasks whose input is public text and nothing else. ONLY these may run on
+ * the Baseten provider (enforced in chat()). Household or email tasks must
+ * never be added here: a third-party host must not see them.
+ */
+export const PUBLIC_TEXT_TASKS: ReadonlySet<TaskKind> = new Set([
+  "listing_extraction",
+]);
+
+/** Provider allowlist per task: Baseten is public-text-only. */
+export function providersForTask(task: TaskKind): readonly LlmProvider[] {
+  return PUBLIC_TEXT_TASKS.has(task) ? ["meta", "baseten"] : ["meta"];
+}
 
 /**
  * Model per task. Only listing_extraction (public event text, never household
@@ -111,6 +140,8 @@ export interface BudgetLimits {
   total?: number;
   perRun?: number;
   dailyLive?: number;
+  /** Provider-scoped: Baseten spend only (global limits count all). */
+  basetenTotal?: number;
 }
 
 /** Default budget limits in USD when the LLM_MAX_USD_* vars are unset. */
@@ -118,6 +149,7 @@ export const DEFAULT_BUDGETS: Required<BudgetLimits> = {
   total: 135,
   perRun: 10,
   dailyLive: 5,
+  basetenTotal: 90,
 };
 
 /** Default USD held against budgets while one call is in flight. */
@@ -126,6 +158,8 @@ export const DEFAULT_RESERVE_USD_PER_CALL = 0.05;
 export interface LlmConfig {
   apiBase: string;
   apiKey: string | undefined;
+  /** Baseten key from BASETEN_API_KEY (.env) only; never defaulted/logged. */
+  basetenApiKey: string | undefined;
   models: ModelIds;
   timeoutMs: number;
   retryDelayMs: number;
@@ -253,6 +287,10 @@ export function resolveConfig(
       overrides.budgets?.dailyLive ??
       parsePositiveNumber(env["LLM_MAX_USD_DAILY_LIVE"]) ??
       DEFAULT_BUDGETS.dailyLive,
+    basetenTotal:
+      overrides.budgets?.basetenTotal ??
+      parsePositiveNumber(env["BASETEN_MAX_USD_TOTAL"]) ??
+      DEFAULT_BUDGETS.basetenTotal,
   };
   return {
     apiBase:
@@ -260,6 +298,8 @@ export function resolveConfig(
       nonEmpty(env["MODEL_API_BASE"]) ??
       DEFAULT_API_BASE,
     apiKey: nonEmpty(overrides.apiKey) ?? nonEmpty(env["MODEL_API_KEY"]),
+    basetenApiKey:
+      nonEmpty(overrides.basetenApiKey) ?? nonEmpty(env["BASETEN_API_KEY"]),
     models,
     timeoutMs:
       overrides.timeoutMs ?? parsePositiveInt(env["LLM_TIMEOUT_MS"], 60_000),

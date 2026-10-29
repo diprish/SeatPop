@@ -5,6 +5,7 @@ import {
   resolveEnrichConfig,
   resolveProvider,
 } from "../src/enrich/config";
+import { listCandidates } from "../src/enrich/store";
 import {
   sourceHashFor,
   verificationSource,
@@ -167,6 +168,29 @@ describe("enrichment voting", () => {
     expect(result?.values.age_max).toBeNull();
   });
 
+  it("flows v2 vocab and word-form durations end to end", async () => {
+    const input: EnrichEventInput = {
+      ...INPUT,
+      description:
+        "A quiet morning session in the main hall. A one-hour workshop. Limited to 12 spots.",
+    };
+    const content = JSON.stringify({
+      setting: field("indoors", "in the main hall"),
+      energy: field("calm", "A quiet morning session"),
+      crowd: field("small-group", "Limited to 12 spots"),
+      duration_min: field(60, "A one-hour workshop"),
+    });
+    const result = await voteEnrichment(input, {
+      config: config(),
+      chatFn: scriptedChat([content, content]),
+      now: new Date("2026-10-28T12:00:00.000Z"),
+    });
+    expect(result?.values.setting).toBe("indoors");
+    expect(result?.values.energy).toBe("calm");
+    expect(result?.values.crowd).toBe("small-group");
+    expect(result?.values.duration_min).toBe(60);
+  });
+
   it("uppercases grounded currency codes", async () => {
     const withCad = reply({
       currency: field("cad", "Tickets $15 CAD at the door."),
@@ -211,6 +235,18 @@ describe("enrichment voting", () => {
     expect(seen.requests[0].model).toBe("muse-spark-1.3");
   });
 
+  it("routes votes to Baseten when the provider flag sets it", async () => {
+    const seen: Seen = { requests: [] };
+    await voteEnrichment(INPUT, {
+      config: config(),
+      chatFn: scriptedChat([reply(), reply()], seen),
+      provider: "baseten",
+      now: new Date("2026-10-28T12:00:00.000Z"),
+    });
+    expect(seen.requests[0].provider).toBe("baseten");
+    expect(seen.requests[0].model).toBeUndefined();
+  });
+
   it("hashes the source stably and detects changes", () => {
     const base = {
       title: INPUT.title,
@@ -231,6 +267,7 @@ describe("enrichment voting", () => {
   });
 
   it("resolves the provider from flag, env, then default", () => {
+    expect(resolveProvider("baseten")).toBe("baseten");
     expect(resolveProvider("spark")).toBe("spark");
     expect(resolveProvider(undefined, { ENRICH_PROVIDER: "spark" } as NodeJS.ProcessEnv)).toBe(
       "spark",
@@ -246,5 +283,19 @@ describe("enrichment voting", () => {
       LLM_MAX_USD_PER_RUN: "10",
     } as NodeJS.ProcessEnv);
     expect(forced.budgets.perRun).toBe(5);
+  });
+
+  it("disambiguates the sources embed or PostgREST answers 300", async () => {
+    let seenUrl = "";
+    const fetchImpl = (async (url: unknown) => {
+      seenUrl = String(url);
+      return new Response("[]", { status: 200 });
+    }) as unknown as typeof fetch;
+    await listCandidates({
+      url: "https://test.invalid",
+      serviceKey: "key",
+      fetchImpl,
+    });
+    expect(seenUrl).toContain("src:sources!events_source_id_fkey(");
   });
 });

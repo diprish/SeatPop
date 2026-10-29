@@ -5,7 +5,10 @@ import {
 } from "./budget";
 import { cacheKey, readCache, writeCache } from "./cache";
 import {
+  BASETEN_API_BASE,
+  BASETEN_MODEL,
   MIN_MAX_TOKENS,
+  PUBLIC_TEXT_TASKS,
   TASK_REASONING,
   modelForTask,
   priceFor,
@@ -21,6 +24,7 @@ import {
   type ChatSuccess,
   type LedgerRow,
   type LlmError,
+  type LlmProvider,
   type ReasoningEffort,
   type TaskKind,
   type TokenUsage,
@@ -33,6 +37,8 @@ export interface ChatRequest {
   reasoningEffort?: ReasoningEffort;
   maxTokens?: number;
   temperature?: number;
+  /** Model provider (default "meta"). Baseten is public-text tasks only. */
+  provider?: LlmProvider;
 }
 
 export interface ChatOptions {
@@ -113,6 +119,8 @@ async function postChat(
 
 function successOf(data: ChatCompletionResponse, cached: boolean): ChatSuccess {
   const usage = usageOf(data);
+  // content only: a provider's reasoning_content (Baseten) is parsed by
+  // the schema but never mixed into the answer.
   return {
     content: data.choices[0].message.content ?? "",
     model: data.model,
@@ -136,13 +144,14 @@ type LedgerFields = Pick<
 >;
 
 /**
- * One chat completion through the Meta Model API (fetch only, no SDK).
+ * One chat completion through the Meta Model API or Baseten (fetch only).
  *
- * Order: disk cache (a hit makes zero network calls) -> budget guard ->
- * in-flight cost reservation -> network with one backoff retry for transient
- * failures. A null content with finish_reason "length" is a failed call:
- * logged, recorded as a "length_retry" ledger row with the attempt's real
- * usage, retried once with a doubled limit, then returned as a typed error.
+ * Order: provider gate -> disk cache (a hit makes zero network calls) ->
+ * budget guard -> in-flight cost reservation -> network with one backoff
+ * retry for transient failures. A null content with finish_reason "length"
+ * is a failed call: logged, recorded as a "length_retry" ledger row with
+ * the attempt's real usage, retried once with a doubled limit, then
+ * returned as a typed error.
  *
  * Every call appends at least one ledger row (local JSONL always, Supabase
  * mirror when configured); length retries append one row per billed attempt.
@@ -158,7 +167,12 @@ export async function chat(
   const retryDelayMs = options.retryDelayMs ?? config.retryDelayMs;
   const started = Date.now();
 
-  const model = request.model ?? modelForTask(request.task, config.models);
+  const provider: LlmProvider = request.provider ?? "meta";
+  const model =
+    request.model ??
+    (provider === "baseten"
+      ? BASETEN_MODEL
+      : modelForTask(request.task, config.models));
   const effort = request.reasoningEffort ?? TASK_REASONING[request.task];
   const floorMaxTokens = Math.max(
     request.maxTokens ?? MIN_MAX_TOKENS,
@@ -178,7 +192,7 @@ export async function chat(
       ts: new Date().toISOString(),
       run_id: config.runId,
       task: request.task,
-      provider: "meta",
+      provider,
       model,
       latency_ms: Math.max(0, Date.now() - started),
       ...fields,
@@ -210,8 +224,19 @@ export async function chat(
       { ok: false, error },
     );
 
+  // 0. Provider gate: Baseten is public-text tasks only, refused in
+  // code before cache, budget, or network see the request.
+  if (provider === "baseten" && !PUBLIC_TEXT_TASKS.has(request.task)) {
+    return fail({
+      kind: "config",
+      message: `provider "baseten" refused for task "${request.task}": household or email content must not leave Meta hosting`,
+    });
+  }
+
   // 1. Content-hash cache: a hit returns with zero network calls.
-  const cachePayload = { ...basePayload, max_tokens: floorMaxTokens };
+  // The provider is part of the key: identical messages on two providers
+  // are different calls.
+  const cachePayload = { provider, ...basePayload, max_tokens: floorMaxTokens };
   const hit = readCache(
     config.cacheDir,
     cacheKey(cachePayload),
@@ -235,19 +260,28 @@ export async function chat(
   }
 
   // 2. Budget guard (cache misses only; throws BudgetExceeded).
-  assertWithinBudget(config);
+  assertWithinBudget(config, provider);
 
   // 3. Key check.
-  if (!config.apiKey) {
-    return fail({ kind: "config", message: "MODEL_API_KEY is not set" });
+  const apiKey =
+    provider === "baseten" ? config.basetenApiKey : config.apiKey;
+  if (!apiKey) {
+    return fail({
+      kind: "config",
+      message:
+        provider === "baseten"
+          ? "BASETEN_API_KEY is not set"
+          : "MODEL_API_KEY is not set",
+    });
   }
-  const apiKey = config.apiKey;
 
   // 4. Network attempts: one backoff retry for transient failures, one
   // doubled-limit retry for length failures. An estimated cost is reserved
   // against the budgets for the whole attempt sequence so parallel calls
   // cannot collectively overshoot.
-  const url = `${config.apiBase.replace(/\/$/, "")}/chat/completions`;
+  const base =
+    provider === "baseten" ? BASETEN_API_BASE : config.apiBase;
+  const url = `${base.replace(/\/$/, "")}/chat/completions`;
   let maxTokens = floorMaxTokens;
   let transientRetried = false;
   let lengthRetried = false;
@@ -355,7 +389,7 @@ export async function chat(
         );
       }
 
-      writeCache(config.cacheDir, cacheKey(payload), data);
+      writeCache(config.cacheDir, cacheKey({ provider, ...payload }), data);
       const value = successOf(data, false);
       return finish(
         {

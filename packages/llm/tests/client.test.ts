@@ -4,6 +4,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { chat } from "../src/client";
 import {
+  BASETEN_MODEL,
+  priceFor,
+  providersForTask,
   resolveConfig,
   type ConfigOverrides,
   type LlmConfig,
@@ -67,6 +70,7 @@ function okBody(overrides: {
   cached?: number;
   completion?: number;
   reasoning?: number;
+  reasoningContent?: string | null;
 } = {}): Record<string, unknown> {
   return {
     id: "chatcmpl-test",
@@ -76,6 +80,9 @@ function okBody(overrides: {
         message: {
           role: "assistant",
           content: "content" in overrides ? overrides.content : "ok",
+          ...("reasoningContent" in overrides
+            ? { reasoning_content: overrides.reasoningContent }
+            : {}),
         },
         finish_reason: "finish" in overrides ? overrides.finish : "stop",
       },
@@ -353,5 +360,165 @@ describe("chat client", () => {
     expect(calls).toHaveLength(0);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.kind).toBe("config");
+  });
+
+  it("routes public-text tasks to Baseten with the fixed model", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl, calls } = mockFetch([
+      { status: 200, body: okBody({ model: BASETEN_MODEL }) },
+    ]);
+
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe(
+      "https://inference.baseten.co/v1/chat/completions",
+    );
+    expect(calls[0].body["model"]).toBe(
+      "meta-models/muse-spark-open-1026",
+    );
+    expect(calls[0].body["reasoning_effort"]).toBe("minimal");
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows[0].provider).toBe("baseten");
+    expect(rows[0].model).toBe("meta-models/muse-spark-open-1026");
+  });
+
+  it("refuses Baseten for non-public-text tasks before any network call", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl, calls } = mockFetch([
+      { status: 200, body: okBody() },
+    ]);
+
+    const result = await chat(
+      { ...REQUEST, task: "extraction", provider: "baseten" },
+      { fetchImpl, config },
+    );
+
+    expect(calls).toHaveLength(0);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe("config");
+      expect(result.error.message).toContain("refused");
+    }
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].provider).toBe("baseten");
+    expect(rows[0].outcome).toBe("error");
+  });
+
+  it("parses reasoning_content separately and bills completion tokens", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl } = mockFetch([
+      {
+        status: 200,
+        body: okBody({
+          model: BASETEN_MODEL,
+          content: "the answer",
+          reasoningContent: "thinking out loud",
+          prompt: 100,
+          completion: 203,
+        }),
+      },
+    ]);
+
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.content).toBe("the answer");
+      // No breakdown in this reply: 0 recorded, while the 203 completion
+      // tokens (reasoning included) bill at output price. Live Baseten
+      // replies DO carry reasoning_tokens; the client reads them when
+      // present (see usageOf) and the smoke test shows it.
+      expect(result.value.usage.reasoningTokens).toBe(0);
+      expect(result.value.costUsd).toBeCloseTo(
+        (100 * 1.25 + 203 * 4.25) / 1_000_000,
+        9,
+      );
+    }
+  });
+
+  it("keys the cache by provider", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const messages = [{ role: "user" as const, content: "same" }];
+    const first = mockFetch([
+      { status: 200, body: okBody({ content: "meta-live" }) },
+      { status: 200, body: okBody({ content: "baseten-live" }) },
+    ]);
+
+    const meta = await chat(
+      { task: "listing_extraction", messages },
+      { fetchImpl: first.fetchImpl, config },
+    );
+    const baseten = await chat(
+      { task: "listing_extraction", provider: "baseten", messages },
+      { fetchImpl: first.fetchImpl, config },
+    );
+
+    // Same messages, two providers: two live calls, no cross-talk.
+    expect(first.calls).toHaveLength(2);
+    if (meta.ok) expect(meta.value.content).toBe("meta-live");
+    if (baseten.ok) expect(baseten.value.content).toBe("baseten-live");
+
+    const replay = mockFetch([{ status: 200, body: okBody() }]);
+    const cached = await chat(
+      { task: "listing_extraction", provider: "baseten", messages },
+      { fetchImpl: replay.fetchImpl, config },
+    );
+    expect(replay.calls).toHaveLength(0);
+    if (cached.ok) expect(cached.value.content).toBe("baseten-live");
+  });
+
+  it("returns a typed error when the Baseten key is missing", async () => {
+    const root = tempRoot();
+    const config = testConfig(root);
+    const { fetchImpl, calls } = mockFetch([
+      { status: 200, body: okBody() },
+    ]);
+
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(calls).toHaveLength(0);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe("config");
+      expect(result.error.message).toContain("BASETEN_API_KEY");
+    }
+  });
+
+  it("prices the Baseten model from its real price table entry", () => {
+    expect(priceFor(BASETEN_MODEL)).toEqual({
+      inputPer1M: 1.25,
+      cachedInputPer1M: 0.15,
+      outputPer1M: 4.25,
+    });
+    expect(providersForTask("listing_extraction")).toEqual(["meta", "baseten"]);
+    expect(providersForTask("extraction")).toEqual(["meta"]);
   });
 });

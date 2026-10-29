@@ -60,6 +60,29 @@ const SQL3 = readFileSync(
   "utf8",
 );
 
+const SQL4 = readFileSync(
+  new URL("../../supabase/migrations/0004_pricing_policy.sql", import.meta.url),
+  "utf8",
+);
+
+describe("migration 0004", () => {
+  it("adds policy columns, scope and basis without touching RLS or views", () => {
+    for (const fragment of [
+      "pricing_policy_kind",
+      "pricing_policy_quote",
+      "pricing_policy_url",
+      "pricing_policy_scope",
+      "price_basis",
+      "source_policy",
+    ]) {
+      expect(SQL4).toContain(fragment);
+    }
+    expect(SQL4.toLowerCase()).not.toContain("create policy");
+    expect(SQL4.toLowerCase()).not.toContain("create or replace view");
+    expect(SQL4.toLowerCase()).not.toContain("enable row level security");
+  });
+});
+
 describe("migration 0003", () => {
   it("enables RLS on the new tables with no policies", () => {
     const rls = SQL3.match(/enable row level security/g) ?? [];

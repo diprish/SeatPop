@@ -205,4 +205,73 @@ describe("budget guard", () => {
     const rows = readLedgerRows(config.ledgerPath);
     expect(rows).toHaveLength(4);
   });
+
+  it("stops Baseten calls at the Baseten total", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { budgets: { basetenTotal: 5 } });
+    appendLedgerRow(
+      config.ledgerPath,
+      seedRow({ provider: "baseten", est_cost_usd: 10 }),
+    );
+
+    try {
+      await chat(
+        {
+          task: "listing_extraction",
+          provider: "baseten",
+          messages: [{ role: "user", content: "go" }],
+        },
+        { fetchImpl: noFetch, config },
+      );
+    } catch (error) {
+      expect(error).toBeInstanceOf(BudgetExceeded);
+      expect((error as BudgetExceeded).limit).toBe("baseten_total");
+      return;
+    }
+    throw new Error("expected BudgetExceeded(baseten_total)");
+  });
+
+  it("lets Meta calls through when only the Baseten total is spent", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { budgets: { basetenTotal: 5 } });
+    appendLedgerRow(
+      config.ledgerPath,
+      seedRow({ provider: "baseten", est_cost_usd: 10 }),
+    );
+    const okFetch = (async () =>
+      new Response(
+        JSON.stringify({
+          id: "chatcmpl-test",
+          model: "muse-spark-1.3",
+          choices: [
+            {
+              message: { role: "assistant", content: "ok" },
+              finish_reason: "stop",
+            },
+          ],
+          usage: { prompt_tokens: 1, completion_tokens: 1 },
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+
+    const result = await chat(
+      {
+        task: "extraction",
+        messages: [{ role: "user", content: "extract" }],
+      },
+      { fetchImpl: okFetch, config },
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("counts Baseten spend toward the global total", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { budgets: { total: 5 } });
+    appendLedgerRow(
+      config.ledgerPath,
+      seedRow({ provider: "baseten", est_cost_usd: 10 }),
+    );
+
+    await expectBudgetExceeded(config, "total");
+  });
 });

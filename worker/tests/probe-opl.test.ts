@@ -4,6 +4,7 @@ import {
   parseEventLinkTitles,
   parseFilterForm,
   pickFilterCandidates,
+  realOptions,
 } from "../src/ingest/probe-opl";
 
 describe("probe:opl parsers", () => {
@@ -64,6 +65,23 @@ describe("probe:opl parsers", () => {
   it("returns null when no form carries a select", () => {
     expect(parseFilterForm("<form><input></form>")).toBeNull();
     expect(parseFilterForm("<p>no form</p>")).toBeNull();
+  });
+
+  it("filters selects down to real options", () => {
+    expect(
+      realOptions({
+        name: "field_age_group_target_id",
+        options: [
+          { value: "All", label: "- Any -" },
+          { value: "", label: "Empty" },
+          { value: "1147", label: "Adult" },
+          { value: "1148", label: "Teen" },
+        ],
+      }),
+    ).toEqual([
+      { value: "1147", label: "Adult" },
+      { value: "1148", label: "Teen" },
+    ]);
   });
 
   it("picks branch/audience options first and skips any-options", () => {

@@ -3,7 +3,7 @@ import { resolveConfig, type LlmConfig } from "@seatpop/llm";
 /** Hard per-run model-spend cap for enrichment (USD). */
 export const ENRICH_RUN_BUDGET_USD = 5;
 
-export type EnrichProvider = "contributor" | "spark";
+export type EnrichProvider = "contributor" | "spark" | "baseten";
 
 export function resolveEnrichConfig(
   env: NodeJS.ProcessEnv = process.env,
@@ -20,6 +20,7 @@ export function resolveProvider(
     .trim()
     .toLowerCase();
   if (raw === "spark") return "spark";
+  if (raw === "baseten") return "baseten";
   if (raw !== "contributor") {
     console.warn(
       `unknown ENRICH_PROVIDER ${JSON.stringify(raw)}; using contributor`,

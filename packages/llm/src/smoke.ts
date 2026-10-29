@@ -1,9 +1,11 @@
 import { chat } from "./client";
-import { resolveConfig } from "./config";
+import { BASETEN_MODEL, resolveConfig } from "./config";
 
 /**
  * Smoke test: one tiny request per configured chat model.
- * Prints reply, token counts and cost. Refuses to run without MODEL_API_KEY.
+ * Prints reply, token counts and cost. Refuses to run without MODEL_API_KEY;
+ * the Baseten leg runs the production public-text task and skips without
+ * BASETEN_API_KEY.
  */
 async function main(): Promise<number> {
   const config = resolveConfig();
@@ -45,6 +47,36 @@ async function main(): Promise<number> {
         `cached_in=${value.usage.cachedTokens} ` +
         `cost_usd=${value.costUsd.toFixed(6)} from_cache=${value.cached}`,
     );
+  }
+
+  if (!config.basetenApiKey) {
+    console.log(
+      `${BASETEN_MODEL} (BASETEN_API_KEY): skipped, Baseten key is not set`,
+    );
+  } else {
+    const baseten = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "Reply with exactly: ok" }],
+      },
+      { config },
+    );
+    if (!baseten.ok) {
+      console.log(
+        `${BASETEN_MODEL} (BASETEN_API_KEY): ERROR [${baseten.error.kind}] ${baseten.error.message}`,
+      );
+      failures += 1;
+    } else {
+      console.log(
+        `${BASETEN_MODEL} (BASETEN_API_KEY): reply=${JSON.stringify(baseten.value.content)} ` +
+          `tokens_in=${baseten.value.usage.promptTokens} ` +
+          `tokens_out=${baseten.value.usage.completionTokens} ` +
+          `reasoning=${baseten.value.usage.reasoningTokens} ` +
+          `cached_in=${baseten.value.usage.cachedTokens} ` +
+          `cost_usd=${baseten.value.costUsd.toFixed(6)} from_cache=${baseten.value.cached}`,
+      );
+    }
   }
 
   console.log(

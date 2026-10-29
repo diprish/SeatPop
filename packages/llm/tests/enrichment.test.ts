@@ -10,10 +10,10 @@ import {
 
 describe("enrichment prompt", () => {
   it("loads the versioned prompt with the free rule", () => {
-    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v1");
+    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v2");
     expect(ENRICH_TEMPERATURE).toBe(0.3);
     const prompt = loadEnrichPrompt();
-    expect(prompt).toContain("enrich.v1");
+    expect(prompt).toContain("enrich.v2");
     expect(prompt).toContain("free");
     expect(prompt).toContain("no charge");
     expect(prompt).toContain("Never infer");

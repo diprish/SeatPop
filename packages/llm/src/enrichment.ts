@@ -13,10 +13,14 @@ import type { ChatMessage } from "./types";
  *
  * Privacy (CONTEXT rule 4): the venue STREET ADDRESS never reaches the
  * model — venue name only.
+ *
+ * v2 changes: setting/energy/crowd use fixed vocabularies grounded by
+ * cue words (not value-in-quote), and durations accept number words.
+ * The verifier side lives in packages/shared/verify.ts.
  */
 
 /** Bumped only with packages/llm/prompts/enrich.v*.md (re-enriches all). */
-export const ENRICH_PROMPT_VERSION = "enrich.v1";
+export const ENRICH_PROMPT_VERSION = "enrich.v2";
 
 /** Voting temperature for every enrichment pass (spec: adaptive voting). */
 export const ENRICH_TEMPERATURE = 0.3;
@@ -132,10 +136,13 @@ export type EnrichedField = (typeof ENRICHED_FIELDS)[number];
 
 let cachedPrompt: string | undefined;
 
-/** Load packages/llm/prompts/enrich.v1.md (cached after first read). */
+/** Load packages/llm/prompts/enrich.vN.md (cached after first read). */
 export function loadEnrichPrompt(): string {
   if (cachedPrompt === undefined) {
-    const url = new URL("../prompts/enrich.v1.md", import.meta.url);
+    const url = new URL(
+      `../prompts/${ENRICH_PROMPT_VERSION}.md`,
+      import.meta.url,
+    );
     cachedPrompt = readFileSync(url, "utf8");
   }
   return cachedPrompt;

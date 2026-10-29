@@ -117,6 +117,13 @@ export interface FilterCandidate {
 
 const ANY_LABEL = /any|all|choose|select|^\s*-/i;
 
+/** Non-placeholder options of one select (skips "any" + empty values). */
+export function realOptions(select: FilterSelect): FilterOption[] {
+  return select.options.filter(
+    (o) => o.value !== "" && !ANY_LABEL.test(o.label),
+  );
+}
+
 /**
  * Pick single-filter tries: branch/audience-flavoured selects first, then
  * the rest; skip "any" options and empty values.
@@ -132,14 +139,50 @@ export function pickFilterCandidates(
   );
   const out: FilterCandidate[] = [];
   for (const select of ordered) {
-    for (const option of select.options) {
-      if (out.length >= maxTries) return out;
-      if (option.value === "" || ANY_LABEL.test(option.label)) continue;
-      out.push({ select: select.name, value: option.value, label: option.label });
-      break;
-    }
+    const first = realOptions(select)[0];
+    if (out.length >= maxTries) return out;
+    if (!first) continue;
+    out.push({ select: select.name, value: first.value, label: first.label });
   }
   return out;
+}
+
+/** Try each candidate slice against the baseline; return winner URLs. */
+async function tryCandidates(
+  fetcher: Fetcher,
+  baselineUrl: string,
+  baselineTitles: string[],
+  candidates: FilterCandidate[],
+): Promise<string[]> {
+  const winners: string[] = [];
+  for (const c of candidates) {
+    const url = new URL(baselineUrl);
+    url.search = "";
+    url.searchParams.set(c.select, c.value);
+    try {
+      const page = await fetcher.fetchText(url.href);
+      const showing = parseDisplaying(visibleText(page.text));
+      const titles = parseEventLinkTitles(page.text);
+      const differs =
+        titles.length !== baselineTitles.length ||
+        titles.some((t, i) => t !== baselineTitles[i]);
+      console.log(
+        `--- filter ${c.select}=${JSON.stringify(c.label)}\n` +
+          `url: ${url.href}\n` +
+          `displaying=${showing ? `${showing.from}-${showing.to} of ${showing.of}` : "unknown"} ` +
+          `event_links=${titles.length} ${differs ? "DIFFERS" : "same-as-baseline"}`,
+      );
+      for (const t of titles.slice(0, 3)) console.log(`  title: ${t}`);
+      if (differs && titles.length > 0) winners.push(url.href);
+    } catch (error) {
+      if (error instanceof RobotsDisallowed || error instanceof HttpNoRetry) {
+        console.log(`--- filter ${c.select}=${JSON.stringify(c.label)} BLOCKED: ${error.message}`);
+        continue;
+      }
+      throw error;
+    }
+  }
+  return winners;
 }
 
 function loadEnvFile(): void {
@@ -173,10 +216,12 @@ async function main(): Promise<number> {
   if (args.includes("--help") || args.includes("-h")) {
     console.log(
       "seatpop probe:opl: try OPL single-filter listing URLs with our User-Agent.\n" +
-        "usage: npm run probe:opl --workspace @seatpop/worker",
+        "usage: npm run probe:opl --workspace @seatpop/worker [--age-groups]\n" +
+        "  --age-groups  dump every age-group option and try each slice.",
     );
     return 0;
   }
+  const ageMode = args.includes("--age-groups");
   loadEnvFile();
   const contactUrl =
     process.env["INGEST_CONTACT_URL"]?.trim() ||
@@ -239,10 +284,10 @@ async function main(): Promise<number> {
   }
   console.log(`--- filter form method=${form.method} action=${form.action || "(same page)"}`);
   for (const s of form.selects) {
+    const show = ageMode ? s.options : s.options.slice(0, 3);
     console.log(
-      `  select ${s.name}: ${s.options.length} options (e.g. ${s.options
-        .slice(0, 3)
-        .map((o) => JSON.stringify(o.label))
+      `  select ${s.name}: ${s.options.length} options (${show
+        .map((o) => `${JSON.stringify(o.label)}=${JSON.stringify(o.value)}`)
         .join(", ")})`,
     );
   }
@@ -251,40 +296,28 @@ async function main(): Promise<number> {
     return 0;
   }
 
-  // 4. Bounded single-filter tries against the baseline.
-  const candidates = pickFilterCandidates(form);
+  // 4. Single-filter tries against the baseline.
+  let candidates: FilterCandidate[];
+  if (ageMode) {
+    const age = form.selects.find((s) => /age/i.test(s.name));
+    if (!age) {
+      console.log("no age-group select found; leaving OPL as is.");
+      return 0;
+    }
+    candidates = realOptions(age).map((o) => ({
+      select: age.name,
+      value: o.value,
+      label: o.label,
+    }));
+    console.log(`--- trying all ${candidates.length} age-group slices`);
+  } else {
+    candidates = pickFilterCandidates(form);
+  }
   if (candidates.length === 0) {
     console.log("no usable filter options; leaving OPL as is.");
     return 0;
   }
-  const winners: string[] = [];
-  for (const c of candidates) {
-    const url = new URL(baselineUrl);
-    url.search = "";
-    url.searchParams.set(c.select, c.value);
-    try {
-      const page = await fetcher.fetchText(url.href);
-      const showing = parseDisplaying(visibleText(page.text));
-      const titles = parseEventLinkTitles(page.text);
-      const differs =
-        titles.length !== baselineTitles.length ||
-        titles.some((t, i) => t !== baselineTitles[i]);
-      console.log(
-        `--- filter ${c.select}=${JSON.stringify(c.label)}\n` +
-          `url: ${url.href}\n` +
-          `displaying=${showing ? `${showing.from}-${showing.to} of ${showing.of}` : "unknown"} ` +
-          `event_links=${titles.length} ${differs ? "DIFFERS" : "same-as-baseline"}`,
-      );
-      for (const t of titles.slice(0, 3)) console.log(`  title: ${t}`);
-      if (differs && titles.length > 0) winners.push(url.href);
-    } catch (error) {
-      if (error instanceof RobotsDisallowed || error instanceof HttpNoRetry) {
-        console.log(`--- filter ${c.select}=${JSON.stringify(c.label)} BLOCKED: ${error.message}`);
-        continue;
-      }
-      throw error;
-    }
-  }
+  const winners = await tryCandidates(fetcher, baselineUrl, baselineTitles, candidates);
   console.log(
     winners.length > 0
       ? `winners (${winners.length}):\n${winners.map((w) => `  ${w}`).join("\n")}`

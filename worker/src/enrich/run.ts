@@ -5,9 +5,11 @@ import {
   ENRICHED_FIELDS,
   ENRICH_PROMPT_VERSION,
 } from "@seatpop/llm";
+import { optionsForSource } from "../ingest/source-config";
 import type { StoreConfig } from "../ingest/store";
 import { isDirectExecution } from "../script-entry";
 import { resolveEnrichConfig, resolveProvider } from "./config";
+import { applyFacetAges, applyPricingPolicy } from "./policy";
 import { zonedLocalToUtc } from "../ingest/tz";
 import {
   embedTextFor,
@@ -17,11 +19,13 @@ import {
 } from "./embed";
 import {
   listCandidates,
+  listEventSourceNames,
   listMissingEmbeddings,
   reportTallies,
   updateEmbedding,
   upsertEnrichment,
   upsertPricing,
+  type EnrichCandidate,
 } from "./store";
 import {
   REVIEW_CONFIDENCE_BELOW,
@@ -114,6 +118,7 @@ interface RunStats {
   costUsd: number;
   /** Nulls per field; price_kind counts "unknown" as its null bucket. */
   nulls: Record<string, number>;
+  priceFromPolicy: number;
   review: Array<{ id: string; title: string; confidence: number }>;
   models: Set<string>;
 }
@@ -134,6 +139,7 @@ function freshStats(): RunStats {
     reasoning: 0,
     costUsd: 0,
     nulls,
+    priceFromPolicy: 0,
     review: [],
     models: new Set(),
   };
@@ -142,10 +148,14 @@ function freshStats(): RunStats {
 function printUsage(): void {
   console.log(`seatpop enrich: model enrichment + pricing + embeddings.
 usage: npm run enrich --workspace @seatpop/worker -- [options]
-  --provider contributor|spark  model for the task (default: ENRICH_PROVIDER
-                                or contributor). spark runs the same task on
-                                muse-spark-1.3 for phase-3 comparison.
-  --limit N            enrich at most N pending events (soonest first).
+  --provider contributor|spark|baseten
+                       model for the task (default: ENRICH_PROVIDER
+                       or contributor). spark runs the same task on
+                       muse-spark-1.3; baseten on Baseten's hosted
+                       muse-spark-open (comparison runs).
+  --limit N            enrich at most N events (soonest first).
+  --force              re-enrich even when the source hash matches
+                       (comparison runs; overwrites rows).
   --dry-run            list what would be enriched; make no model calls.
   --skip-embeddings    skip the local embedding sweep.`);
 }
@@ -166,6 +176,7 @@ async function main(): Promise<number> {
   }
   const dryRun = args.includes("--dry-run");
   const skipEmbeddings = args.includes("--skip-embeddings");
+  const force = args.includes("--force");
   const provider = resolveProvider(providerFlag);
   const supabaseUrl = process.env["SUPABASE_URL"]?.trim();
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
@@ -177,16 +188,35 @@ async function main(): Promise<number> {
   const llmConfig = resolveEnrichConfig();
   const modelOverride =
     provider === "spark" ? llmConfig.models.spark : undefined;
+  const providerOverride = provider === "baseten" ? "baseten" as const : undefined;
 
   const candidates = await listCandidates(store);
-  const pending = candidates.filter(
-    (c) =>
-      sourceHashFor({
-        title: c.title,
-        description: c.description,
-        venueName: c.venueName,
-      }) !== c.sourceHash,
+  const listingSources = await listEventSourceNames(
+    store,
+    candidates.map((c) => c.id),
   );
+  // Facet labels from every listing source (OPL age slices); a policy or
+  // facet change re-enriches the event via the hash inputs.
+  const facetLabelsFor = (c: EnrichCandidate): string[] =>
+    [...new Set(listingSources.get(c.id) ?? [])]
+      .map((name) => optionsForSource(name).ageFacet?.label)
+      .filter((label): label is string => label !== undefined)
+      .sort();
+  const policyStringFor = (c: EnrichCandidate): string =>
+    c.policy
+      ? [c.policy.kind, c.policy.quote, c.policy.url, ...(c.policy.scope ?? [])].join("\n")
+      : "";
+  const hashFor = (c: EnrichCandidate): string =>
+    sourceHashFor({
+      title: c.title,
+      description: c.description,
+      venueName: c.venueName,
+      policy: policyStringFor(c),
+      facets: facetLabelsFor(c).join(","),
+    });
+  const pending = force
+    ? [...candidates]
+    : candidates.filter((c) => hashFor(c) !== c.sourceHash);
   const now = new Date();
   if (dryRun) {
     const missing = await listMissingEmbeddings(store);
@@ -222,6 +252,7 @@ async function main(): Promise<number> {
         {
           config: llmConfig,
           model: modelOverride,
+          provider: providerOverride,
           now,
         },
       );
@@ -240,7 +271,23 @@ async function main(): Promise<number> {
       console.warn(`enrich: ${candidate.id} produced no usable pass; skipped`);
       continue;
     }
-    const evidence: Record<string, { value: unknown; quote: string | null }> = {};
+    const facetLabels = facetLabelsFor(candidate);
+    const facet = applyFacetAges(
+      numOrNull(result.values.age_min),
+      numOrNull(result.values.age_max),
+      facetLabels,
+    );
+    const pricing = applyPricingPolicy(
+      result.values,
+      result.quotes.price_kind,
+      candidate.policy,
+      facetLabels,
+    );
+    if (pricing.applied) stats.priceFromPolicy++;
+    const evidence: Record<
+      string,
+      { value: unknown; quote: string | null; basis?: string }
+    > = {};
     for (const field of ENRICHED_FIELDS) {
       evidence[field] = {
         value: result.values[field],
@@ -249,10 +296,19 @@ async function main(): Promise<number> {
     }
     evidence["summary_short"] = { value: result.summary, quote: null };
     evidence["tags"] = { value: result.tags, quote: null };
+    evidence["age_facet"] = {
+      value: facet.labels.length > 0 ? facet.labels : null,
+      quote: null,
+    };
+    evidence["price_kind"] = {
+      value: pricing.priceKind,
+      quote: pricing.evidenceQuote,
+      basis: pricing.basis,
+    };
     await upsertEnrichment(store, {
       event_id: candidate.id,
-      age_min: numOrNull(result.values.age_min),
-      age_max: numOrNull(result.values.age_max),
+      age_min: facet.ageMin,
+      age_max: facet.ageMax,
       needs_adult: boolOrNull(result.values.needs_adult),
       setting: strOrNull(result.values.setting),
       energy: strOrNull(result.values.energy),
@@ -270,26 +326,19 @@ async function main(): Promise<number> {
       evidence,
       model: result.model,
       prompt_version: ENRICH_PROMPT_VERSION,
-      source_hash: sourceHashFor({
-        title: candidate.title,
-        description: candidate.description,
-        venueName: candidate.venueName,
-      }),
+      source_hash: hashFor(candidate),
       confidence: result.confidence,
     });
-    const priceKind =
-      typeof result.values.price_kind === "string"
-        ? result.values.price_kind
-        : "unknown";
     await upsertPricing(store, {
       event_id: candidate.id,
-      price_kind: priceKind,
+      price_kind: pricing.priceKind,
       amount_min_cents: numOrNull(result.values.amount_min_cents),
       amount_max_cents: numOrNull(result.values.amount_max_cents),
       currency: strOrNull(result.values.currency),
       price_text: strOrNull(result.values.price_text),
-      evidence_quote: result.quotes.price_kind,
+      evidence_quote: pricing.evidenceQuote,
       fee_notes: strOrNull(result.values.fee_notes),
+      price_basis: pricing.basis,
     });
     stats.processed++;
     stats.models.add(result.model);
@@ -302,8 +351,15 @@ async function main(): Promise<number> {
       stats.reasoning += call.reasoningTokens;
       stats.costUsd += call.costUsd;
     }
+    // Null rates reflect FINAL stored values (facet ages + policy kind).
+    const finalValues: Record<string, VerifiedValue> = {
+      ...result.values,
+      age_min: facet.ageMin,
+      age_max: facet.ageMax,
+      price_kind: pricing.priceKind,
+    };
     for (const field of ENRICHED_FIELDS) {
-      const value = result.values[field];
+      const value = finalValues[field];
       const isNull =
         field === "price_kind"
           ? value === "unknown"
@@ -418,7 +474,8 @@ async function main(): Promise<number> {
     .join(" ");
   console.log(`  categories: ${cats}`);
   console.log(
-    `  price_kind unknown: ${tallies.priceUnknown}/${tallies.priceTotal}`,
+    `  price_kind unknown: ${tallies.priceUnknown}/${tallies.priceTotal} ` +
+      `(this run: ${stats.priceFromPolicy} from source policy)`,
   );
   return stoppedByBudget ? 1 : 0;
 }

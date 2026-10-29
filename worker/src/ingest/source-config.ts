@@ -15,6 +15,8 @@ export interface SourceOptions {
   includeSubdomains?: boolean;
   extraIndexPages?: { template: string; from: number; to: number };
   rssPubDateIsEventDate?: boolean;
+  /** OPL listing-facet label (e.g. an age group): structured evidence. */
+  ageFacet?: { label: string };
 }
 
 export const SOURCE_OPTIONS: Record<string, SourceOptions> = {

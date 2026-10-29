@@ -10,15 +10,20 @@ import {
   chat,
   type EnrichedField,
   type LlmConfig,
+  type LlmProvider,
 } from "@seatpop/llm";
 import {
   groundingQuote,
   normalizeEvidence,
   verifyAmount,
   verifyBool,
+  verifyCrowd,
+  verifyDuration,
+  verifyEnergy,
   verifyInt,
   verifyPriceKind,
   verifyRegDate,
+  verifySetting,
   verifyText,
   verifyTextList,
   type PriceKind,
@@ -78,15 +83,27 @@ export interface EnrichEventInput {
   venueName: string | null;
 }
 
-/** Change-detection hash: title + description + venue name + prompt. */
+/**
+ * Change-detection hash: title + description + venue name + prompt, plus
+ * the pricing policy and facet labels when the caller passes them (a new
+ * policy or facet re-enriches the event even when its text is unchanged).
+ */
 export function sourceHashFor(
-  input: Pick<EnrichEventInput, "title" | "description" | "venueName">,
+  input: Pick<EnrichEventInput, "title" | "description" | "venueName"> & {
+    policy?: string;
+    facets?: string;
+  },
 ): string {
   return createHash("sha256")
     .update(
-      [input.title, input.description ?? "", input.venueName ?? "", ENRICH_PROMPT_VERSION].join(
-        "\n",
-      ),
+      [
+        input.title,
+        input.description ?? "",
+        input.venueName ?? "",
+        ENRICH_PROMPT_VERSION,
+        input.policy ?? "",
+        input.facets ?? "",
+      ].join("\n"),
     )
     .digest("hex");
 }
@@ -122,11 +139,31 @@ function verifyField(
       );
       break;
     case "duration_min":
-      kept = verifyInt(
+      kept = verifyDuration(
         typeof value === "number" ? value : null,
         quote,
         sourceNorm,
-        { min: 1, max: 10080 },
+      );
+      break;
+    case "setting":
+      kept = verifySetting(
+        typeof value === "string" ? value : null,
+        quote,
+        sourceNorm,
+      );
+      break;
+    case "energy":
+      kept = verifyEnergy(
+        typeof value === "string" ? value : null,
+        quote,
+        sourceNorm,
+      );
+      break;
+    case "crowd":
+      kept = verifyCrowd(
+        typeof value === "string" ? value : null,
+        quote,
+        sourceNorm,
       );
       break;
     case "amount_min_cents":
@@ -255,6 +292,8 @@ export interface VoteDeps {
   chatFn?: ChatFn;
   /** Model override: the spark-comparison flag pins standard Spark. */
   model?: string;
+  /** Provider override: baseten runs the same public-text task remotely. */
+  provider?: LlmProvider;
   now?: Date;
 }
 
@@ -285,6 +324,7 @@ export async function voteEnrichment(
           pass,
         }),
         ...(deps.model ? { model: deps.model } : {}),
+        ...(deps.provider ? { provider: deps.provider } : {}),
         temperature: ENRICH_TEMPERATURE,
         maxTokens: ENRICH_MAX_TOKENS,
       },
