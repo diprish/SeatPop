@@ -150,6 +150,21 @@ export async function findEventsByDedupeKeys(
   return out;
 }
 
+/** Event ids this source already lists (idempotent re-runs skip them). */
+export async function findLinkedEventIds(
+  config: StoreConfig,
+  sourceId: string,
+): Promise<Set<string>> {
+  const rows = await rest<Array<{ event_id: string }>>(
+    config,
+    "event_sources",
+    {
+      query: `?select=event_id&source_id=${eq(sourceId)}&limit=10000`,
+    },
+  );
+  return new Set(rows.map((r) => r.event_id));
+}
+
 export async function insertEvent(
   config: StoreConfig,
   row: EventInsert,

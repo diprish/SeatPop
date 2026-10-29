@@ -17,6 +17,7 @@ import {
 } from "./config";
 import { appendLedgerRow, mirrorToSupabase } from "./ledger";
 import {
+  BudgetExceeded,
   ChatCompletionResponseSchema,
   type ChatCompletionResponse,
   type ChatMessage,
@@ -144,30 +145,75 @@ type LedgerFields = Pick<
 >;
 
 /**
- * One chat completion through the Meta Model API or Baseten (fetch only).
+ * One chat completion (fetch only). The default provider is Baseten for
+ * listing_extraction (public text, never household or email content) and
+ * Meta otherwise; an explicit request.provider always wins.
  *
- * Order: provider gate -> disk cache (a hit makes zero network calls) ->
- * budget guard -> in-flight cost reservation -> network with one backoff
- * retry for transient failures. A null content with finish_reason "length"
- * is a failed call: logged, recorded as a "length_retry" ledger row with
- * the attempt's real usage, retried once with a doubled limit, then
- * returned as a typed error.
- *
- * Every call appends at least one ledger row (local JSONL always, Supabase
- * mirror when configured); length retries append one row per billed attempt.
- * Returns a typed error for call failures; throws BudgetExceeded only, when a
- * spend limit is already reached.
+ * Baseten failures fall back to the contributor model automatically: any
+ * Baseten error, or a reached Baseten cap, retries once on Meta. Gate
+ * refusals (non-public tasks) never fall back. Both attempts write ledger
+ * rows, so each row's provider+model show what produced it.
  */
 export async function chat(
   request: ChatRequest,
   options: ChatOptions = {},
+): Promise<ChatResult> {
+  const provider: LlmProvider =
+    request.provider ??
+    (request.task === "listing_extraction" ? "baseten" : "meta");
+  if (provider === "meta") {
+    return chatWithProvider(request, options, "meta");
+  }
+  try {
+    const result = await chatWithProvider(request, options, "baseten");
+    if (result.ok || result.error.kind === "refused") return result;
+    warnFallback(`baseten ${result.error.kind}, falling back to contributor`);
+    return chatWithProvider(request, options, "meta");
+  } catch (error) {
+    if (error instanceof BudgetExceeded && error.limit === "baseten_total") {
+      warnFallback("baseten cap reached, falling back to contributor");
+      return chatWithProvider(request, options, "meta");
+    }
+    throw error;
+  }
+}
+
+let warnedConfigFallback = false;
+
+/**
+ * Fallback warnings: errors warn every occurrence (rare); config issues
+ * (a missing Baseten key fails every call) warn once per process.
+ */
+function warnFallback(message: string): void {
+  if (message.startsWith("baseten config")) {
+    if (warnedConfigFallback) return;
+    warnedConfigFallback = true;
+  }
+  console.warn(`llm ${message}`);
+}
+
+/**
+ * One provider attempt: provider gate -> disk cache (a hit makes zero
+ * network calls) -> budget guard -> in-flight cost reservation -> network
+ * with one backoff retry for transient failures. A null content with
+ * finish_reason "length" is a failed call: logged, recorded as a
+ * "length_retry" ledger row with the attempt's real usage, retried once
+ * with a doubled limit, then returned as a typed error.
+ *
+ * Every attempt appends at least one ledger row (local JSONL always,
+ * Supabase mirror when configured). Returns a typed error for call
+ * failures; throws BudgetExceeded only, when a spend limit is reached.
+ */
+async function chatWithProvider(
+  request: ChatRequest,
+  options: ChatOptions,
+  provider: LlmProvider,
 ): Promise<ChatResult> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const config = options.config ?? resolveConfig();
   const retryDelayMs = options.retryDelayMs ?? config.retryDelayMs;
   const started = Date.now();
 
-  const provider: LlmProvider = request.provider ?? "meta";
   const model =
     request.model ??
     (provider === "baseten"
@@ -225,10 +271,11 @@ export async function chat(
     );
 
   // 0. Provider gate: Baseten is public-text tasks only, refused in
-  // code before cache, budget, or network see the request.
+  // code before cache, budget, or network see the request. Refusals never
+  // fall back (kind "refused", not an error worth retrying elsewhere).
   if (provider === "baseten" && !PUBLIC_TEXT_TASKS.has(request.task)) {
     return fail({
-      kind: "config",
+      kind: "refused",
       message: `provider "baseten" refused for task "${request.task}": household or email content must not leave Meta hosting`,
     });
   }

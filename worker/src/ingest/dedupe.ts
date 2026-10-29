@@ -35,3 +35,40 @@ export function dedupeKey(input: DedupeInput): string {
     normalizeTitle(input.venue ?? ""),
   ].join("|");
 }
+
+export type DraftWriteAction =
+  | { action: "skip" }
+  | { action: "link"; eventId: string }
+  | { action: "insert" };
+
+export interface PlannedDraft {
+  hash: string;
+  key: string;
+}
+
+/**
+ * One write action per draft, in order. A draft skips when its raw text
+ * already exists for this source, or when its canonical event already
+ * lists this source; otherwise it links the canonical event, or inserts
+ * it when no canonical exists. Drafts are never collapsed by hash:
+ * every draft carries its own key and earns its own link, so slice
+ * facets attach per occurrence even when raw text repeats.
+ * Same-key duplicates in one batch both plan "insert"; the runner links
+ * the second to the row the first just inserted.
+ */
+export function planDraftActions(
+  drafts: PlannedDraft[],
+  existingHashes: ReadonlySet<string>,
+  canonicalIdByKey: ReadonlyMap<string, string>,
+  linkedEventIds: ReadonlySet<string>,
+): DraftWriteAction[] {
+  const linked = new Set(linkedEventIds);
+  return drafts.map((draft) => {
+    if (existingHashes.has(draft.hash)) return { action: "skip" };
+    const eventId = canonicalIdByKey.get(draft.key);
+    if (eventId === undefined) return { action: "insert" };
+    if (linked.has(eventId)) return { action: "skip" };
+    linked.add(eventId);
+    return { action: "link", eventId };
+  });
+}

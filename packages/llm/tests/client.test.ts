@@ -132,7 +132,12 @@ describe("chat client", () => {
       ]);
       const result = await chat(
         // Distinct prompt per task so each iteration is a live call.
-        { task, messages: [{ role: "user", content: `go ${task}` }] },
+        // Explicit Meta: this pins task->model mapping, not the default.
+        {
+          task,
+          provider: "meta",
+          messages: [{ role: "user", content: `go ${task}` }],
+        },
         { fetchImpl, config },
       );
       expect(result.ok).toBe(true);
@@ -407,7 +412,7 @@ describe("chat client", () => {
     expect(calls).toHaveLength(0);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.kind).toBe("config");
+      expect(result.error.kind).toBe("refused");
       expect(result.error.message).toContain("refused");
     }
     const rows = readLedgerRows(config.ledgerPath);
@@ -466,7 +471,7 @@ describe("chat client", () => {
     ]);
 
     const meta = await chat(
-      { task: "listing_extraction", messages },
+      { task: "listing_extraction", provider: "meta", messages },
       { fetchImpl: first.fetchImpl, config },
     );
     const baseten = await chat(
@@ -488,7 +493,7 @@ describe("chat client", () => {
     if (cached.ok) expect(cached.value.content).toBe("baseten-live");
   });
 
-  it("returns a typed error when the Baseten key is missing", async () => {
+  it("falls back to the contributor when the Baseten key is missing", async () => {
     const root = tempRoot();
     const config = testConfig(root);
     const { fetchImpl, calls } = mockFetch([
@@ -504,12 +509,13 @@ describe("chat client", () => {
       { fetchImpl, config },
     );
 
-    expect(calls).toHaveLength(0);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.kind).toBe("config");
-      expect(result.error.message).toContain("BASETEN_API_KEY");
-    }
+    // Missing Baseten key is a Baseten error: zero Baseten calls, one
+    // Meta fallback call to the contributor model.
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe("https://test.invalid/v1/chat/completions");
+    expect(calls[0].body["model"]).toBe("muse-spark-1.3-contributor");
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.content).toBe("ok");
   });
 
   it("prices the Baseten model from its real price table entry", () => {
@@ -520,5 +526,62 @@ describe("chat client", () => {
     });
     expect(providersForTask("listing_extraction")).toEqual(["meta", "baseten"]);
     expect(providersForTask("extraction")).toEqual(["meta"]);
+  });
+
+  it("defaults listing_extraction to Baseten; explicit Meta wins", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl, calls } = mockFetch([
+      { status: 200, body: okBody() },
+      { status: 200, body: okBody() },
+    ]);
+
+    await chat(
+      { task: "listing_extraction", messages: [{ role: "user", content: "a" }] },
+      { fetchImpl, config },
+    );
+    await chat(
+      {
+        task: "listing_extraction",
+        provider: "meta",
+        messages: [{ role: "user", content: "b" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(calls[0].url).toBe(
+      "https://inference.baseten.co/v1/chat/completions",
+    );
+    expect(calls[0].body["model"]).toBe("meta-models/muse-spark-open-1026");
+    expect(calls[1].url).toBe("https://test.invalid/v1/chat/completions");
+    expect(calls[1].body["model"]).toBe("muse-spark-1.3-contributor");
+  });
+
+  it("falls back to the contributor when Baseten errors", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl, calls } = mockFetch([
+      { status: 500, body: { error: "baseten down" } },
+      { status: 500, body: { error: "baseten down" } },
+      { status: 200, body: okBody({ content: "via contributor" }) },
+    ]);
+
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.content).toBe("via contributor");
+    expect(calls).toHaveLength(3);
+    expect(calls[2].url).toBe("https://test.invalid/v1/chat/completions");
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows.map((r) => r.provider)).toEqual(["baseten", "meta"]);
+    expect(rows[0].outcome).toBe("error");
+    expect(rows[1].model).toBe("muse-spark-1.3-contributor");
   });
 });

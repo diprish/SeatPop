@@ -124,6 +124,12 @@ export function realOptions(select: FilterSelect): FilterOption[] {
   );
 }
 
+/** The age-group select. Never bare /age/i: the language select's name
+ * ("field_event_language_value_i18n") contains "age" too. */
+export function findAgeGroupSelect(form: FilterForm): FilterSelect | undefined {
+  return form.selects.find((s) => /age_group/i.test(s.name));
+}
+
 /**
  * Pick single-filter tries: branch/audience-flavoured selects first, then
  * the rest; skip "any" options and empty values.
@@ -133,7 +139,7 @@ export function pickFilterCandidates(
   maxTries: number = MAX_FILTER_TRIES,
 ): FilterCandidate[] {
   const preferred = (name: string): boolean =>
-    /loc|branch|librar|audience|age/i.test(name);
+    /loc|branch|librar|audience|age_group/i.test(name);
   const ordered = [...form.selects].sort(
     (a, b) => Number(preferred(b.name)) - Number(preferred(a.name)),
   );
@@ -299,7 +305,7 @@ async function main(): Promise<number> {
   // 4. Single-filter tries against the baseline.
   let candidates: FilterCandidate[];
   if (ageMode) {
-    const age = form.selects.find((s) => /age/i.test(s.name));
+    const age = findAgeGroupSelect(form);
     if (!age) {
       console.log("no age-group select found; leaving OPL as is.");
       return 0;

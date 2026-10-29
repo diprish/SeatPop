@@ -40,6 +40,59 @@ export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
+    ageFacet: { label: "Adult" },
+  },
+  // Age-group slices (probe:opl --age-groups winners, 2026-10-29): all 9
+  // differ from the baseline; the Adult slice is the existing (Adults)
+  // source above. Facet labels are stored as structured evidence; only
+  // digit-bearing labels ("Adults 50-plus") may set ages.
+  "Ottawa Public Library (Adults 50-plus)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Adults 50-plus" },
+  },
+  "Ottawa Public Library (Baby)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Baby" },
+  },
+  "Ottawa Public Library (Child)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Child" },
+  },
+  "Ottawa Public Library (Family)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Family" },
+  },
+  "Ottawa Public Library (Newcomers)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Newcomers" },
+  },
+  "Ottawa Public Library (Preschool)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Preschool" },
+  },
+  "Ottawa Public Library (Teen)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Teen" },
+  },
+  "Ottawa Public Library (Toddler)": {
+    category: "library",
+    icsIndex: true,
+    includeSubdomains: true,
+    ageFacet: { label: "Toddler" },
   },
   "Ottawa Art Gallery": { category: "arts" },
   "Canadian Museum of Nature": { category: "museums" },

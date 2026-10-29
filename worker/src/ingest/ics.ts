@@ -720,7 +720,10 @@ export function parseIcs(text: string, options: ParseIcsOptions): EventDraft[] {
         venueName: location,
         category: options.defaultCategory,
         status: statusValue === "CANCELLED" ? "cancelled" : "scheduled",
-        rawText: event.raw,
+        // One raw text per occurrence: RRULE siblings share the VEVENT
+        // block but must hash apart, or the (source_id, raw_hash) unique
+        // index admits only one of them and the rest lose their links.
+        rawText: `${event.raw}\nX-SEATPOP-OCCURRENCE:${new Date(occurrenceMs).toISOString()}`,
       };
       const parsed = EventDraftSchema.safeParse(candidate);
       if (parsed.success) drafts.push(parsed.data);

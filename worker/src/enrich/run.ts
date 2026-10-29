@@ -4,6 +4,7 @@ import {
   BudgetExceeded,
   ENRICHED_FIELDS,
   ENRICH_PROMPT_VERSION,
+  type LlmProvider,
 } from "@seatpop/llm";
 import { optionsForSource } from "../ingest/source-config";
 import type { StoreConfig } from "../ingest/store";
@@ -150,9 +151,9 @@ function printUsage(): void {
 usage: npm run enrich --workspace @seatpop/worker -- [options]
   --provider contributor|spark|baseten
                        model for the task (default: ENRICH_PROVIDER
-                       or contributor). spark runs the same task on
-                       muse-spark-1.3; baseten on Baseten's hosted
-                       muse-spark-open (comparison runs).
+                       or baseten). Baseten failures and cap hits
+                       fall back to the contributor automatically;
+                       each row's model shows what produced it.
   --limit N            enrich at most N events (soonest first).
   --force              re-enrich even when the source hash matches
                        (comparison runs; overwrites rows).
@@ -188,7 +189,9 @@ async function main(): Promise<number> {
   const llmConfig = resolveEnrichConfig();
   const modelOverride =
     provider === "spark" ? llmConfig.models.spark : undefined;
-  const providerOverride = provider === "baseten" ? "baseten" as const : undefined;
+  // Always explicit: contributor/spark mean Meta (never the task default).
+  const providerOverride: LlmProvider =
+    provider === "baseten" ? "baseten" : "meta";
 
   const candidates = await listCandidates(store);
   const listingSources = await listEventSourceNames(

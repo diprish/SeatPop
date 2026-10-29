@@ -78,6 +78,21 @@ Conditions:
   Overlap with the baseline slice is absorbed by dedupe. Cost: each OPL
   slice fetches ~20 ICS files at crawl-delay 10 (~4 min per slice).
 
+## OPL age-group slices (2026-10-29, `probe:opl --age-groups`, honest UA)
+
+- Robots re-checked first: booking `crawl-delay 10`, listing and filtered
+  query URLs both allow. Baseline "1 - 20 of 560", GET form, age select
+  `field_age_group_target_id` with 9 real options.
+- All 9 differ from the baseline (of-counts): Adult 327 (= existing
+  Adults slice, not duplicated), 50-plus 165, Baby 36, Child 121,
+  Family 116, Newcomers 40, Preschool 32, Teen 75, Toddler 25. **Kept:
+  the 8 new ones** as tier-1 ICS-index slice sources, each with its
+  facet label as structured evidence. Only "Adults 50-plus" states
+  digits, so only it can set ages (unanimous-digit rule; event text
+  wins).
+- Probe bug fixed same day: age-mode matched bare `/age/i` and caught
+  the *language* select first; now `/age_group/i` + regression test.
+
 ## Extraction fixes (2026-10-28)
 
 - OLT seed URL `/calendar/` → `/2026-season/`: the calendar page is an empty

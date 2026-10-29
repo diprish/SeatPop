@@ -65,6 +65,11 @@ const SQL4 = readFileSync(
   "utf8",
 );
 
+const SQL6 = readFileSync(
+  new URL("../../supabase/migrations/0006_pricing_policies.sql", import.meta.url),
+  "utf8",
+);
+
 describe("migration 0004", () => {
   it("adds policy columns, scope and basis without touching RLS or views", () => {
     for (const fragment of [
@@ -80,6 +85,25 @@ describe("migration 0004", () => {
     expect(SQL4.toLowerCase()).not.toContain("create policy");
     expect(SQL4.toLowerCase()).not.toContain("create or replace view");
     expect(SQL4.toLowerCase()).not.toContain("enable row level security");
+  });
+});
+
+describe("migration 0006", () => {
+  it("sets a scoped OPL kids-free policy and nothing else", () => {
+    for (const fragment of [
+      "pricing_policy_kind = 'free'",
+      "These programs are free and offered at branches throughout the city.",
+      "https://collections.biblioottawalibrary.ca/en/parenting",
+      "array['Baby', 'Child', 'Family', 'Preschool', 'Toddler']",
+      "where name like 'Ottawa Public Library%'",
+    ]) {
+      expect(SQL6).toContain(fragment);
+    }
+    // Teen/Adult audiences are not covered by the verbatim statement.
+    expect(SQL6).not.toContain("'Teen'");
+    expect(SQL6).not.toContain("'Adult'");
+    expect(SQL6.toLowerCase()).not.toContain("create policy");
+    expect(SQL6.toLowerCase()).not.toContain("create or replace view");
   });
 });
 

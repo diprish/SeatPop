@@ -16,11 +16,12 @@ import { IcsAdapter } from "./ics";
 import { JsonLdAdapter } from "./jsonld";
 import { RssAdapter } from "./rss";
 import { UserSubmittedAdapter } from "./user";
-import { dedupeKey, rawHash } from "./dedupe";
+import { dedupeKey, planDraftActions, rawHash } from "./dedupe";
 import { optionsForSource } from "./source-config";
 import {
   findEventsByDedupeKeys,
   findEventsByRawHashes,
+  findLinkedEventIds,
   findVenueByName,
   insertEvent,
   insertVenue,
@@ -180,39 +181,55 @@ async function ingestSource(
   }
   const store = options.store;
 
-  // Within-source dedupe: skip listings whose raw text already exists.
-  const hashes = new Map<string, EventDraft>();
-  for (const draft of upcoming) {
-    hashes.set(rawHash(draft.rawText), draft);
-  }
+  // Within-source dedupe: skip listings whose raw text already exists,
+  // or whose canonical event already lists this source (idempotent).
+  const planned = upcoming.map((draft) => ({
+    draft,
+    hash: rawHash(draft.rawText),
+    key: dedupeKey({
+      title: draft.title,
+      startsAtUtc: draft.startsAtUtc,
+      venue: draft.venueName ?? draft.venueAddress,
+    }),
+  }));
   const existing = await findEventsByRawHashes(
     store,
     source.id,
-    [...hashes.keys()],
+    [...new Set(planned.map((p) => p.hash))],
   );
-  const fresh = [...hashes.entries()].filter(([h]) => !existing.has(h));
-  report.skippedUnchanged = upcoming.length - fresh.length;
+  const alreadyLinked = await findLinkedEventIds(store, source.id);
 
   // Cross-source dedupe: link to the canonical event or insert it.
-  const keys = fresh.map(
-    ([, draft]) =>
-      [
-        dedupeKey({
-          title: draft.title,
-          startsAtUtc: draft.startsAtUtc,
-          venue: draft.venueName ?? draft.venueAddress,
-        }),
-        draft,
-      ] as const,
-  );
   const canonical = await findEventsByDedupeKeys(
     store,
-    keys.map(([k]) => k),
+    [...new Set(planned.map((p) => p.key))],
   );
-  for (const [key, draft] of keys) {
-    const hit = canonical.get(key);
-    if (hit) {
-      await linkEventSource(store, hit.id, source.id, draft.sourceUrl);
+  const canonicalIdByKey = new Map(
+    [...canonical.entries()].map(([key, row]) => [key, row.id] as const),
+  );
+  const actions = planDraftActions(
+    planned,
+    new Set(existing.keys()),
+    canonicalIdByKey,
+    alreadyLinked,
+  );
+  const insertedByKey = new Map<string, string>();
+  for (const [index, entry] of planned.entries()) {
+    const { draft, key } = entry;
+    const action = actions[index];
+    if (action === undefined || action.action === "skip") {
+      report.skippedUnchanged++;
+      continue;
+    }
+    if (action.action === "link") {
+      await linkEventSource(store, action.eventId, source.id, draft.sourceUrl);
+      report.linked++;
+      continue;
+    }
+    const prior = insertedByKey.get(key);
+    if (prior !== undefined) {
+      // Same occurrence twice in one fetch: link the row just inserted.
+      await linkEventSource(store, prior, source.id, draft.sourceUrl);
       report.linked++;
       continue;
     }
@@ -253,7 +270,7 @@ async function ingestSource(
       status: draft.status,
     });
     await linkEventSource(store, inserted.id, source.id, draft.sourceUrl);
-    canonical.set(key, inserted);
+    insertedByKey.set(key, inserted.id);
     report.inserted++;
   }
 

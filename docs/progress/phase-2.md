@@ -115,3 +115,173 @@ when filters show which fields matter.
 - `--provider spark` comparison run happens in phase 3 (flag ready).
 - Prompt says "events ending before TODAY" nowhere: ongoing exhibitions
   (start in past, end in future) enrich normally — intended.
+
+## Phase 2b
+
+### enrich.v2: vocabularies + number words
+
+- Fixed vocabularies for setting/energy/crowd with deterministic
+  keyword checks in the verifier: a value is accepted only when its
+  grounded quote contains the value's cue words (whole-word, negation
+  aware, so "mushroom" never means "room"). Number-word map for
+  durations ("one-hour" → 60). Prompt bumped to `enrich.v2`, which
+  forces a justified full re-enrich (~$0.20 on contributor).
+- Null rates before → after, contributor (v1 on 261 events → v2 on
+  857; populations differ, see below): setting 1.00 → 0.28, energy
+  1.00 → 0.92, crowd 1.00 → 0.96, duration 1.00 → 0.96. The setting
+  win is the verifier keyword check; energy/crowd/duration stay thin
+  because OPL text rarely carries the cues. Full v2 report below.
+
+### Source pricing policies (migration 0004 schema + 0006 data)
+
+- Numbered 0006 because remote already holds a 0005 row from earlier
+  work, which shadows any local 0005 file. The UPDATE is idempotent.
+
+- OPL children's programs, verbatim (Children's Programs section,
+  [parenting page](https://collections.biblioottawalibrary.ca/en/parenting)):
+  "These programs are free and offered at branches throughout the
+  city." Stored on every `Ottawa Public Library%` source row with
+  scope `[Baby, Child, Family, Preschool, Toddler]`. Teen excluded:
+  OPL treats Teen as a separate audience and the statement never
+  names it — no inference.
+- Every other source stays `unknown`: OAG's official "Admission is
+  always FREE" is gallery admission while its feed carries paid
+  programs (camps) no scope can separate; no verbatim fee statement
+  found for the market, museums, or theatres.
+- Merge rule (runner): event fee text always wins; a scoped policy
+  needs an overlapping facet label; basis recorded per row
+  (`event_text` | `source_policy`).
+
+### OPL age-group facets
+
+- `probe:opl --age-groups` (fixed 2026-10-29: the matcher was bare
+  `/age/i`, which caught the *language* select; now `/age_group/i`
+  with a regression test). Robots allow; all 9 slices differ from
+  the baseline (of-counts: Adult 327, 50-plus 165, Baby 36, Child
+  121, Family 116, Newcomers 40, Preschool 32, Teen 75, Toddler 25).
+- 8 new slice sources configured (Adult = existing Adults slice);
+  each carries its facet label as structured evidence. Only
+  "Adults 50-plus" states digits, so only it can set ages — and
+  only when every digit-bearing facet agrees; text-verified ages
+  always win.
+- Ingest hardening from the slice counts (2026-10-29): the runner
+  used to collapse drafts by raw_hash before cross-source dedupe,
+  which drops links whenever one raw text fans out to several
+  occurrences. Fix: per-occurrence raw text (`X-SEATPOP-OCCURRENCE`
+  stamp, also required by the `(source_id, raw_hash)` unique index)
+  + a pure per-draft write planner (`planDraftActions`, tested)
+  that links every occurrence and skips already-linked canonicals.
+  Post-fix run: the feared ~400 missing links did not exist — most
+  collapsed drafts were same-key duplicates (identical series files
+  served from several event pages), already covered by run-1 links;
+  the fix's real yield was small fan-out catch-up plus clean
+  idempotent re-runs (stable slices report all-unchanged, zero link
+  re-attempts). Known pre-existing gap, unchanged: a listing whose
+  text changes re-links but never updates the canonical row.
+- Counts per source/category + price/age null rates: see the full
+  v2 run report below.
+
+### Full v2 re-enrich report (2026-10-29, contributor, enrich.v2)
+
+- Events: 857 candidates (+596 over the 261: +30 in the two pasted
+  ingest runs, the rest from intermediate runs — the new slices'
+  page-1s hold largely distinct programs, and the per-occurrence fix
+  recovered RRULE fan-out the old collapse had dropped), 851
+  processed, 0 failed, 6 up_to_date.
+- Passes: 396 live + 1437 cached — cached v1 raw replies re-verified
+  under v2 rules, which is legitimate (verification runs at vote
+  time) and is why the run cost $0.07 instead of ~$0.20.
+- Spend: $0.0732 total, **$0.09 per 1,000 events** (same unit rate
+  as v1). Tokens in 2.2M / out 1.2M / reasoning 0.7M.
+- Null rates: setting 0.28, energy 0.92, crowd 0.96, duration 0.96,
+  age_min 0.67 (was 0.92 — facet + text ages), age_max 0.84 (was
+  0.94), needs_adult 0.76, language 0.77, reg_hint 0.56,
+  accessibility 1.00, reg_opens 1.00, price_kind 0.58 (was 0.84),
+  amounts/currency/price_text 1.00, fee_notes 0.97, summary 0.00,
+  tags 0.00.
+- Review list: 1 event at 0.50 (Morning Social — one pass returned
+  unusable JSON; correctly flagged, everything else ≥ 0.7).
+- Embeddings: 358 embedded (30-day window), 387 skipped out of
+  window, 0 failed (remainder already embedded).
+- Categories: library 792 (was 211 — kids slices), arts 26,
+  museums 23, music 14, markets 2.
+- price_kind unknown: 500/857 (was 220/261); this run put 300 on
+  `free` via the OPL kids source policy.
+- Final ingest per source (fetched): History 7, Nature 5, War 6,
+  Diefenbunker 0 (304), GCTC 5, OAG 14, Chamberfest 23, OFM 2,
+  OLT 1, OPL base 82, 50-plus 92, Adults 89, Baby 113, Child 62,
+  English 58, Family 73, Newcomers 106, Preschool 100, Teen 75,
+  Toddler 95 — 20 sources, 1008 fetched / 1001 upcoming.
+
+## Baseten provider (second provider, public-text tasks only)
+
+- `packages/llm`: base `https://inference.baseten.co/v1`, model exactly
+  `meta-models/muse-spark-open-1026`, key `BASETEN_API_KEY` from env
+  only. Ledger provider is `"meta" | "baseten"`.
+- Price table (real, from the model library page, USD per 1M tokens):
+  input 1.25, cached input 0.15, output 4.25. No estimates.
+- The model always reasons: `reasoning_content` is parsed separately,
+  stripped from the answer, and its tokens counted as output
+  (`reasoning_effort: minimal` still sent; runs at low, the lightest
+  available).
+- Only tasks flagged public-text may use it (enrichment, listing
+  extraction). Non-public tasks (household/email) refuse Baseten in
+  code (`refused`, never falls back).
+- Routing: Baseten is the default for `listing_extraction` and
+  enrichment; an explicit provider flag/env wins. Any Baseten error or
+  cap hit falls back to the contributor model automatically (warn
+  logged); both attempts are ledger-logged. The API-reported model id
+  is stored per enrichment row.
+- Budgets: global limits (total, per_run, daily_live) count Meta spend
+  ONLY; Baseten spend is capped only by `BASETEN_MAX_USD_TOTAL`
+  (default 90).
+- `npm run smoke` covers Baseten (live leg confirmed: reply ok, 46
+  reasoning tokens).
+
+### Baseten vs contributor, 20 events each (`--force`, enrich.v2)
+
+- Baseten: $0.1792, **$8.96/1k events**; contributor: $0.0085,
+  **$0.43/1k events** (~21x gap).
+- Null rates tied within noise (age_min 0.90 both; setting 0.55 both;
+  price_kind 1.00 both; language 1.00 vs 0.95 — one event differed).
+- Quality tied, cost not: Baseten is the default with automatic
+  contributor fallback (outages never block a run); pass
+  `--provider contributor` for cheap production runs until the cost
+  gap is revisited.
+
+### Baseten data-retention and training policy (verbatim, read 2026-10-29)
+
+Training — Terms and Conditions, Sec 6.3 "No Training on Customer
+Content" ([terms](https://www.baseten.co/terms-and-conditions/), last
+updated September 15, 2026):
+
+> "Baseten will not use Customer Content, including Customer Models,
+> Model Outputs, or inference logs, to train, fine-tune, or otherwise
+> develop machine learning or artificial intelligence models."
+
+"Customer Content" (Sec 1) means submitted content AND all Model
+Outputs, so the no-training promise covers both prompts and outputs.
+Sec 6.2 limits Baseten's use of Customer Content to (a) providing /
+maintaining the Services, (b) service problems and support, (c) legal
+compulsion or written permission. Sec 6.4: operational telemetry
+(latency, throughput, error rates, utilization) may be used for
+analytics/benchmarking only in aggregated or de-identified form.
+
+Retention — [security docs](https://docs.baseten.co/observability/security)
+(Data privacy):
+
+> "Baseten does not store model inputs, outputs, or weights by
+> default. This zero data retention (ZDR) policy applies to
+> synchronous inference."
+
+Async-inference inputs are stored in queue up to 72 hours; "Baseten
+doesn't store outputs." Our client uses synchronous inference, so ZDR
+applies. The [security page](https://www.baseten.co/security/) states
+"zero retention of inference inputs and outputs, plus encryption in
+transit and at rest."
+
+Unclear: the pages read state no exception or retention window for
+abuse/safety monitoring copies — not stated either way. Deletion:
+Sec 7.4 — export during the term + 30 days; on written request Baseten
+securely deletes all Customer Content "in accordance with the Security
+Practices, unless legally prohibited."

@@ -18,6 +18,54 @@
     "city": "Ottawa"
   },
   {
+    "name": "Ottawa Public Library (Adults 50-plus)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1104",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Baby)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1148",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Child)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1149",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Family)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1150",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Newcomers)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1160",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Preschool)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1151",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Teen)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1152",
+    "city": "Ottawa"
+  },
+  {
+    "name": "Ottawa Public Library (Toddler)",
+    "kind": "ics",
+    "url": "https://booking.biblioottawalibrary.ca/program?field_age_group_target_id=1153",
+    "city": "Ottawa"
+  },
+  {
     "name": "Ottawa Art Gallery",
     "kind": "ics",
     "url": "https://oaggao.ca/events/?ical=1",

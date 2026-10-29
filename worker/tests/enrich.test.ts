@@ -269,12 +269,13 @@ describe("enrichment voting", () => {
   it("resolves the provider from flag, env, then default", () => {
     expect(resolveProvider("baseten")).toBe("baseten");
     expect(resolveProvider("spark")).toBe("spark");
+    expect(resolveProvider("contributor")).toBe("contributor");
     expect(resolveProvider(undefined, { ENRICH_PROVIDER: "spark" } as NodeJS.ProcessEnv)).toBe(
       "spark",
     );
-    expect(resolveProvider(undefined, {} as NodeJS.ProcessEnv)).toBe("contributor");
+    expect(resolveProvider(undefined, {} as NodeJS.ProcessEnv)).toBe("baseten");
     expect(resolveProvider(undefined, { ENRICH_PROVIDER: "bogus" } as NodeJS.ProcessEnv)).toBe(
-      "contributor",
+      "baseten",
     );
   });
 

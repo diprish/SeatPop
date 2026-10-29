@@ -85,7 +85,8 @@ export type LlmErrorKind =
   | "timeout"
   | "network"
   | "schema"
-  | "length";
+  | "length"
+  | "refused";
 
 export interface LlmError {
   kind: LlmErrorKind;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  findAgeGroupSelect,
   parseDisplaying,
   parseEventLinkTitles,
   parseFilterForm,
@@ -120,5 +121,25 @@ describe("probe:opl parsers", () => {
       { select: "field_audience", value: "teen", label: "Teen" },
       { select: "field_subject", value: "9", label: "Music and Dance" },
     ]);
+  });
+
+  it("finds the age-group select, never the language select", () => {
+    const form = {
+      method: "get",
+      action: "",
+      selects: [
+        // "language" contains "age": the recorded --age-groups bug.
+        { name: "field_event_language_value_i18n", options: [] },
+        { name: "field_age_group_target_id", options: [] },
+      ],
+    };
+    expect(findAgeGroupSelect(form)?.name).toBe("field_age_group_target_id");
+    expect(
+      findAgeGroupSelect({
+        method: "get",
+        action: "",
+        selects: [{ name: "field_event_language_value_i18n", options: [] }],
+      }),
+    ).toBeUndefined();
   });
 });

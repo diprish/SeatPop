@@ -42,6 +42,22 @@ const noFetch = (() => {
   throw new Error("network call made despite budget");
 }) as unknown as typeof fetch;
 
+const okFetch = (async () =>
+  new Response(
+    JSON.stringify({
+      id: "chatcmpl-test",
+      model: "muse-spark-1.3",
+      choices: [
+        {
+          message: { role: "assistant", content: "ok" },
+          finish_reason: "stop",
+        },
+      ],
+      usage: { prompt_tokens: 1, completion_tokens: 1 },
+    }),
+    { status: 200 },
+  )) as unknown as typeof fetch;
+
 function seedRow(overrides: Partial<LedgerRow> = {}): LedgerRow {
   return {
     ts: "2020-01-01T00:00:00.000Z",
@@ -206,7 +222,7 @@ describe("budget guard", () => {
     expect(rows).toHaveLength(4);
   });
 
-  it("stops Baseten calls at the Baseten total", async () => {
+  it("falls back to Meta when the Baseten cap is reached", async () => {
     const root = tempRoot();
     const config = testConfig(root, { budgets: { basetenTotal: 5 } });
     appendLedgerRow(
@@ -214,21 +230,18 @@ describe("budget guard", () => {
       seedRow({ provider: "baseten", est_cost_usd: 10 }),
     );
 
-    try {
-      await chat(
-        {
-          task: "listing_extraction",
-          provider: "baseten",
-          messages: [{ role: "user", content: "go" }],
-        },
-        { fetchImpl: noFetch, config },
-      );
-    } catch (error) {
-      expect(error).toBeInstanceOf(BudgetExceeded);
-      expect((error as BudgetExceeded).limit).toBe("baseten_total");
-      return;
-    }
-    throw new Error("expected BudgetExceeded(baseten_total)");
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl: okFetch, config },
+    );
+
+    expect(result.ok).toBe(true);
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows.map((r) => r.provider)).toEqual(["baseten", "meta"]);
   });
 
   it("lets Meta calls through when only the Baseten total is spent", async () => {
@@ -238,21 +251,6 @@ describe("budget guard", () => {
       config.ledgerPath,
       seedRow({ provider: "baseten", est_cost_usd: 10 }),
     );
-    const okFetch = (async () =>
-      new Response(
-        JSON.stringify({
-          id: "chatcmpl-test",
-          model: "muse-spark-1.3",
-          choices: [
-            {
-              message: { role: "assistant", content: "ok" },
-              finish_reason: "stop",
-            },
-          ],
-          usage: { prompt_tokens: 1, completion_tokens: 1 },
-        }),
-        { status: 200 },
-      )) as unknown as typeof fetch;
 
     const result = await chat(
       {
@@ -264,7 +262,7 @@ describe("budget guard", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("counts Baseten spend toward the global total", async () => {
+  it("ignores Baseten spend in the global limits", async () => {
     const root = tempRoot();
     const config = testConfig(root, { budgets: { total: 5 } });
     appendLedgerRow(
@@ -272,6 +270,13 @@ describe("budget guard", () => {
       seedRow({ provider: "baseten", est_cost_usd: 10 }),
     );
 
-    await expectBudgetExceeded(config, "total");
+    const result = await chat(
+      {
+        task: "extraction",
+        messages: [{ role: "user", content: "extract" }],
+      },
+      { fetchImpl: okFetch, config },
+    );
+    expect(result.ok).toBe(true);
   });
 });

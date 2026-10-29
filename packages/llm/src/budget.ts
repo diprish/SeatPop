@@ -11,7 +11,8 @@ export interface SpendTotals {
 
 /**
  * Sum spend from ledger rows. `today` is a UTC YYYY-MM-DD date.
- * total/perRun/dailyLive span all providers; basetenTotal is Baseten rows.
+ * total/perRun/dailyLive count Meta spend only; basetenTotal counts
+ * Baseten spend only. Baseten is capped solely by its own total.
  */
 export function spendTotals(
   rows: LedgerRow[],
@@ -23,12 +24,15 @@ export function spendTotals(
   let dailyLive = 0;
   let basetenTotal = 0;
   for (const row of rows) {
+    if (row.provider === "baseten") {
+      basetenTotal += row.est_cost_usd;
+      continue;
+    }
     total += row.est_cost_usd;
     if (row.run_id === runId) perRun += row.est_cost_usd;
     if (!row.cached && row.ts.slice(0, 10) === today) {
       dailyLive += row.est_cost_usd;
     }
-    if (row.provider === "baseten") basetenTotal += row.est_cost_usd;
   }
   return { total, perRun, dailyLive, basetenTotal };
 }
@@ -63,10 +67,11 @@ export function releaseInflight(ledgerPath: string, usd: number): void {
 
 /**
  * Throw BudgetExceeded when any configured limit is already reached.
- * Ledger spend plus in-flight reservations count against every limit.
- * The Baseten cap guards Baseten calls only; the global limits count all
- * providers. The reservation pool is per ledger file (not per provider),
- * so it counts in full against the Baseten cap too — safe direction.
+ * Meta calls check the global limits (Meta spend only); Baseten calls
+ * check solely their own total. Ledger spend plus in-flight reservations
+ * count against the checked limits. The reservation pool is per ledger
+ * file (not per provider), so it counts in full wherever checked —
+ * safe direction.
  */
 export function assertWithinBudget(
   config: LlmConfig,
@@ -75,13 +80,27 @@ export function assertWithinBudget(
   const rows = readLedgerRows(config.ledgerPath);
   const totals = spendTotals(rows, config.runId, todayUtc());
   const reserved = inflightReserved(config.ledgerPath);
+  if (provider === "baseten") {
+    const basetenTotal = config.budgets.basetenTotal;
+    if (
+      basetenTotal !== undefined &&
+      totals.basetenTotal + reserved >= basetenTotal
+    ) {
+      throw new BudgetExceeded(
+        "baseten_total",
+        totals.basetenTotal + reserved,
+        basetenTotal,
+      );
+    }
+    return totals;
+  }
   const withInflight: SpendTotals = {
+    ...totals,
     total: totals.total + reserved,
     perRun: totals.perRun + reserved,
     dailyLive: totals.dailyLive + reserved,
-    basetenTotal: totals.basetenTotal + reserved,
   };
-  const { total, perRun, dailyLive, basetenTotal } = config.budgets;
+  const { total, perRun, dailyLive } = config.budgets;
   if (total !== undefined && withInflight.total >= total) {
     throw new BudgetExceeded("total", withInflight.total, total);
   }
@@ -90,17 +109,6 @@ export function assertWithinBudget(
   }
   if (dailyLive !== undefined && withInflight.dailyLive >= dailyLive) {
     throw new BudgetExceeded("daily_live", withInflight.dailyLive, dailyLive);
-  }
-  if (
-    provider === "baseten" &&
-    basetenTotal !== undefined &&
-    withInflight.basetenTotal >= basetenTotal
-  ) {
-    throw new BudgetExceeded(
-      "baseten_total",
-      withInflight.basetenTotal,
-      basetenTotal,
-    );
   }
   return withInflight;
 }

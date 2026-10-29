@@ -11,20 +11,18 @@ export function resolveEnrichConfig(
   return resolveConfig(env, { budgets: { perRun: ENRICH_RUN_BUDGET_USD } });
 }
 
-/** CLI flag wins, then ENRICH_PROVIDER, then contributor. */
+/** CLI flag wins, then ENRICH_PROVIDER, then baseten. */
 export function resolveProvider(
   flag: string | undefined,
   env: NodeJS.ProcessEnv = process.env,
 ): EnrichProvider {
-  const raw = (flag ?? env["ENRICH_PROVIDER"] ?? "contributor")
-    .trim()
-    .toLowerCase();
+  const raw = (flag ?? env["ENRICH_PROVIDER"] ?? "baseten").trim().toLowerCase();
   if (raw === "spark") return "spark";
-  if (raw === "baseten") return "baseten";
-  if (raw !== "contributor") {
+  if (raw === "contributor") return "contributor";
+  if (raw !== "baseten") {
     console.warn(
-      `unknown ENRICH_PROVIDER ${JSON.stringify(raw)}; using contributor`,
+      `unknown ENRICH_PROVIDER ${JSON.stringify(raw)}; using baseten`,
     );
   }
-  return "contributor";
+  return "baseten";
 }

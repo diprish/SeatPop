@@ -34,6 +34,16 @@ describe("ics adapter", () => {
     ]);
   });
 
+  it("gives every RRULE occurrence its own raw text", () => {
+    const drafts = parse().filter((d) => d.title === "Wednesday Yoga");
+    expect(drafts.length).toBeGreaterThan(1);
+    const raws = new Set(drafts.map((d) => d.rawText));
+    expect(raws.size).toBe(drafts.length);
+    for (const draft of drafts) {
+      expect(draft.rawText).toContain(draft.startsAtUtc);
+    }
+  });
+
   it("maps cancelled status, all-day events, and drops the past", () => {
     const drafts = parse();
     expect(drafts).toHaveLength(7);
