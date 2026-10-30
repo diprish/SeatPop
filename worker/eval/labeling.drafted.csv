@@ -1,0 +1,311 @@
+# SeatPop enrichment eval — labeling instructions
+# RULE: label only what the text says; blank means the text does not say.
+# Label columns only (context columns are read-only): age_min, age_max
+# (whole years, blank when unstated), price_kind (blank = unknown, or
+# free|paid|pay_what_you_can|donation|member_only), amount (blank, or
+# dollars like 25, $25.00, or a range 10-20), setting, language,
+# registration_hint, accessibility (";"-separated, blank when unstated).
+# Put x in labeled when the row is done; notes are free text.
+# 50 row(s) below mention a price or the word "free" and
+# were force-included; the rest stratify sources x categories.
+# Validate with: npm run eval:import --workspace @seatpop/worker
+event_id,title,description,venue,source,category,age_min,age_max,price_kind,amount,setting,language,registration_hint,accessibility,labeled,notes
+01fb3d69-6a0e-4f23-a5c6-19676c977f61,Write with Us!,"The Writers Collective of Canada (WCC) and the Rockcliffe Park&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",Rockcliffe Park at Branch Open Space,Ottawa Public Library,library,,,unknown,,,,,,x,AI-drafted; no price/age/registration stated; Open Space is not a place type
+02bc52c5-fe7b-406b-a288-0b9092a7129a,Morning Social / Matinée conviviale,"Join us at the library on Wednesday mornings&nbsp;for our&nbsp;Morning Social&nbsp;and connect with others in the community. Whether you'd like to work on a puzzle, play a board game, enjoy some colouring, or simply chat over coffee or tea, there's something for everyone. Feel free to bring your own activity as well.Drop-in event.&nbsp;Joignez-vous �  nous les mercredis matins pour tisser des liens avec d'autres membres de la communauté et passer une matinée&nbsp;conviviale �  la bibliothèque. Que vous souhaitiez faire un casse-tête, jouer �  un jeu de société, colorier ou simplement discuter autour d'un café ou d'un thé, il y en a pour tous les goûts. N'hésitez pas �  apporter votre propre activité.Activité sans inscription.",Orléans at Salle Dolorès et Marcel Bériault,Ottawa Public Library,library,,,unknown,,,,drop-in,,x,AI-drafted; bilingual text; salle not mapped
+04b9c222-bc89-43e9-bec3-90526f9e208e,English Conversation Group,"Join our free English conversation to practice speaking in English in a relaxed and friendly environment.All levels are welcome to this drop-in program.**Joignez-vous �  notre groupe de conversation pour pratiquer l'anglais dans une atmosphère&nbsp;détendue.Tous les niveaux&nbsp;d'habileté sont les bienvenus&nbsp;�  ce programme, et aucune inscription n'est requise.NOTICE / AVIS :There will be no session on October 21, 2026.Il n'y aura pas de session le 21 octobre, 2026.",Main at Room B125,Ottawa Public Library (Adults),library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+05cb8b89-e513-4a4e-85b6-9c7ce26a95f0,English Conversation Group,"Join our free English conversation to practice speaking in English in a relaxed and friendly environment.All levels are welcome to this drop-in program.**Joignez-vous �  notre groupe de conversation pour pratiquer l'anglais dans une atmosphère&nbsp;détendue.Tous les niveaux&nbsp;d'habileté sont les bienvenus&nbsp;�  ce programme, et aucune inscription n'est requise.NOTICE / AVIS :There will be no session on October 21, 2026.Il n'y aura pas de session le 21 octobre, 2026.",Main at Room B125,Ottawa Public Library (Adults),library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+08692282-ec0e-4684-8d1a-e1d292c97242,Write With Us!,"The Writers Collective of Canada (WCC) and the Greenboro Branch of the Ottawa Public Library&nbsp;invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary",Greenboro at Meeting room A (Community Centre),Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Meeting room A in venue
+098a1241-30ad-458c-a944-8421330e1b87,English Conversation Group / Groupe de conversation en anglais,"Join our free English Conversation Group to practice speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre&nbsp;Groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.",Stittsville at Grace Thompson Room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Grace Thompson Room
+09e86778-85eb-43a1-9510-fcc15654623a,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.NOTICE / AVIS :There will be no session on September 30, which is the National Day of Truth and Reconciliation.Il n'y aura pas de séance le 30 septembre, la Journée nationale de la vérité et de la réconciliation.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+0a53c282-cc66-454b-854d-e01aa9e78313,English Conversation Group / Groupe de conversation en anglais,"Join our free English conversation group to practise speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme, inscription non requise.",St-Laurent at Claude B. Aubry room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+0a84de57-2543-418c-b48e-28b7e692fd96,Kronos Quartet,,,Ottawa Chamberfest,music,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+0c72ed8a-22dc-4873-bf38-98b186516224,Greely Cards and Games for Adults (55+),"Drop-in for a session of card games and board games for adults 55+ at the Greely Library.An assortment of games and cards will be provided but feel free to bring your own as well!Tea, coffee, and cookies provided.Every Friday from 1:30pm-4pm.",Greely at Carol Parker Room,Ottawa Public Library (Adults 50-plus),library,55,,unknown,,indoors,,drop-in,,x,AI-drafted; adults 55+; Carol Parker Room
+0e268ee0-e9f9-48a6-a055-3c36973bc37d,Write With Us!,"The Writers Collective of Canada (WCC) and the Greenboro Branch of the Ottawa Public Library&nbsp;invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary",Greenboro at Meeting room A (Community Centre),Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Meeting room A in venue
+12584e65-785a-46b7-b602-938a43763db9,Greely Cards and Games for Adults (55+),"Drop-in for a session of card games and board games for adults 55+ at the Greely Library.An assortment of games and cards will be provided but feel free to bring your own as well!Tea, coffee, and cookies provided.Every Friday from 1:30pm-4pm.",Greely at Carol Parker Room,Ottawa Public Library (Adults 50-plus),library,55,,unknown,,indoors,,drop-in,,x,AI-drafted; adults 55+; Carol Parker Room
+136795f2-3015-4b31-a8a3-c5adc322db82,Halloween at the Bunker 2026,"Join us underground for a day of spooky season fun for all ages. 
+Free Halloween programming will take place at the museum entrance and in the Blast Tunnel. Stop by for activities for youth and families, a spooky photo backdrop, and trick-or-treating (while supplies last). No admission or booking is required to take part in the free programming.  
+We invite you to continue your Halloween visit inside the Diefenbunker with general admission — explore the museum and take part in a Halloween-themed scavenger hunt along the way.  
+Date
+Saturday, October 31  
+Time
+Halloween programming: 10:00 a.m. to 1:00 p.m.
+Museum admission and scavenger hunt: 10:00 a.m. to 3:00 p.m.  
+Cost
+Halloween programming: Free
+Museum admission and scavenger hunt: Purchase a general admission or guided tour ticket to enter the museum. Tickets can be purchased in advance or on site.  
+Costumes are welcome all day for visitors of all ages.  
+>>PLAN YOUR VISIT
+   
+
+Please note that the multiple levels, stairs, and narrow hallways in the Diefenbunker can make the museum difficult to navigate with a stroller, and there is no elevator available for public use. While an accessible stair lift is available, we recommend bringing a baby carrier instead of a stroller, if this is a feasible option for you. Learn more about accessibility.","Diefenbunker: Canada’s Cold War Museum, 3929 Carp Road, Ottawa, Ontario, K0A 1L0, Canada",Diefenbunker,museums,,,free,,,,drop-in,accessible stair lift,x,"AI-drafted; free Halloween programming; museum admission is separate and paid, no amount; REVIEW"
+1738ef1e-708c-4233-a9b6-02c5d026b67b,Babytime & Stay and Play | Bébés à la biblio & Jouons à la biblio,"Stories, rhymes and songs for babies 0 -18 months and a parent or caregiver. Feel free to stay after the program to play and chat. Drop-in program.Contes, comptines et chansons pour les bébés de 0 �  18 mois et un parent ou gardien. N’hésitez pas �  rester après le programme pour jouer et socialiser. Programme portes ouvertes.",Main at Childrens program room,Ottawa Public Library (Baby),library,0,,unknown,,indoors,,drop-in,,x,"AI-drafted; 0-18 months: whole-year max not expressible, left blank; REVIEW"
+1972f9cc-1abd-4ca1-9375-e28c18017aba,The Morning Social/ La matinée sociale,"Join us to meet new people, play games and socialize. We have coffee, puzzles, board games and adult coloring books available.&nbsp; Feel free to bring your own materials and games!Joignez-vous �  nous pour rencontrer des&nbsp;nouveaux amis, pour jouer et socialiser.&nbsp;&nbsp;Nous avons du café,&nbsp;des casse-têtes, des jeux de société et des livres de coloriage pour adultes,&nbsp;mais&nbsp;n’hésitez pas �  apporter votre propre matériel.&nbsp; &nbsp;",Cumberland at Adult Programming Room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Adult Programming Room; nothing else stated
+1c2e59ea-e5b7-47d9-b105-d559a82f105d,The Morning Social/ La matinée sociale,"Join us to meet new people, play games and socialize. We have coffee, puzzles, board games and adult coloring books available.&nbsp; Feel free to bring your own materials and games!Joignez-vous �  nous pour rencontrer des&nbsp;nouveaux amis, pour jouer et socialiser.&nbsp;&nbsp;Nous avons du café,&nbsp;des casse-têtes, des jeux de société et des livres de coloriage pour adultes,&nbsp;mais&nbsp;n’hésitez pas �  apporter votre propre matériel.&nbsp; &nbsp;",Cumberland at Adult Programming Room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Adult Programming Room; nothing else stated
+1c89555b-9999-4612-9fc8-2ea570e98b49,Hunting for Fossils in the Badlands of Alberta: Then and Now,Follow scientists from the Canadian Museum of Nature into the wild in this immersive documentary short film.,,Canadian Museum of Nature,museums,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+21e6fd3c-ede7-4328-a69b-7fe167a480eb,“Dear Lara” Film Screening + Conversation with Lara St. John,Dear Lara is a deeply personal documentary exposing decades of sexual abuse and institutional complicity in classical music.,Ottawa Art Gallery,Ottawa Chamberfest,music,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+22cf2015-a1a6-4b2f-988c-6e6cc5f10dfa,Write with Us!,"The Writers Collective of Canada (WCC) and the Rockcliffe Park&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",Rockcliffe Park at Branch Open Space,Ottawa Public Library,library,,,unknown,,,,,,x,AI-drafted; no price/age/registration stated; Open Space is not a place type
+27096827-f6ed-4535-85d9-ee30a89b5265,The Morning Social/ La matinée sociale,"Join us to meet new people, play games and socialize. We have coffee, puzzles, board games and adult coloring books available.&nbsp; Feel free to bring your own materials and games!Joignez-vous �  nous pour rencontrer des&nbsp;nouveaux amis, pour jouer et socialiser.&nbsp;&nbsp;Nous avons du café,&nbsp;des casse-têtes, des jeux de société et des livres de coloriage pour adultes,&nbsp;mais&nbsp;n’hésitez pas �  apporter votre propre matériel.&nbsp; &nbsp;",Cumberland at Adult Programming Room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Adult Programming Room; nothing else stated
+275c3021-8c88-41ad-9048-031b5ef230ca,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.NOTICE / AVIS :There will be no session on September 30, which is the National Day of Truth and Reconciliation.Il n'y aura pas de séance le 30 septembre, la Journée nationale de la vérité et de la réconciliation.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+299bb095-8531-4b61-bd64-ff7a845affcb,Write With Us!,"The Writers Collective of Canada (WCC) and the North Gloucester&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",North Gloucester at Room A,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Room A in venue
+2a947614-a6b5-47df-b323-62b797da017b,Teen Spooky Social,"Celebrate Halloween with trivia, bingo, board games, puzzles, karaoke, and more! Sit on beanbags, enjoy free snacks, and wear your costume.This event is organized by the teen volunteer members of the Nepean Centrepointe library's Teen Advisory Group.Drop-in program. Ages 13-18 (Grades 8-12)",Nepean Centrepointe at Room 1B,Ottawa Public Library,library,13,18,unknown,,indoors,,drop-in,,x,"AI-drafted; free snacks only, event price unstated; Room 1B"
+2af81e67-0139-4fb6-8737-c299889f15ea,English Conversation Group / Groupe de conversation en anglais,"Join our free English Conversation Group to practice speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre&nbsp;Groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.",Stittsville at Grace Thompson Room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Grace Thompson Room
+2b001cc7-caa0-4636-a0a1-c50279ef51ab,Babytime & Stay and Play | Bébés à la biblio & Jouons à la biblio,"Stories, rhymes and songs for babies 0 -18 months and a parent or caregiver. Feel free to stay after the program to play and chat. Drop-in program.Contes, comptines et chansons pour les bébés de 0 �  18 mois et un parent ou gardien. N’hésitez pas �  rester après le programme pour jouer et socialiser. Programme portes ouvertes.",Main at Childrens program room,Ottawa Public Library (Baby),library,0,,unknown,,indoors,,drop-in,,x,"AI-drafted; 0-18 months: whole-year max not expressible, left blank; REVIEW"
+2e5572b4-8eb4-4d2d-ad52-b945e2757b55,Sketchy Thursdays,"Join us in the Studio to learn art techniques at the Ottawa Art Gallery.
+
+With summer plein air sessions and surprise guest artists, this program changes often and offers a range of learning opportunities and sketching settings.
+
+Register here.
+
+Art materials will be provided.
+
+For more information email cstewart@oaggao.ca or call 613-233-8699 +242.","Ottawa Art Gallery Studio, 10 Daly Ave., Ottawa, ON, K1N 6E2, Canada",Ottawa Art Gallery,arts,,,unknown,,indoors,,required,,x,"AI-drafted; Studio; ""Register here"""
+2ebfd2c7-1a22-432f-89e7-3dcd4d66ac34,Cheng² Duo: A Night at the Museum,,,Ottawa Chamberfest,music,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+302432a0-7341-40ea-b27f-0cca3b409b84,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.NOTICE / AVIS :There will be no session on September 30, which is the National Day of Truth and Reconciliation.Il n'y aura pas de séance le 30 septembre, la Journée nationale de la vérité et de la réconciliation.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+307862cc-6708-4384-8fc3-bdb3ddb8818f,Jane Eyre,,,Ottawa Little Theatre,arts,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+32429243-f03d-4d65-a46a-c61989509f9c,Write With Us!,"The Writers Collective of Canada (WCC) and the Greenboro Branch of the Ottawa Public Library&nbsp;invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary",Greenboro at Meeting room A (Community Centre),Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Meeting room A in venue
+369861c7-84a1-46bd-aac8-f80bef04d9e9,Morning Social / Matinée conviviale,"Join us at the library on Wednesday mornings&nbsp;for our&nbsp;Morning Social&nbsp;and connect with others in the community. Whether you'd like to work on a puzzle, play a board game, enjoy some colouring, or simply chat over coffee or tea, there's something for everyone. Feel free to bring your own activity as well.Drop-in event.&nbsp;Joignez-vous �  nous les mercredis matins pour tisser des liens avec d'autres membres de la communauté et passer une matinée&nbsp;conviviale �  la bibliothèque. Que vous souhaitiez faire un casse-tête, jouer �  un jeu de société, colorier ou simplement discuter autour d'un café ou d'un thé, il y en a pour tous les goûts. N'hésitez pas �  apporter votre propre activité.Activité sans inscription.",Orléans at Patricia Leduc Room,Ottawa Public Library,library,,,unknown,,indoors,,drop-in,,x,AI-drafted; Patricia Leduc Room; bilingual text
+37362c5c-a151-4ae6-bed9-4d54576e4528,Morning Social / Matinée conviviale,"Join us at the library on Wednesday mornings&nbsp;for our&nbsp;Morning Social&nbsp;and connect with others in the community. Whether you'd like to work on a puzzle, play a board game, enjoy some colouring, or simply chat over coffee or tea, there's something for everyone. Feel free to bring your own activity as well.Drop-in event.&nbsp;Joignez-vous �  nous les mercredis matins pour tisser des liens avec d'autres membres de la communauté et passer une matinée&nbsp;conviviale �  la bibliothèque. Que vous souhaitiez faire un casse-tête, jouer �  un jeu de société, colorier ou simplement discuter autour d'un café ou d'un thé, il y en a pour tous les goûts. N'hésitez pas �  apporter votre propre activité.Activité sans inscription.",Orléans at Patricia Leduc Room,Ottawa Public Library,library,,,unknown,,indoors,,drop-in,,x,AI-drafted; Patricia Leduc Room; bilingual text
+37c19cef-14a5-488f-9c53-4e973d2f05cc,English Conversation Group,"Join our free English conversation to practice speaking in English in a relaxed and friendly environment.All levels are welcome to this drop-in program.**Joignez-vous �  notre groupe de conversation pour pratiquer l'anglais dans une atmosphère&nbsp;détendue.Tous les niveaux&nbsp;d'habileté sont les bienvenus&nbsp;�  ce programme, et aucune inscription n'est requise.NOTICE / AVIS :There will be no session on October 21, 2026.Il n'y aura pas de session le 21 octobre, 2026.",Main at Room B125,Ottawa Public Library (Adults),library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+388f2d81-c017-4d1e-aecf-7bc582f3a73a,English Conversation Group / Groupe de conversation en anglais,"Join our free English conversation group to practise speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme, inscription non requise.",St-Laurent at Claude B. Aubry room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+39a2dd51-2ea7-4bcb-9274-5d124816ce8b,Write With Us!,"The Writers Collective of Canada (WCC) and the North Gloucester&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",North Gloucester at Room A,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Room A in venue
+3c9c59ae-1471-47d8-bb82-0e0159cf648d,Babytime & Stay and Play | Bébés à la biblio & Jouons à la biblio,"Stories, rhymes and songs for babies 0 -18 months and a parent or caregiver. Feel free to stay after the program to play and chat. Drop-in program.Contes, comptines et chansons pour les bébés de 0 �  18 mois et un parent ou gardien. N’hésitez pas �  rester après le programme pour jouer et socialiser. Programme portes ouvertes.",Main at Childrens program room,Ottawa Public Library (Baby),library,0,,unknown,,indoors,,drop-in,,x,"AI-drafted; 0-18 months: whole-year max not expressible, left blank; REVIEW"
+3cb29955-d038-4ec5-ba24-eaeed0d2a12f,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.NOTICE / AVIS :There will be no session on September 30, which is the National Day of Truth and Reconciliation.Il n'y aura pas de séance le 30 septembre, la Journée nationale de la vérité et de la réconciliation.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+3d13b525-6ceb-4fa7-a567-1eb702cebee6,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+4305ae78-2abc-4c17-a977-5d77c962db90,The Morning Social/ La matinée sociale,"Join us to meet new people, play games and socialize. We have coffee, puzzles, board games and adult coloring books available.&nbsp; Feel free to bring your own materials and games!Joignez-vous �  nous pour rencontrer des&nbsp;nouveaux amis, pour jouer et socialiser.&nbsp;&nbsp;Nous avons du café,&nbsp;des casse-têtes, des jeux de société et des livres de coloriage pour adultes,&nbsp;mais&nbsp;n’hésitez pas �  apporter votre propre matériel.&nbsp; &nbsp;",Cumberland at Adult Programming Room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Adult Programming Room; nothing else stated
+48029984-46f0-4f61-9d17-2e2dac62588e,English Conversation Group / Groupe de conversation en anglais,"Join our free English Conversation Group to practice speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre&nbsp;Groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.",Stittsville at Grace Thompson Room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Grace Thompson Room
+4b632d7f-1e02-4c20-84a8-4a20f10cda3e,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.NOTICE / AVIS :There will be no session on September 30, which is the National Day of Truth and Reconciliation.Il n'y aura pas de séance le 30 septembre, la Journée nationale de la vérité et de la réconciliation.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+4dda13b4-7995-40f9-b2e3-8de86340ff44,Many Faces of Orlando: Ema Nikolovska &#038; Sean Shibe,,,Ottawa Chamberfest,music,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+4dde9684-8e41-45a8-988f-a4d1fdbec968,Art Talk,"The OAG’s Learning and Engagement team offers Art Talk phone calls in partnership with The Good Companions Seniors’ Centre and other seniors’ organizations. 
+Experience a taste of the local world of art by joining us for engaging discussions about the OAG’s diverse exhibitions and collections, where our expert guide provides in-depth descriptions of artworks and the meaning behind them. Simply dial 1-844-237-9847 to join the conversation and be encouraged to share personal experiences and memories evoked by the artwork! 
+THIS PROGRAM IS FREE 
+All you need is a regular telephone to participate! 
+Phone calls take place on the last Tuesday of each month, at 10:45 am. 
+Art Talk phone calls are also featured in the Seniors’ Centre Without Walls program, which coordinates a calendar full of voluntary phone-in opportunities that enrich the lives of local seniors. Mail-outs of Art Talk images are provided to those who register in advance. 
+Seniors who are interested in taking part in upcoming Art Talk conversations, and opportunities alike, can do so by reaching out through this link:
+The Good Companions Centre","Telephone, Canada",Ottawa Art Gallery,arts,,,free,,,,,,x,"AI-drafted; ""THIS PROGRAM IS FREE""; phone-in, setting not mapped"
+4fc1371d-edbc-4d56-bd9b-35a91e79d838,Tiny Giants,Experience the titanic battles that the smallest of animals face to survive in this documentary short film of giant proportions.,,Canadian Museum of Nature,museums,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+5270ce74-e87a-4082-a30c-23e63a2e668d,Concert: We Will Remember,,Canadian War Museum,Canadian War Museum,museums,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+531a1e6a-bc7a-4aa1-9030-73e23e98c151,Operation Whisky: A Festive Fallout Fundraiser,"Join us on Saturday, November 21, 2026 for the return of our signature annual fundraiser, with a retro festive twist! 
+Travel back in time to the 1950s and escape the looming nuclear winter as you stay warm underground in a decommissioned fallout shelter, delighting in a mid-century holiday party with whisky tastings, themed cocktails, tasty treats, a silent auction, and other festivities. 
+Enjoy unique flavours and a slice of the past, while contributing to the preservation of Canada’s Cold War story. 
+Tickets
+Individual: $160.00 
+
+
+Four whisky tastings
+A selection of food pairings and appetizers
+Access to full cash bar
+Tax receipt for a portion of the ticket price
+
+
+Designated Driver: $100.00 
+
+
+A selection of food plates and appetizers
+Two non-alcoholic beverages
+Access to non-alcoholic beverages at the cash bar
+Tax receipt for a portion of the ticket price
+
+
+Sponsor a Full Table: $1,500 
+
+
+Tickets for 8 people
+Four whisky tastings per person
+A selection of food pairings and appetizers
+Access to full cash bar
+Bonus gift for each attendee
+Recognition as a sponsor in event promotions and signage
+To sponsor a table, please contact marketing@diefenbunker.ca.
+
+Tickets must be purchased in advance. 
+
+>> RESERVE YOUR TICKETS
+
+Event details
+
+6:00 p.m. Doors open. Join the party and check out the cash bar, appetizers, silent auction, and festive activities throughout the lower levels of the museum.
+6:30 p.m. Event kick-off and introductions.
+6:45 p.m. Sommelier introduces the whisky selections. Whisky and food pairings available at stations throughout the evening.
+9:00 p.m. Silent auction closes.
+9:30 p.m. Event ends.
+
+Silent auction
+We look forward to featuring incredible prizes from local businesses in the event’s silent auction. To inquire about donating items to our silent auction, please contact marketing@diefenbunker.ca. 
+
+
+Bletchley Park (opens in new tab)
+Bytown Museum (opens in new tab)
+Carp Custom Creamery (opens in new tab)
+Dunrobin Distilleries (opens in new tab)
+Equator Coffee Roasters (opens in new tab)
+Firehouse Subs (opens in new tab)
+Happy Goat Coffee Co. (opens in new tab)
+OCR Academy (opens in new tab)
+Ottawa Little Theatre (opens in new tab)
+Spirits Canada (opens in new tab)
+Wine Growers Canada (opens in new tab)
+Yuk Yuk’s (opens in new tab)
+
+
+Whisky selections 
+Whisky is provided by Ottawa’s own SFR Distillery (opens in new tab). Guests will be served 0.5 oz of each of the four whiskies. 
+Sponsors
+By sponsoring this event, you can put your organization at the forefront of important community engagement and impact. Learn more about the available sponsorship opportunities (opens in new tab) and contact marketing@diefenbunker.ca for more information. 
+What cause am I supporting?
+A portion of your ticket for this fundraising event is a donation to the Diefenbunker: Canada’s Cold War Museum. Ticket purchasers will be issued a tax receipt after the event for this donation. 
+The Diefenbunker is an impressive four-storey underground facility that operated as the country’s central communications headquarters during the Cold War, ready at any moment in case of a nuclear attack. Today, it is a one-of-a-kind museum, national historic site, and independent charitable organization. 
+Your support through our fundraiser will contribute to our preservation and conservation efforts, along with our ability to offer high-quality exhibitions and educational programs to visitors year-round. Thank you for preserving an important window into the past, as we continue to share important history lessons and strive to build a more peaceful future. 
+
+Thank you to our event supporters
+WHISKY SPONSOR & SOMMELIER 
+(opens in new tab) 
+FOOD CURATION 
+(opens in new tab)","Diefenbunker: Canada’s Cold War Museum, 3929 Carp Road, Ottawa, Ontario, K0A 1L0, Canada",Diefenbunker,museums,,,paid,$100-$160,,,required,,x,"AI-drafted; Individual $160, designated driver $100; $1,500 table sponsorship excluded; REVIEW"
+53443c5c-4015-4691-a7d6-ca56dda24fa8,Concert: We Will Remember,,,Canadian War Museum,museums,,,unknown,,,,,,x,AI-drafted; no description; nothing to label
+554faef7-cee3-41aa-9cd6-0f92b9836bd3,English Conversation Group / Groupe de conversation en anglais,"Join our free English conversation group to practise speaking in English in a&nbsp;relaxed and friendly environment. All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue. Tous les niveaux sont les bienvenus �  ce programme, inscription non requise.",St-Laurent at Claude B. Aubry room,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; room in venue
+5961be91-8151-4612-8808-3b2fc6a0e214,English conversation group,"Join our free English conversation group to practice speaking in English in a&nbsp;relaxed and friendly environment.All levels are welcome to this drop-in program.Rejoignez notre groupe de conversation en anglais&nbsp;gratuit pour pratiquer l'anglais&nbsp;dans une atmosphère détendue.Tous les niveaux sont les bienvenus �  ce programme , inscription non requise.",Main at Program Room MA 117,Ottawa Public Library,library,,,free,,indoors,English,drop-in,,x,AI-drafted; free + drop-in stated; Program Room in venue
+5ab0d26e-bb8e-47d7-aa96-3c9995f839d8,The Morning Social/ La matinée sociale,"Join us to meet new people, play games and socialize. We have coffee, puzzles, board games and adult coloring books available.&nbsp; Feel free to bring your own materials and games!Joignez-vous �  nous pour rencontrer des&nbsp;nouveaux amis, pour jouer et socialiser.&nbsp;&nbsp;Nous avons du café,&nbsp;des casse-têtes, des jeux de société et des livres de coloriage pour adultes,&nbsp;mais&nbsp;n’hésitez pas �  apporter votre propre matériel.&nbsp; &nbsp;",Cumberland at Adult Programming Room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,,,x,AI-drafted; Adult Programming Room; nothing else stated
+5b935d7c-2dab-4a68-b586-32db0f38ea8d,Write with Us!,"The Writers Collective of Canada (WCC) and the Rockcliffe Park&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",Rockcliffe Park at Branch Open Space,Ottawa Public Library,library,,,unknown,,,,,,x,AI-drafted; no price/age/registration stated; Open Space is not a place type
+5e3c9bb4-7d95-4236-8ff8-ab7a70876b66,Artificial Intelligence (AI): Fun and Useful Tips,"Artificial Intelligence (AI) tools have exploded over the last few years. They can: supercharge your web searches & help you find the most relevant information; generate images & videos from text prompts; summarize web pages, YouTube videos, & PDF files; help you accomplish tasks in your programs; assist with creative writing; and more. Chris Taylor from the Ottawa PC Users' Group will show you how easily it can be done and how to avoid dreaded ""AI hallucinations"". And you can do it all for free.&nbsp;Drop-in",Centennial at Meeting room,Ottawa Public Library (Adults 50-plus),library,,,unknown,,indoors,,drop-in,,x,"AI-drafted; ""do it all for free"" refers to AI tools, not event; REVIEW"
+635249f1-43c1-403c-84f8-6e55f6d1c46e,Write with Us!,"The Writers Collective of Canada (WCC) and the Rockcliffe Park&nbsp;Branch invite you to join us for our writing workshops: Write With Us!We are all connected through story. Stories have the power to remove barriers of difference and to broaden perspectives. By writing together and listening to others with only positive feedback, we connect with the common humanity that bonds us all.&nbsp;Writers are free to write to whatever genre they desire. We will share and receive feedback on our pieces.&nbsp; Each workshop stands alone&nbsp;so no need to feel that one has missed out. A new writing prompt will be explored each session.WCC believes that every voice deserves to be heard. No experience is necessary.",Rockcliffe Park at Branch Open Space,Ottawa Public Library,library,,,unknown,,,,,,x,AI-drafted; no price/age/registration stated; Open Space is not a place type
+7e902266-836f-48e9-b17a-ece7c669a282,OAG's Winter Exhibition Celebration,"You do not want to miss this celebration! 
+Exhibitions 
+Memory Palace
+Olivia Johnston, Karen Miller, Mina Moshajjari, Wind Up Radio
+Level 4 
+Timescapes
+Journey through the Firestone Collection of Canadian Art
+Level 2 
+Art + Parcel: A Holiday Sale
+Level 1 
+ 
+Schedule 
+6 PM
+Reception Begins in the Alma Duncan Salon, level 3 
+6:20 PM
+Speeches in the Alma Duncan Salon, level 3 
+Reception Continues until 8:30 PM 
+  
+REGISTER HERE 
+  
+OAG is pleased to offer free childcare during exhibition receptions.
+It will be available from 6 – 8 PM in the Studio (level 0). Please email cstewart@oaggao.ca to register. 
+If you are in need of ASL interpretation for the event speeches, please contact Emma Campbell by November 3. 
+
+Winter Savings at the OAG Shop
+
+Start your holiday shopping at Art + Parcel: A Holiday Sale. Enjoy a 10% discount at the OAG Shop during the reception, or 20% for OAG Members. Please note that discounts are not applicable to original artwork or products that are already on sale. 
+ 
+Image: Olivia Johnston, grotto 2; audio: cello improv 1, 2026, dried plant matter, chicken wire, fishing wire, wood, pigment-ink print on cotton rag paper, light box, sound piece. Courtesy of the artist.","Ottawa Art Gallery, 10 Daly Avenue, Ottawa, Ontario, K1N 6E2, Canada",Ottawa Art Gallery,arts,,,unknown,,,,required,ASL interpretation on request;free childcare,x,"AI-drafted; ""REGISTER HERE""; reception price unstated"
+9c186db4-d18d-49f5-99a7-1794c1ecf943,Toddler Mornings,"Join us in the Studio on the first Wednesday of every month for Toddler Mornings at the Ottawa Art Gallery. Explore creative play with a variety of activities that foster creativity and problem solving skills in toddlers and their caretakers.
+
+Toddler Mornings are led by OAG Educator Wendy Moir. Wendy is passionate about art education and has taught visual literacy at galleries in Kingston, Halifax and Ottawa since 2003.
+
+Please dress for mess!
+
+NO REGISTRATION REQUIRED. THIS IS A FREE ACTIVITY.
+
+Spots are available on a first come first served basis. All materials will be provided.
+The program is best for children aged 0 to 4 years old. Children must be accompanied by an adult.
+For more information, email family@oaggao.ca or call 613-233-8699 +242.","Ottawa Art Gallery Studio, 10 Daly Ave., Ottawa, ON, K1N 6E2, Canada",Ottawa Art Gallery,arts,0,4,free,,indoors,,drop-in,,x,"AI-drafted; free, no registration, ages 0-4; Studio"
+a68a0731-abc6-4fc6-85c4-115b9218b94b,Toddler Mornings,"Join us in the Studio on the first Wednesday of every month for Toddler Mornings at the Ottawa Art Gallery. Explore creative play with a variety of activities that foster creativity and problem solving skills in toddlers and their caretakers.
+
+Toddler Mornings are led by OAG Educator Wendy Moir. Wendy is passionate about art education and has taught visual literacy at galleries in Kingston, Halifax and Ottawa since 2003.
+
+Please dress for mess!
+
+NO REGISTRATION REQUIRED. THIS IS A FREE ACTIVITY.
+
+Spots are available on a first come first served basis. All materials will be provided.
+The program is best for children aged 0 to 4 years old. Children must be accompanied by an adult.
+For more information, email family@oaggao.ca or call 613-233-8699 +242.","Ottawa Art Gallery Studio, 10 Daly Ave., Ottawa, ON, K1N 6E2, Canada",Ottawa Art Gallery,arts,0,4,free,,indoors,,drop-in,,x,"AI-drafted; free, no registration, ages 0-4; Studio"
+b2092319-1be1-4c2f-9f9b-ec7b89a82b35,Veterans’ Week at the Diefenbunker 2026,"The Diefenbunker was an active military base for 32 years throughout the Cold War. We invite you to learn why we remember as you explore Cold War stories at the Diefenbunker.
+This Veterans’ Week (November 5–11), the Diefenbunker honours those who have served and those who continue to serve, including Indigenous veterans on November 8. 
+Through special programming, we reflect on the impact of conflict and work towards a more peaceful future. 
+November 5 to 8 and 10 to 11
+
+Visit the Bank of Canada Vault for a space of reflection and remembrance.
+Discover stories of Indigenous veterans through our exhibition An Inuit Story: The DEW Line(opens in new tab).
+Watch oral history videos(opens in new tab) of Cold War veterans, on display outside the Machine Room.
+Hear museum volunteers share their stories and personal experiences from serving during the Cold War.
+
+November 10
+
+
+In addition to our extended experience guided tours, two special tours will be available. Spots are limited and tickets must be reserved in advance. Reserve your tickets.(opens in new tab)
+
+Curatorial Tour, 12:30 – 2:30 p.m.
+Discover secret history of the Diefenbunker — what came before it, and once-classified plans for its operations in the event of a nuclear attack on Canada. You will explore historical context surrounding the Cold War that led to the construction of the Central Emergency Government Headquarters (the Diefenbunker) and will learn about Canada’s preparations for a nuclear war that were never realized, including the plans for after a bomb hit and the implications on citizens across the country. 
+Collections Tour, 12:30 – 2:00 p.m.
+Discover the Diefenbunker as Canada’s most significant Cold War artifact. You will explore the bunker’s unique architectural features that were designed for surviving a nuclear attack and will learn about how we preserve the facility today for the continued enjoyment of museum visitors. 
+November 11
+
+Enjoy free general admission to the museum. Reserve your tickets.(opens in new tab) Guided tours will not be offered.
+A moment of silence will be observed at 11 a.m. throughout the museum. After this time, we invite you to lay your poppy on our wreath in the Bank of Canada Vault. The wreath will be brought to the West Carleton War Memorial at the end of the day.
+
+The museum will be closed on November 9. 
+
+Interested in supporting our Veterans’ Week initiatives? Sponsorship opportunities are available. (opens in new tab)","Diefenbunker: Canada’s Cold War Museum, 3929 Carp Road, Ottawa, Ontario, K0A 1L0, Canada",Diefenbunker,museums,,,unknown,,,,,,x,"AI-drafted; mixed: free admission Nov 11, tours ticketed without price; REVIEW"
+b21d693a-83b4-44d6-9d9e-2f659c5e9081,Creative Sundays,"Join us in the Studio for Creative Sundays, a free drop in art activity suitable for all ages. Discover the current exhibition with a knowledgeable gallery educator and explore your creativity with family and friends.
+
+NO REGISTRATION REQUIRED. THIS IS A FREE, ALL-AGES ACTIVITY.
+
+Children must be accompanied by an adult.
+
+For more information email studio@oaggao.ca or call 613-233-8699 + 242.","Ottawa Art Gallery Studio, 10 Daly Ave., Ottawa, ON, K1N 6E2, Canada",Ottawa Art Gallery,arts,,,free,,indoors,,drop-in,,x,AI-drafted; free all-ages drop-in; Studio
+b2bc38a0-92bc-47a1-ab52-573e3a433780,Halloween Kids Cookie Decorating,"Join us on Saturday, October 31st at our Westboro Farmers’ Market from 10am-2pm. We will have a spooktacular cookie decorating activity for kids, where they can decorate/create a halloween themed cookie. Free kids activity or by donation towards Shepherds of Good Hope.","Westboro Market, Byron Linear Park",Ottawa Farmers' Market,markets,,,free,,,,,,x,"AI-drafted; ""Free kids activity or by donation"": free option exists; REVIEW (could be donation)"
+dd042ab2-516f-4da1-a73c-b50f80be8772,Creative Opportunities Conference,"You’re invited to the Creative Opportunities Conference, a free event taking place at the Ottawa Art Gallery’s Alma Duncan Salon on Sunday, November, 8, 2026. 
+This one-day event is a fantastic opportunity to learn about a range of arts education, creative careers, and artistic development opportunities available right here in the greater Ottawa-Gatineau region. The COC is designed to connect the region’s community of arts professionals, recent graduates, and adult learners with local arts/visual media, and community organizations that offer programs and experiences designed to enrich your artistic practice, professional skills, and personal development. 
+What’s Happening: 
+
+Creative Opportunities Info Fair: Visit a broad range of info tables and network with arts and culture specialists.
+2 Artist Talks
+2 Panel Discussions
+
+
+Creative Careers Panel speakers include:
+ 
+Moderator: 
+
+CBC’s Alan Neal
+
+
+Panelists: 
+
+Paul Fox, Award Winning Director for Schitt’s Creek
+Jay Odjick, Artist, Author, & Television Producer
+Izzy Poirier, Founder of the Ottawa Design Club
+
+
+Reshaping Ottawa Through Public Art Panel speakers include: 
+Moderator: 
+
+Jennifer Barrett, Managing Director, Programs, Planning & Policy, Canadian Urban Institute
+
+
+Panelists: 
+
+Amy Wallace, Assistant Curator, Ottawa Art Gallery
+Katherine Ingrey, Portfolio Manager: Public Art Program, City of Ottawa
+Benjamin Gianni, Associate Professor, Azrieli School of Architecture & Urbanism, Carleton University
+
+
+Schedule: 
+
+10:00 AM – Creative Opportunities Info Fair opens (Alma Duncan Salon, Level 3)
+10:00 AM – 12:00 PM – 2026 Project XO Reception + Artist Talk with Victoria Laube (Sky Lounge, Level 3) – mimosas + refreshments served!
+11:45 AM – 12:45 PM – Creative Careers Panel discussion moderated by CBC’s Alan Neal (Alma Duncan Salon, Level 3)
+1:00 PM – light snacks served
+1:45 PM – 2:30 PM – Panel Discussion: Reshaping Ottawa Through Public Art (Alma Duncan Salon, Level 3)
+3:00 PM – 3:45 PM – Artist Talk with Karen Miller (4th Floor Galleries)
+3:30 PM – Creative Opportunities Info Fair close
+
+
+Register to attend this free event:
+https://www.eventbrite.ca/e/2000228708913?aff=oddtdtcreator 
+Register as an organization to operate an information table: https://shorturl.at/JdHhk 
+
+Presenting Partners: 
+     
+Supported by:","Ottawa Art Gallery, 10 Daly Avenue, Ottawa, Ontario, K1N 6E2, Canada",Ottawa Art Gallery,arts,,,free,,,,required,,x,"AI-drafted; ""free event""; ""Register to attend"""

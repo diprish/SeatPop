@@ -125,6 +125,8 @@ describe("chat client", () => {
       { task: "extraction", model: "muse-spark-1.3" },
       { task: "classification", model: "muse-spark-1.3" },
       { task: "parsing", model: "muse-spark-1.3" },
+      { task: "profile_parse", model: "muse-spark-1.3" },
+      { task: "rerank", model: "muse-spark-1.3" },
     ];
     for (const { task, model } of cases) {
       const { fetchImpl, calls } = mockFetch([
@@ -408,17 +410,25 @@ describe("chat client", () => {
       { ...REQUEST, task: "extraction", provider: "baseten" },
       { fetchImpl, config },
     );
+    const household = await chat(
+      { ...REQUEST, task: "profile_parse", provider: "baseten" },
+      { fetchImpl, config },
+    );
 
     expect(calls).toHaveLength(0);
+    expect(household.ok).toBe(false);
+    if (!household.ok) expect(household.error.kind).toBe("refused");
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).toBe("refused");
       expect(result.error.message).toContain("refused");
     }
     const rows = readLedgerRows(config.ledgerPath);
-    expect(rows).toHaveLength(1);
+    expect(rows).toHaveLength(2);
     expect(rows[0].provider).toBe("baseten");
     expect(rows[0].outcome).toBe("error");
+    expect(rows[1].task).toBe("profile_parse");
+    expect(rows[1].outcome).toBe("error");
   });
 
   it("parses reasoning_content separately and bills completion tokens", async () => {

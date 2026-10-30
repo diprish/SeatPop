@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./recommend": "./src/recommend/index.ts",
+    "./recommend/chips": "./src/recommend/chips.ts"
+  },
   "scripts": {
     "start": "tsx src/index.ts",
     "ingest": "tsx src/ingest/run.ts",
@@ -14,6 +19,7 @@
     "eval:export": "tsx src/eval/export-csv.ts",
     "eval:import": "tsx src/eval/import-csv.ts",
     "eval:check": "tsx src/eval/check.ts",
+    "eval:recommend": "tsx src/recommend/eval-run.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

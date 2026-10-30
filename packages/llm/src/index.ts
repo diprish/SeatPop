@@ -4,4 +4,5 @@ export * from "./client";
 export * from "./config";
 export * from "./enrichment";
 export * from "./ledger";
+export * from "./profile";
 export * from "./types";

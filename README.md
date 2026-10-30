@@ -49,3 +49,23 @@ npx supabase db push  # applies pending migrations
 Table overview: `llm_calls` (ledger mirror, service role only), `profiles`
 (one row per auth user, readable/writable by its owner only). Every table has
 Row Level Security enabled.
+
+## Recommendations (phases 4-5)
+
+Guest-first: `POST /api/recommend` takes `{prefs}` (age bands, budget,
+distance, area, availability, interests) and stores nothing, or
+`{householdId}` for a signed-in user's saved household. `POST
+/api/profile/parse` turns typed household text into editable chips (PII
+redacted, raw text discarded). `GET/POST /api/households` manage saved
+households behind a user JWT (`Authorization: Bearer`). Try it at
+`/recommend`. Saving from the page reads a JWT from the
+`seatpop_jwt` localStorage key; a sign-in UI is still open.
+
+## Attribution
+
+- Home-area centroids (migration 0008) are FSA rows used directly from
+  the GeoNames free postal code dump (FSA-level lat/lng)
+  (https://download.geonames.org/export/zip, © GeoNames contributors,
+  CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
+  Ottawa-area K-prefixed FSAs only; method and operator steps in
+  `supabase/seeds/ottawa_fsa_from_geonames.py`.

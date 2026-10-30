@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-10-30T05:13:05.516Z",
+  "mode": "fallback-proof (MODEL_API_KEY removed)",
+  "grading": "none (key removed)",
+  "households": [
+    {
+      "id": "h01",
+      "description": "Single adult downtown, likes music, flexible",
+      "candidates": 10,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": true
+    },
+    {
+      "id": "h02",
+      "description": "Couple in the Glebe, $50 budget, weekend evenings",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h03",
+      "description": "Two kids in Orleans, free only, Saturday mornings",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h04",
+      "description": "Baby and preschooler in Kanata, $20, weekday mornings",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h05",
+      "description": "Teen in Barrhaven, sports, avoids crowds, $30",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    }
+  ],
+  "totals": {
+    "violations": 0,
+    "distanceMismatches": 0,
+    "meanNdcgReranked": null,
+    "meanNdcgDate": null,
+    "meanNdcgStage2": null
+  }
+}

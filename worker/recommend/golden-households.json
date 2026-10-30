@@ -1,0 +1,268 @@
+[
+  {
+    "id": "h01",
+    "description": "Single adult downtown, likes music, flexible",
+    "prefs": {
+      "members": [{ "age_band": "adults", "include_adjacent": true }],
+      "max_distance_km": 10,
+      "fsa": "K1P",
+      "interests": ["music"]
+    }
+  },
+  {
+    "id": "h02",
+    "description": "Couple in the Glebe, $50 budget, weekend evenings",
+    "prefs": {
+      "members": [
+        { "age_band": "adults", "include_adjacent": true },
+        { "age_band": "adults", "include_adjacent": true }
+      ],
+      "max_price_cents": 5000,
+      "max_distance_km": 8,
+      "fsa": "K1S",
+      "availability": { "fri": ["evening"], "sat": ["evening"] },
+      "interests": ["music", "arts"]
+    }
+  },
+  {
+    "id": "h03",
+    "description": "Two kids in Orleans, free only, Saturday mornings",
+    "prefs": {
+      "members": [
+        { "age_band": "kids", "include_adjacent": true },
+        { "age_band": "kids", "include_adjacent": true }
+      ],
+      "free_only": true,
+      "max_distance_km": 10,
+      "fsa": "K1C",
+      "availability": { "sat": ["morning"] }
+    }
+  },
+  {
+    "id": "h04",
+    "description": "Baby and preschooler in Kanata, $20, weekday mornings",
+    "prefs": {
+      "members": [
+        { "age_band": "baby", "include_adjacent": true },
+        { "age_band": "preschool", "include_adjacent": true }
+      ],
+      "max_price_cents": 2000,
+      "max_distance_km": 6,
+      "fsa": "K2K",
+      "availability": { "mon": ["morning"], "wed": ["morning"], "fri": ["morning"] },
+      "interests": ["library", "music"]
+    }
+  },
+  {
+    "id": "h05",
+    "description": "Teen in Barrhaven, sports, avoids crowds, $30",
+    "prefs": {
+      "members": [{ "age_band": "teens", "include_adjacent": true }],
+      "max_price_cents": 3000,
+      "max_distance_km": 8,
+      "fsa": "K2J",
+      "availability": { "sat": ["afternoon"] },
+      "interests": ["sports"],
+      "avoid": ["crowds"]
+    }
+  },
+  {
+    "id": "h06",
+    "description": "Senior couple in Alta Vista, wheelchair, weekday afternoons, $15",
+    "prefs": {
+      "members": [
+        { "age_band": "seniors", "include_adjacent": true },
+        { "age_band": "seniors", "include_adjacent": true }
+      ],
+      "max_price_cents": 1500,
+      "max_distance_km": 6,
+      "fsa": "K1H",
+      "availability": { "tue": ["afternoon"], "thu": ["afternoon"] },
+      "accessibility": ["wheelchair access"]
+    }
+  },
+  {
+    "id": "h07",
+    "description": "Single French-speaking senior, free only",
+    "prefs": {
+      "members": [{ "age_band": "seniors", "include_adjacent": true }],
+      "free_only": true,
+      "max_distance_km": 8,
+      "fsa": "K1V",
+      "language": ["French"]
+    }
+  },
+  {
+    "id": "h08",
+    "description": "Kids and teens in Nepean, outdoors, $100, Sunday afternoons",
+    "prefs": {
+      "members": [
+        { "age_band": "kids", "include_adjacent": true },
+        { "age_band": "teens", "include_adjacent": true }
+      ],
+      "max_price_cents": 10000,
+      "max_distance_km": 8,
+      "fsa": "K2E",
+      "availability": { "sun": ["afternoon"] },
+      "interests": ["outdoors", "sports"]
+    }
+  },
+  {
+    "id": "h09",
+    "description": "Preschooler in Riverview, library, $10, Saturdays",
+    "prefs": {
+      "members": [{ "age_band": "preschool", "include_adjacent": true }],
+      "max_price_cents": 1000,
+      "max_distance_km": 5,
+      "fsa": "K1G",
+      "availability": { "sat": ["morning", "afternoon"] },
+      "interests": ["library"]
+    }
+  },
+  {
+    "id": "h10",
+    "description": "Adults plus grandparent downtown, museums, $40, wheelchair",
+    "prefs": {
+      "members": [
+        { "age_band": "adults", "include_adjacent": true },
+        { "age_band": "seniors", "include_adjacent": true }
+      ],
+      "max_price_cents": 4000,
+      "max_distance_km": 6,
+      "fsa": "K1N",
+      "accessibility": ["wheelchair access"],
+      "interests": ["museums"]
+    }
+  },
+  {
+    "id": "h11",
+    "description": "Single adult in Kanata, workshops, evenings, $60",
+    "prefs": {
+      "members": [{ "age_band": "adults", "include_adjacent": true }],
+      "max_price_cents": 6000,
+      "max_distance_km": 10,
+      "fsa": "K2T",
+      "availability": { "tue": ["evening"], "thu": ["evening"] },
+      "interests": ["workshops"],
+      "avoid": ["alcohol"]
+    }
+  },
+  {
+    "id": "h12",
+    "description": "Kids in Orleans, sports, tight 3 km range, $25",
+    "prefs": {
+      "members": [{ "age_band": "kids", "include_adjacent": true }],
+      "max_price_cents": 2500,
+      "max_distance_km": 3,
+      "fsa": "K1W",
+      "availability": { "sat": ["morning"] },
+      "interests": ["sports"]
+    }
+  },
+  {
+    "id": "h13",
+    "description": "Teens and adults in Westboro, music Fridays, unconstrained budget and distance",
+    "prefs": {
+      "members": [
+        { "age_band": "teens", "include_adjacent": true },
+        { "age_band": "adults", "include_adjacent": true }
+      ],
+      "availability": { "fri": ["evening"] },
+      "interests": ["music"]
+    }
+  },
+  {
+    "id": "h14",
+    "description": "Baby in Vanier, free only, French, weekdays",
+    "prefs": {
+      "members": [{ "age_band": "baby", "include_adjacent": true }],
+      "free_only": true,
+      "max_distance_km": 5,
+      "fsa": "K1L",
+      "availability": { "tue": ["morning"], "thu": ["morning"] },
+      "language": ["French"],
+      "interests": ["library"]
+    }
+  },
+  {
+    "id": "h15",
+    "description": "Adults in Bridlewood, markets and festivals, Sundays, $30",
+    "prefs": {
+      "members": [{ "age_band": "adults", "include_adjacent": true }],
+      "max_price_cents": 3000,
+      "max_distance_km": 10,
+      "fsa": "K2M",
+      "availability": { "sun": ["morning", "afternoon"] },
+      "interests": ["markets", "festivals"]
+    }
+  },
+  {
+    "id": "h16",
+    "description": "Kids and preschooler in Manotick, free only, wide range",
+    "prefs": {
+      "members": [
+        { "age_band": "kids", "include_adjacent": true },
+        { "age_band": "preschool", "include_adjacent": true }
+      ],
+      "free_only": true,
+      "max_distance_km": 15,
+      "fsa": "K4M",
+      "interests": ["library"]
+    }
+  },
+  {
+    "id": "h17",
+    "description": "Seniors downtown, museums and music, weekday afternoons, $20",
+    "prefs": {
+      "members": [{ "age_band": "seniors", "include_adjacent": true }],
+      "max_price_cents": 2000,
+      "max_distance_km": 5,
+      "fsa": "K1R",
+      "availability": { "wed": ["afternoon"], "fri": ["afternoon"] },
+      "accessibility": ["wheelchair access"],
+      "interests": ["museums", "music"]
+    }
+  },
+  {
+    "id": "h18",
+    "description": "Teen in Stittsville, sports and outdoors, Saturdays, $20",
+    "prefs": {
+      "members": [{ "age_band": "teens", "include_adjacent": true }],
+      "max_price_cents": 2000,
+      "max_distance_km": 8,
+      "fsa": "K2S",
+      "availability": { "sat": ["morning", "afternoon"] },
+      "interests": ["sports", "outdoors"]
+    }
+  },
+  {
+    "id": "h19",
+    "description": "Adults in Blackburn Hamlet, arts and workshops, evenings, $45",
+    "prefs": {
+      "members": [{ "age_band": "adults", "include_adjacent": true }],
+      "max_price_cents": 4500,
+      "max_distance_km": 8,
+      "fsa": "K1B",
+      "availability": { "wed": ["evening"], "fri": ["evening"] },
+      "interests": ["arts", "workshops"]
+    }
+  },
+  {
+    "id": "h20",
+    "description": "Multigenerational in Gloucester South, free festivals, wheelchair, avoids crowds",
+    "prefs": {
+      "members": [
+        { "age_band": "kids", "include_adjacent": true },
+        { "age_band": "adults", "include_adjacent": true },
+        { "age_band": "seniors", "include_adjacent": true }
+      ],
+      "free_only": true,
+      "max_distance_km": 10,
+      "fsa": "K1X",
+      "availability": { "sun": ["afternoon"] },
+      "accessibility": ["wheelchair access"],
+      "interests": ["festivals"],
+      "avoid": ["crowds"]
+    }
+  }
+]

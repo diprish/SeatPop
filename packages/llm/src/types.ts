@@ -6,6 +6,8 @@ export type TaskKind =
   | "classification"
   | "parsing"
   | "listing_extraction"
+  | "profile_parse"
+  | "rerank"
   | "plan"
   | "judge"
   | "smoke"
