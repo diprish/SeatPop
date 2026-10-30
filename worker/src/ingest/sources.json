@@ -118,5 +118,11 @@
     "kind": "ics",
     "url": "https://diefenbunker.ca/events/?ical=1",
     "city": "Ottawa"
+  },
+  {
+    "name": "Dovercourt Recreation",
+    "kind": "html",
+    "url": "https://dovercourt.org/schedules/",
+    "city": "Ottawa"
   }
 ]

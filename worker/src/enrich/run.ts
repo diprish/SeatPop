@@ -110,6 +110,8 @@ const listOrEmpty = (v: VerifiedValue): string[] =>
 interface RunStats {
   processed: number;
   failed: number;
+  /** No-training-route events skipped (Baseten error/cap; retry later). */
+  skipped: number;
   fullyCached: number;
   livePasses: number;
   cachedPasses: number;
@@ -132,6 +134,7 @@ function freshStats(): RunStats {
   return {
     processed: 0,
     failed: 0,
+    skipped: 0,
     fullyCached: 0,
     livePasses: 0,
     cachedPasses: 0,
@@ -154,6 +157,8 @@ usage: npm run enrich --workspace @seatpop/worker -- [options]
                        or baseten). Baseten failures and cap hits
                        fall back to the contributor automatically;
                        each row's model shows what produced it.
+                       No-training-route events always use Baseten
+                       only (flag ignored) and skip on errors/cap.
   --limit N            enrich at most N events (soonest first).
   --force              re-enrich even when the source hash matches
                        (comparison runs; overwrites rows).
@@ -241,8 +246,25 @@ async function main(): Promise<number> {
     limit === undefined ? pending : pending.slice(0, limit as number);
   const stats = freshStats();
   let stoppedByBudget = false;
+  // No-training route: an event listed by ANY flagged source uses Baseten
+  // only (safe direction — a re-listing must not leak text to Meta).
+  const noTrainingFor = (c: EnrichCandidate): boolean =>
+    [...new Set(listingSources.get(c.id) ?? [])].some(
+      (name) => optionsForSource(name).noTrainingRoute === true,
+    );
+  if (provider !== "baseten" && queue.some(noTrainingFor)) {
+    console.warn(
+      `enrich: --provider ${provider} ignored for no-training-route events (Baseten only)`,
+    );
+  }
+  let basetenExhausted = false;
 
   for (const candidate of queue) {
+    const noTraining = noTrainingFor(candidate);
+    if (noTraining && basetenExhausted) {
+      stats.skipped++;
+      continue;
+    }
     let result: VoteResult | null;
     try {
       result = await voteEnrichment(
@@ -254,12 +276,21 @@ async function main(): Promise<number> {
         },
         {
           config: llmConfig,
-          model: modelOverride,
-          provider: providerOverride,
+          model: noTraining ? undefined : modelOverride,
+          provider: noTraining ? "baseten" : providerOverride,
+          fallback: noTraining ? "none" : undefined,
           now,
         },
       );
     } catch (error) {
+      if (error instanceof BudgetExceeded && error.limit === "baseten_total") {
+        console.warn(
+          "enrich: Baseten cap reached; no-training events skipped for this run",
+        );
+        basetenExhausted = true;
+        stats.skipped++;
+        continue;
+      }
       if (error instanceof BudgetExceeded) {
         console.error(
           `enrich stopped: budget reached (${error.message}); partial report below`,
@@ -270,7 +301,8 @@ async function main(): Promise<number> {
       throw error;
     }
     if (!result) {
-      stats.failed++;
+      if (noTraining) stats.skipped++;
+      else stats.failed++;
       console.warn(`enrich: ${candidate.id} produced no usable pass; skipped`);
       continue;
     }
@@ -438,6 +470,7 @@ async function main(): Promise<number> {
   console.log(
     `  events: candidates=${candidates.length} pending=${pending.length} ` +
       `processed=${stats.processed} failed=${stats.failed} ` +
+      `skipped=${stats.skipped} ` +
       `up_to_date=${candidates.length - pending.length}` +
       (stoppedByBudget ? " STOPPED_BY_BUDGET" : ""),
   );

@@ -2,7 +2,12 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { chat, type LlmConfig } from "@seatpop/llm";
+import {
+  BudgetExceeded,
+  chat,
+  type ChatRequest,
+  type LlmConfig,
+} from "@seatpop/llm";
 import {
   EXTRACTION_MAX_TOKENS,
   EXTRACTION_RUN_BUDGET_USD,
@@ -489,5 +494,80 @@ describe("listing extraction", () => {
       now: NOW,
     });
     expect(drafts).toHaveLength(0);
+  });
+});
+
+describe("extraction no-training route", () => {
+  function captureChat(seen: ChatRequest[]): ChatFn {
+    return async (request: ChatRequest) => {
+      seen.push(request);
+      return {
+        ok: true as const,
+        value: {
+          content: eventsReply([GOOD_EVENT]),
+          model: "meta-models/muse-spark-open-1026",
+          finishReason: "stop",
+          usage: {
+            promptTokens: 10,
+            completionTokens: 5,
+            cachedTokens: 0,
+            reasoningTokens: 0,
+          },
+          costUsd: 0,
+          cached: false,
+        },
+      };
+    };
+  }
+
+  it("sends flagged sources to Baseten with no fallback", async () => {
+    const seen: ChatRequest[] = [];
+    const drafts = await extractEventsFromPage(
+      page(),
+      source({ name: "Dovercourt Recreation" }),
+      { config: testConfig(), chatFn: captureChat(seen), now: NOW },
+    );
+    expect(drafts).toHaveLength(1);
+    expect(seen).toHaveLength(1);
+    expect(seen[0]?.provider).toBe("baseten");
+    expect(seen[0]?.fallback).toBe("none");
+  });
+
+  it("leaves provider and fallback unset for other sources", async () => {
+    const seen: ChatRequest[] = [];
+    const drafts = await extractEventsFromPage(
+      page(),
+      source({ name: "Example Museum" }),
+      { config: testConfig(), chatFn: captureChat(seen), now: NOW },
+    );
+    expect(drafts).toHaveLength(1);
+    expect(seen).toHaveLength(1);
+    expect(seen[0]?.provider).toBeUndefined();
+    expect(seen[0]?.fallback).toBeUndefined();
+  });
+
+  it("skips the page when the Baseten cap is reached", async () => {
+    const throwing: ChatFn = async () => {
+      throw new BudgetExceeded("baseten_total", 90, 90);
+    };
+    const drafts = await extractEventsFromPage(
+      page(),
+      source({ name: "Dovercourt Recreation" }),
+      { config: testConfig(), chatFn: throwing, now: NOW },
+    );
+    expect(drafts).toHaveLength(0);
+  });
+
+  it("rethrows a spent Meta budget instead of skipping", async () => {
+    const throwing: ChatFn = async () => {
+      throw new BudgetExceeded("total", 135, 135);
+    };
+    await expect(
+      extractEventsFromPage(
+        page(),
+        source({ name: "Dovercourt Recreation" }),
+        { config: testConfig(), chatFn: throwing, now: NOW },
+      ),
+    ).rejects.toBeInstanceOf(BudgetExceeded);
   });
 });

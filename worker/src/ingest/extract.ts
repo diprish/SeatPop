@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  BudgetExceeded,
   chat,
   resolveConfig,
   type ChatMessage,
@@ -8,6 +9,7 @@ import {
   type ChatResult,
   type LlmConfig,
 } from "@seatpop/llm";
+import { optionsForSource } from "./source-config";
 import { DEFAULT_TIMEZONE, zonedLocalToUtc } from "./tz";
 import {
   EventDraftSchema,
@@ -19,9 +21,11 @@ import {
 /**
  * Tier-2 listing extraction: public event-listing text in, EventDrafts out.
  *
- * Authorization constraints (2026-10-28, six HTML sources only):
- * - Task "listing_extraction", the ONLY task routed to the contributor model
- *   (see modelForTask + the routing test in packages/llm).
+ * Authorization constraints (2026-10-28 tier-2 set, 2026-10-30 round-2
+ * set; HTML sources only, never more than approved):
+ * - Task "listing_extraction" (public listing text only). Baseten is the
+ *   default with contributor fallback — EXCEPT no-training-route sources
+ *   (no ToU found), which use Baseten only and skip on errors or cap.
  * - Hard $2 model-spend cap per run, enforced by the budget guard.
  * - Every field carries a verbatim evidence quote that must appear in the
  *   page text after whitespace normalisation; a field without one is null,
@@ -431,7 +435,8 @@ export interface ExtractDeps {
  * Extract upcoming events from one listing page. Model failures, unparsable
  * replies, and unquoted events yield zero drafts (logged); only a spent $2
  * run budget throws (BudgetExceeded from the client) so the run stops
- * spending loudly instead of silently returning nothing.
+ * spending loudly instead of silently returning nothing — except a spent
+ * Baseten cap, which skips the page for a later run instead of throwing.
  */
 export async function extractEventsFromPage(
   page: ExtractionPage,
@@ -451,14 +456,30 @@ export async function extractEventsFromPage(
     text: page.text,
     links: page.links,
   });
-  const result = await chatFn(
-    {
-      task: "listing_extraction",
-      messages,
-      maxTokens: EXTRACTION_MAX_TOKENS,
-    },
-    { fetchImpl: deps.fetchImpl, config: deps.config },
-  );
+  // No-training-route sources: Baseten only, never the contributor model.
+  const basetenOnly = optionsForSource(source.name).noTrainingRoute === true;
+  let result: ChatResult;
+  try {
+    result = await chatFn(
+      {
+        task: "listing_extraction",
+        messages,
+        maxTokens: EXTRACTION_MAX_TOKENS,
+        ...(basetenOnly
+          ? { provider: "baseten" as const, fallback: "none" as const }
+          : {}),
+      },
+      { fetchImpl: deps.fetchImpl, config: deps.config },
+    );
+  } catch (error) {
+    if (error instanceof BudgetExceeded && error.limit === "baseten_total") {
+      console.warn(
+        `extract: ${page.url} skipped, Baseten cap reached (retry later)`,
+      );
+      return [];
+    }
+    throw error;
+  }
   if (!result.ok) {
     console.warn(
       `extract: ${page.url} model call failed (${result.error.kind}): ${result.error.message}`,

@@ -299,4 +299,21 @@ describe("enrichment voting", () => {
     });
     expect(seenUrl).toContain("src:sources!events_source_id_fkey(");
   });
+
+  it("passes provider and fallback through to every pass", async () => {
+    const seen: Seen = { requests: [] };
+    const result = await voteEnrichment(INPUT, {
+      config: config(),
+      chatFn: scriptedChat([reply(), reply()], seen),
+      provider: "baseten",
+      fallback: "none",
+      now: new Date("2026-10-28T12:00:00.000Z"),
+    });
+    expect(result).not.toBeNull();
+    expect(seen.requests).toHaveLength(2);
+    for (const request of seen.requests) {
+      expect(request.provider).toBe("baseten");
+      expect(request.fallback).toBe("none");
+    }
+  });
 });

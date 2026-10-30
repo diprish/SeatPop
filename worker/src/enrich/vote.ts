@@ -294,6 +294,11 @@ export interface VoteDeps {
   model?: string;
   /** Provider override: baseten runs the same public-text task remotely. */
   provider?: LlmProvider;
+  /**
+   * Baseten failure policy: "none" for no-training-route events (Baseten
+   * only, errors skip the event for a later run, never contributor).
+   */
+  fallback?: "contributor" | "none";
   now?: Date;
 }
 
@@ -325,6 +330,7 @@ export async function voteEnrichment(
         }),
         ...(deps.model ? { model: deps.model } : {}),
         ...(deps.provider ? { provider: deps.provider } : {}),
+        ...(deps.fallback ? { fallback: deps.fallback } : {}),
         temperature: ENRICH_TEMPERATURE,
         maxTokens: ENRICH_MAX_TOKENS,
       },

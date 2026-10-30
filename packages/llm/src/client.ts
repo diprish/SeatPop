@@ -40,6 +40,13 @@ export interface ChatRequest {
   temperature?: number;
   /** Model provider (default "meta"). Baseten is public-text tasks only. */
   provider?: LlmProvider;
+  /**
+   * Baseten failure policy (default "contributor"): "none" returns the
+   * Baseten error (or throws its cap) with no Meta retry. Used for
+   * no-training-route sources, whose text must never reach Meta-hosted
+   * models that may train on it.
+   */
+  fallback?: "contributor" | "none";
 }
 
 export interface ChatOptions {
@@ -153,6 +160,9 @@ type LedgerFields = Pick<
  * Baseten error, or a reached Baseten cap, retries once on Meta. Gate
  * refusals (non-public tasks) never fall back. Both attempts write ledger
  * rows, so each row's provider+model show what produced it.
+ *
+ * fallback "none" disables all of that: one Baseten attempt, returned
+ * as-is (cap throws propagate). No-training-route sources require it.
  */
 export async function chat(
   request: ChatRequest,
@@ -161,8 +171,9 @@ export async function chat(
   const provider: LlmProvider =
     request.provider ??
     (request.task === "listing_extraction" ? "baseten" : "meta");
-  if (provider === "meta") {
-    return chatWithProvider(request, options, "meta");
+  const noFallback = request.fallback === "none";
+  if (provider === "meta" || (provider === "baseten" && noFallback)) {
+    return chatWithProvider(request, options, provider);
   }
   try {
     const result = await chatWithProvider(request, options, "baseten");

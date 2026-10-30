@@ -17,6 +17,13 @@ export interface SourceOptions {
   rssPubDateIsEventDate?: boolean;
   /** OPL listing-facet label (e.g. an age group): structured evidence. */
   ageFacet?: { label: string };
+  /**
+   * No-training route: no terms of use found for this source
+   * (docs/sources.md), so its text uses Baseten only; on Baseten
+   * errors or cap, skip and retry later — never fall back to the
+   * contributor model, which may train on inputs.
+   */
+  noTrainingRoute?: boolean;
 }
 
 export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
@@ -27,6 +34,7 @@ export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
+    noTrainingRoute: true,
   },
   // Filter-experiment winners (2026-10-28): single-filter listing slices
   // that return different page-1 results to a stateless fetch. Same
@@ -35,12 +43,14 @@ export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Adults)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Adult" },
+    noTrainingRoute: true,
   },
   // Age-group slices (probe:opl --age-groups winners, 2026-10-29): all 9
   // differ from the baseline; the Adult slice is the existing (Adults)
@@ -51,63 +61,90 @@ export const SOURCE_OPTIONS: Record<string, SourceOptions> = {
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Adults 50-plus" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Baby)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Baby" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Child)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Child" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Family)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Family" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Newcomers)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Newcomers" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Preschool)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Preschool" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Teen)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Teen" },
+    noTrainingRoute: true,
   },
   "Ottawa Public Library (Toddler)": {
     category: "library",
     icsIndex: true,
     includeSubdomains: true,
     ageFacet: { label: "Toddler" },
+    noTrainingRoute: true,
   },
-  "Ottawa Art Gallery": { category: "arts" },
+  // No-ToU sources (round-1 table): OPL #1, OAG #4, Farmers #13, GCTC
+  // #14, Chamberfest #15, OLT #17, Diefenbunker #19 — Baseten only.
+  // Nature #5, War #8, History #16 have federal copyright terms: Meta OK.
+  "Ottawa Art Gallery": { category: "arts", noTrainingRoute: true },
   "Canadian Museum of Nature": { category: "museums" },
   "Canadian War Museum": { category: "museums" },
-  "Ottawa Farmers' Market": { category: "markets" },
-  "Great Canadian Theatre Company": { category: "arts" },
+  "Ottawa Farmers' Market": { category: "markets", noTrainingRoute: true },
+  "Great Canadian Theatre Company": {
+    category: "arts",
+    noTrainingRoute: true,
+  },
   // Listing page carries no quotable dates (upcoming concerts are
   // dateless links); follow per-event detail pages instead (approved
   // 2026-10-28 — beyond listing-text scope, same evidence rules).
-  "Ottawa Chamberfest": { category: "music", linkPattern: "/event/20\\d\\d/" },
+  "Ottawa Chamberfest": {
+    category: "music",
+    linkPattern: "/event/20\\d\\d/",
+    noTrainingRoute: true,
+  },
   "Canadian Museum of History": { category: "museums" },
-  "Ottawa Little Theatre": { category: "arts" },
+  "Ottawa Little Theatre": { category: "arts", noTrainingRoute: true },
   // Event pages state UTC-4 while the feed tags America/Halifax (verified
   // against https://diefenbunker.ca/events/halloween-at-the-bunker-2026/).
-  Diefenbunker: { category: "museums", overrideTimezone: "America/Toronto" },
+  Diefenbunker: {
+    category: "museums",
+    overrideTimezone: "America/Toronto",
+    noTrainingRoute: true,
+  },
+  // Round-2 approval (2026-10-30): Dovercourt only (#29, #30, #32,
+  // #33 dropped under the under-3 rule after one extraction attempt —
+  // see docs/sources.md). No ToU: Baseten only. Same-host link
+  // following keeps PerfectMind (off-host, login-walled) unreachable.
+  "Dovercourt Recreation": { category: "community", noTrainingRoute: true },
 };
 
 export function optionsForSource(name: string): SourceOptions {

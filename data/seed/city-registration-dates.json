@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "_note": "Owner-entered City of Ottawa program-registration windows. Do NOT derive events from this file and do NOT crawl ottawa.ca for it: the owner transcribes each window by hand from the City's registration page, with a verbatim quote and the page URL. Phase 7 loads windows[] into registration_windows(scope, kind, opens_at, quote, source_url) and shows every window with its quote and link. Per-window fields: scope (which audience or area the window covers), kind (which program group), opens_at (ISO date or datetime with timezone offset), quote (verbatim City wording), source_url (https City page where it appears).",
+  "windows": []
+}

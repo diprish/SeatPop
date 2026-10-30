@@ -23,4 +23,28 @@ describe("source config", () => {
       ).toBeDefined();
     }
   });
+
+  it("flags no-ToU sources for the no-training route only", () => {
+    for (const name of [
+      "Dovercourt Recreation",
+      "Ottawa Public Library",
+      "Ottawa Public Library (Baby)",
+      "Ottawa Art Gallery",
+      "Ottawa Farmers' Market",
+      "Great Canadian Theatre Company",
+      "Ottawa Chamberfest",
+      "Ottawa Little Theatre",
+      "Diefenbunker",
+    ]) {
+      expect(optionsForSource(name).noTrainingRoute, name).toBe(true);
+    }
+    // Federal copyright terms found: Meta-hosted models stay allowed.
+    for (const name of [
+      "Canadian Museum of Nature",
+      "Canadian War Museum",
+      "Canadian Museum of History",
+    ]) {
+      expect(optionsForSource(name).noTrainingRoute, name).toBeUndefined();
+    }
+  });
 });

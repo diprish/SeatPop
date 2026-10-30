@@ -106,6 +106,91 @@ Conditions:
   ~9 pages, same $2 budget and evidence rules) explicitly approved to
   unlock the music category.
 
+## Source discovery round 2 (2026-10-29, research only, nothing ingested)
+
+Goal: non-library variety (classes, camps, sports, outdoors, workshops).
+Same method as round 1: robots.txt fetched per host, terms read for
+automated-access/redistribution/third-party-service bans, unfetchable
+items marked unknown, ToS-barred excluded, training ambiguity flagged.
+
+- Open Ottawa (open.ottawa.ca) DOES list Recreation Guide CSV datasets
+  via its public Hub API — but only 2020/2022 seasonal vintages
+  (unlisted, stale); a "Recreation Guide 2026" query matched 0
+  datasets. Licence is named "Open Government Licence – Ottawa v2.0"
+  but its text sits on bot-walled ottawa.ca and is unreadable, so it
+  cannot clear reuse sight-unseen. NO (stale); revisit if a current
+  guide appears AND the licence text is verified.
+- City registration (register.ottawa.ca) is an ActiveNet skin
+  (anc.ca.apm.activecommunities.com). Active's own Terms of Use ban
+  robots/spiders/scraping/data-mining without written consent,
+  limit use to personal non-commercial, and ban redistribution and
+  derivatives (plus $0.25/page liquidated damages past 1000/day).
+  NO-barred. This also bars the registration paths of Sensplex and
+  any other ActiveNet user — listing pages on their own domains are
+  a separate question each.
+- Sensplex, Apex Hockey (Ottawa confirmed: /canada/ottawa/ page, HQ
+  here, sessions at Richcraft Sensplex and Nepean Sportsplex),
+  Dovercourt, YMCA-YWCA NCR: all DECIDE in the familiar no-ToU
+  shape (program/privacy policies only, nothing on automated
+  access). Notes: Apex disallows ALL query-string URLs plus its
+  calendar/event action paths (location pages allowed); Dovercourt
+  registration is login-walled PerfectMind and its newsletter
+  mentions an embedded Google Calendar (public-ICS unverified);
+  Apex camp details live on leagueapps.com (robots open, terms
+  unknown — out of scope unless approved, per the Chamberfest
+  detail-page precedent). All four need your call on no-ToU plus
+  the training-use flag.
+- RA Centre: DECIDE-partial. Robots disallow camps, pa-day and
+  march-break camps, upcoming-programs, junior-athletes-events and
+  registration forms; drop-in and some program pages are allowed.
+  Allowed pages only, never the disallowed paths.
+- Barrhaven Bugle: NO-barred. Robots welcome general crawlers but
+  explicitly refuse model-training harvesters (GPTBot, ClaudeBot,
+  Google-Extended, Applebot-Extended, Meta-ExternalAgent, CCBot
+  and more) — same class as #7, and our contributor pipeline may
+  train. Terms not sought; the robots refusal decides.
+- Corporate retail, all NO-barred on verbatim terms: Apple (no
+  page-scrape/robot/spider, no reproduction without written
+  consent), Home Depot (no screen scraping or "any activity
+  intended to collect, store, reorganize or manipulate data", no
+  redistribution; robots.txt itself timed out twice → unknown),
+  Mastermind Toys (no copying/distribution without prior written
+  consent, personal non-commercial only). Their events are real
+  (Home Depot Kids Workshops run free monthly; Mastermind has a
+  Store Events page) but barred all the same.
+- Round-2 yield if you approve every DECIDE: 5 more tier-2 sources,
+  all sports/camps/classes/workshops/outdoors-flavoured, 0 new
+  confirmed tier-1 feeds. Nothing ingested; awaiting your approval
+  list as in round 1.
+
+## Round-2 approval (2026-10-30)
+
+Approved: 29, 30, 31, 32, 33. All others: not approved.
+Conditions:
+- Sensplex: drop on any bot-check page; never touch Active/ActiveNet
+  booking. Dovercourt: public pages only, never PerfectMind. Apex:
+  apexhockey.com pages only, no query-string URL, nothing on
+  leagueapps.com. RA: allowed pages only, never disallowed paths.
+  Enforcement is structural: same-host link following (off-host
+  booking systems unreachable), RFC 9309 robots matching including
+  `*`/`$` and query strings (Apex `/*?`, RA program/camp paths).
+- `noTrainingRoute` per-source flag (source-config.ts): set on the
+  five plus every approved source with no ToU found (OPL + all
+  slices, OAG, Farmers, GCTC, Chamberfest, OLT, Diefenbunker).
+  Nature/War/History keep Meta (federal copyright terms found).
+  Flagged text uses Baseten only in extraction AND enrichment; on
+  Baseten errors or cap, skip and retry later — never contributor.
+- Attribution + official link on every event; every crawl-delay
+  honored (fetcher floor 3 s).
+- Under-3 rule: a source yielding fewer than 3 events after one
+  extraction attempt is dropped and recorded here. Dry-run outcomes
+  (2026-10-30, one attempt each, Baseten extraction): Sensplex 0 —
+  DROPPED (no bot-check errors encountered; page fetched fine,
+  nothing quotable). Apex 0 — DROPPED. YMCA 1 — DROPPED. RA 0 —
+  DROPPED. Dovercourt 3 (plus 3 dropped without evidence) — KEPT,
+  exactly at threshold. Dropped sources removed from seed + config;
+  table rows updated.
+
 ## Table
 
 | # | Name | URL | Feed type | Robots result | Terms-of-use link | Tier | Recommended, and why |
@@ -136,6 +221,17 @@ Conditions:
 | 24 | Ottawa REDBLACKS (CFL) | https://ottawaredblacks.com | Unknown | Open | Unknown (not researched; marginal volume) | 2 | DECIDE — lean no: marginal late-season volume, ToU unknown. |
 | 25 | Ottawa Charge (PWHL) | https://www.thepwhl.com | Schedule exists (Dec–Apr season) | Open | https://www.thepwhl.com/en/terms-of-use — personal non-commercial **home use only** | — | NO-barred — third-party service use forbidden. |
 | 26 | Ottawa Senators (NHL) | https://www.nhl.com/senators | Unknown | Open | https://www.nhl.com/info/terms-of-service — no robots/scrapers/data mining (confirmed via ToS text) | — | NO-barred — automated access explicitly forbidden. |
+| 27 | City open data (Open Ottawa) | https://open.ottawa.ca | CSV Recreation Guides via public Hub API — but only 2020/2022 vintages (unlisted); "Recreation Guide 2026" query matched 0 | Open; dataset paths allowed, crawl-delay 60 | Licence named "Open Government Licence – Ottawa v2.0" but text unreadable (ottawa.ca bot-wall) | 1 (if current) | NO — stale, no current programs dataset. Revisit if a current guide appears AND licence text is verified. |
+| 28 | City registration (Register Ottawa / ActiveNet) | https://register.ottawa.ca (ActiveNet skin: anc.ca.apm.activecommunities.com) | Account-based registration listings (ActiveNet) | register.ottawa.ca/robots.txt redirects to a broken ActiveNet URL (no usable robots); activecommunities.com/robots.txt redirects to a marketing page | Active ToU: no robot/spider/scrape/data-mine without written consent; personal non-commercial only; no reproduction/distribution/derivatives; $0.25/page over 1000/day. City's own terms unreadable (bot-wall, no retry). | 2 | NO-barred — Active ToS forbids automated access and redistribution. |
+| 29 | Sensplex | https://sensplex.ca | None (HTML program pages: learn-to-skate, Intro 2 Hockey, camps; tournament schedules are PDFs) | Open (Yoast allow-all; only /imunify-bot-check) | Privacy page only (sensplex.ca/privacy); /terms/ 404s — no website ToU | 2 | DROPPED 2026-10-30 — 0 events after one extraction attempt (under-3 rule); no bot-check errors encountered. Was DECIDE (no-ToU). |
+| 30 | Apex Hockey (Ottawa) | https://apexhockey.com/canada/ottawa/ | None confirmed (HTML location page; camp detail/booking on leagueapps.com) | Partial: /calendar/action*, /events/action* and ALL query URLs (/*?) disallowed; crawl-delay 3 | Policies page = program participation + privacy only, no automation clause. LeagueApps terms unknown (booking host). Ottawa confirmed: /canada/ottawa/ page, HQ here, sessions at Richcraft Sensplex + Nepean Sportsplex. | 2 | DROPPED 2026-10-30 — 0 events after one extraction attempt (under-3 rule). Was DECIDE (no-ToU). |
+| 31 | Dovercourt Recreation | https://dovercourt.org | None confirmed (HTML: swim, camps, sports, workshops, drop-ins; newsletter mentions embedded Google Calendar — public-ICS unverified) | Open, crawl-delay 10 | Program policies on register page + footer privacy lines only; no website ToU | 2 | KEPT 2026-10-30 — 3 events after one extraction attempt, exactly at threshold (3 more dropped without evidence). Was DECIDE (no-ToU). |
+| 32 | YMCA-YWCA NCR | https://www.ymcaottawa.ca | None confirmed ("Find Your Fit" schedule finder; NYLD calendars are PDFs) | Open (standard Drupal; admin/user paths only) | Privacy policy only; no ToU | 2 | DROPPED 2026-10-30 — 1 event after one extraction attempt (under-3 rule). Was DECIDE (no-ToU). |
+| 33 | RA Centre | https://www.racentre.com | None (HTML program/drop-in pages) | Partial: camps, pa-day/march-break camps, upcoming-programs, junior-athletes-events, registration forms disallowed; drop-in + some program pages allowed; no crawl-delay stated | Policies page = privacy/member policies only; no website ToU | 2 | DROPPED 2026-10-30 — 0 events after one extraction attempt (under-3 rule). Was DECIDE-partial (no-ToU). |
+| 34 | Barrhaven Bugle community calendar | https://barrhavenbugle.ca/events/ | None (HTML calendar) | Open for general crawlers BUT explicit training-crawler refusal (GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, CCBot, …) | Not sought — robots refusal decides | 2 | NO-barred — explicit AI-training reservation; our contributor pipeline may train (same class as #7). |
+| 35 | Apple (Today at Apple / retail) | https://www.apple.com/retail/ | None checked (terms decide) | Open for retail/today paths (shop overlays + CN paths restricted) | Apple Website ToU: no page-scrape/robot/spider/automatic device; no reproduction/distribution without prior written consent | 2 | NO-barred — automated access and redistribution forbidden. |
+| 36 | Home Depot workshops | https://www.homedepot.ca/en/home/ideas-how-to/workshops.html | None checked (terms decide); Kids Workshops (free, 2nd Sat/month) confirmed real | Unknown (robots.txt timed out twice) | Home Depot ToU §1: no screen scrape or "any activity intended to collect, store, reorganize or manipulate data"; no reproduction/distribution; personal non-commercial only | 2 | NO-barred — scraping and redistribution forbidden (terms decide regardless of robots). |
+| 37 | Mastermind Toys store events | https://www.mastermindtoys.com/pages/store-events | None checked (terms decide) | Open (Shopify public pages/blogs/policies; transactional paths disallowed) | Mastermind ToS: no copying/distribution/reproduction without prior written consent; personal non-commercial only | 2 | NO-barred — redistribution forbidden. |
 
 Not pursued: Winterlude (federal robots fetch timed out; February dates fall outside the 90-day window), open.ottawa.ca (no events dataset found — facilities only), BlackJacks (season over).
 

@@ -125,9 +125,34 @@ export function parseRobotsTxt(
   return match?.rules ?? { disallows: [], crawlDelayMs: undefined };
 }
 
-export function robotsAllows(rules: RobotsRules, urlPath: string): boolean {
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * One disallow value against path+query (RFC 9309 §2.2): `*` matches any
+ * run of characters, a trailing `$` anchors the end, otherwise the value
+ * is a prefix. Case-sensitive, like the crawlers the rules are written
+ * for. NOTE: Allow lines are parsed out (ignored) — with disallows only,
+ * any match refuses, which errs toward fetching less, never more.
+ */
+function ruleMatches(pattern: string, pathAndQuery: string): boolean {
+  let anchored = false;
+  let body = pattern;
+  if (body.endsWith("$")) {
+    anchored = true;
+    body = body.slice(0, -1);
+  }
+  const source = `^${body.split("*").map(escapeRegExp).join(".*")}${anchored ? "$" : ""}`;
+  return new RegExp(source).test(pathAndQuery);
+}
+
+export function robotsAllows(
+  rules: RobotsRules,
+  pathAndQuery: string,
+): boolean {
   return !rules.disallows.some(
-    (prefix) => prefix !== "" && urlPath.startsWith(prefix),
+    (pattern) => pattern !== "" && ruleMatches(pattern, pathAndQuery),
   );
 }
 
@@ -231,13 +256,13 @@ export class Fetcher {
   async robotsOk(url: string): Promise<boolean> {
     const parsed = new URL(url);
     const rules = await this.robotsRulesFor(url);
-    return robotsAllows(rules, parsed.pathname);
+    return robotsAllows(rules, parsed.pathname + parsed.search);
   }
 
   async fetchText(url: string): Promise<FetchResult> {
     const parsed = new URL(url);
     const rules = await this.robotsRulesFor(url);
-    if (!robotsAllows(rules, parsed.pathname)) {
+    if (!robotsAllows(rules, parsed.pathname + parsed.search)) {
       throw new RobotsDisallowed(url);
     }
     await this.throttle(parsed.host, rules.crawlDelayMs ?? 0);

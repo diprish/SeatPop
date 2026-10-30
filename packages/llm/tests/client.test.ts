@@ -584,4 +584,34 @@ describe("chat client", () => {
     expect(rows[0].outcome).toBe("error");
     expect(rows[1].model).toBe("muse-spark-1.3-contributor");
   });
+
+  it("never touches Meta when fallback is none", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { basetenApiKey: "bt-key" });
+    const { fetchImpl, calls } = mockFetch([
+      { status: 500, body: { error: "baseten down" } },
+      { status: 500, body: { error: "baseten down" } },
+    ]);
+
+    const result = await chat(
+      {
+        task: "listing_extraction",
+        provider: "baseten",
+        fallback: "none",
+        messages: [{ role: "user", content: "go" }],
+      },
+      { fetchImpl, config },
+    );
+
+    expect(result.ok).toBe(false);
+    // Initial attempt + one transient retry, all Baseten, zero Meta.
+    expect(calls).toHaveLength(2);
+    for (const call of calls) {
+      expect(call.url).toBe(
+        "https://inference.baseten.co/v1/chat/completions",
+      );
+    }
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows.map((r) => r.provider)).toEqual(["baseten"]);
+  });
 });

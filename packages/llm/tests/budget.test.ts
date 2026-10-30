@@ -244,6 +244,29 @@ describe("budget guard", () => {
     expect(rows.map((r) => r.provider)).toEqual(["baseten", "meta"]);
   });
 
+  it("throws the Baseten cap instead of falling back when fallback is none", async () => {
+    const root = tempRoot();
+    const config = testConfig(root, { budgets: { basetenTotal: 5 } });
+    appendLedgerRow(
+      config.ledgerPath,
+      seedRow({ provider: "baseten", est_cost_usd: 10 }),
+    );
+
+    await expect(
+      chat(
+        {
+          task: "listing_extraction",
+          provider: "baseten",
+          fallback: "none",
+          messages: [{ role: "user", content: "go" }],
+        },
+        { fetchImpl: okFetch, config },
+      ),
+    ).rejects.toBeInstanceOf(BudgetExceeded);
+    const rows = readLedgerRows(config.ledgerPath);
+    expect(rows.every((r) => r.provider === "baseten")).toBe(true);
+  });
+
   it("lets Meta calls through when only the Baseten total is spent", async () => {
     const root = tempRoot();
     const config = testConfig(root, { budgets: { basetenTotal: 5 } });

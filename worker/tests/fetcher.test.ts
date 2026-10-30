@@ -5,6 +5,7 @@ import {
   RobotsDisallowed,
   memoryEtagStore,
   parseRobotsTxt,
+  robotsAllows,
 } from "../src/ingest/fetcher";
 
 interface Captured {
@@ -128,6 +129,45 @@ describe("fetcher", () => {
     expect(second.notModified).toBe(true);
     expect(second.text).toBe("");
     expect(seen[1]?.["User-Agent"]).toContain("https://example.test/contact");
+  });
+
+  it("matches * and $ against path and query (Apex-style rules)", () => {
+    const rules = parseRobotsTxt(
+      "User-agent: *\n" +
+        "Disallow: /calendar/action*\n" +
+        "Disallow: /events/action*\n" +
+        "Disallow: /*?\n",
+    );
+    // Every query-string URL is refused, clean paths are not.
+    expect(robotsAllows(rules, "/events/?season=summer")).toBe(false);
+    expect(robotsAllows(rules, "/events?x=1")).toBe(false);
+    expect(robotsAllows(rules, "/canada/ottawa/")).toBe(true);
+    expect(robotsAllows(rules, "/events/ottawa")).toBe(true);
+    const anchored = parseRobotsTxt("User-agent: *\nDisallow: /events$\n");
+    expect(robotsAllows(anchored, "/events")).toBe(false);
+    expect(robotsAllows(anchored, "/events/x")).toBe(true);
+  });
+
+  it("refuses query-string URLs at fetch time without fetching them", async () => {
+    const { fetchImpl, calls } = mockFetch((url) =>
+      url.endsWith("/robots.txt")
+        ? text("User-agent: *\nDisallow: /*?\n")
+        : text("page"),
+    );
+    const fetcher = new Fetcher({
+      fetchImpl,
+      contactUrl: "https://example.test/contact",
+      minDelayMs: 1,
+    });
+    await expect(
+      fetcher.fetchText("https://example.test/events/?x=1"),
+    ).rejects.toBeInstanceOf(RobotsDisallowed);
+    const clean = await fetcher.fetchText("https://example.test/events/");
+    expect(clean.text).toBe("page");
+    expect(calls.map((c) => c.url)).toEqual([
+      "https://example.test/robots.txt",
+      "https://example.test/events/",
+    ]);
   });
 
   it("treats a hidden robots.txt as disallow-all", async () => {
