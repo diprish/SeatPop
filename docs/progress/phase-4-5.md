@@ -110,3 +110,27 @@ often empty — the UI states counts honestly via the warnings array.
 - Web embedding vectors (eval-only today; route passes no query vector).
 - Phase-3 labeling + live eval still pending (independent track).
 - Feedback/re-cache APIs (table exists; no endpoints yet).
+
+## Follow-up: facet pattern, policy probe, fee-noise repair (0010/0011)
+
+- 0010 re-installed `recommend_candidates` with the single-backslash facet
+  pattern `\(([^)]+)\)$`; a static test pins it and rejects the
+  double-backslash variant (which silently disabled all scoped policies).
+- `eval:recommend` gained a policy probe: bare `free_only` + kids must
+  surface ≥1 `free (per OPL)` row, over a full-width net (`stage1Limit:
+  500`, new dep on `recommendStages`) so late-dated rows count.
+- The probe first failed at 0/301: 295 in-scope OPL kids events were
+  already enriched `free` (policy correctly masked), and the other 6 —
+  one recurring Crafternoon — carried enrichment noise in `fee_notes`
+  ("we have all the supplies..."), which blocked the policy and hid them
+  from `free_only` families. enrich.v2's own example taught that noise.
+- Fix: enrich.v3 constrains `price_text`/`fee_notes` to cost spans and
+  corrects the example; 0011 clears the exact bogus sentence
+  (idempotent data repair, no schema change). TS mirrors untouched —
+  the rule was right, the data was wrong.
+- Rerun 2026-10-30 (user terminal): **329/329 across 42 files**; push
+  applied only 0011; eval **PASS** — 0 violations, 0 mismatches, probe
+  `candidates=307 free_per_opl=6` as predicted. Household lines
+  unchanged (same 4 non-empty): the 6 Crafternoon rows miss every
+  `free_only` household's time/distance windows, so emptiness is still
+  the 10/797 coords gap, not the policy path.

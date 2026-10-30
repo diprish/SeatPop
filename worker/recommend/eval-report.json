@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-30T05:13:05.516Z",
-  "mode": "fallback-proof (MODEL_API_KEY removed)",
-  "grading": "none (key removed)",
+  "generatedAt": "2026-10-30T05:45:07.644Z",
+  "mode": "full (model-graded)",
+  "grading": "model-graded (muse-wonder)",
   "households": [
     {
       "id": "h01",
@@ -9,11 +9,11 @@
       "candidates": 10,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
-      "fallback": true
+      "ndcgReranked": 0.9920705459712793,
+      "ndcgDate": 0.7395611005771359,
+      "ndcgStage2": 1,
+      "graded": true,
+      "fallback": false
     },
     {
       "id": "h02",
@@ -62,13 +62,198 @@
       "ndcgStage2": null,
       "graded": false,
       "fallback": false
+    },
+    {
+      "id": "h06",
+      "description": "Senior couple in Alta Vista, wheelchair, weekday afternoons, $15",
+      "candidates": 1,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
+      "fallback": false
+    },
+    {
+      "id": "h07",
+      "description": "Single French-speaking senior, free only",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h08",
+      "description": "Kids and teens in Nepean, outdoors, $100, Sunday afternoons",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h09",
+      "description": "Preschooler in Riverview, library, $10, Saturdays",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h10",
+      "description": "Adults plus grandparent downtown, museums, $40, wheelchair",
+      "candidates": 10,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
+      "fallback": false
+    },
+    {
+      "id": "h11",
+      "description": "Single adult in Kanata, workshops, evenings, $60",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h12",
+      "description": "Kids in Orleans, sports, tight 3 km range, $25",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h13",
+      "description": "Teens and adults in Westboro, music Fridays, unconstrained budget and distance",
+      "candidates": 1,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
+      "fallback": false
+    },
+    {
+      "id": "h14",
+      "description": "Baby in Vanier, free only, French, weekdays",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h15",
+      "description": "Adults in Bridlewood, markets and festivals, Sundays, $30",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h16",
+      "description": "Kids and preschooler in Manotick, free only, wide range",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h17",
+      "description": "Seniors downtown, museums and music, weekday afternoons, $20",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h18",
+      "description": "Teen in Stittsville, sports and outdoors, Saturdays, $20",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h19",
+      "description": "Adults in Blackburn Hamlet, arts and workshops, evenings, $45",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
+    },
+    {
+      "id": "h20",
+      "description": "Multigenerational in Gloucester South, free festivals, wheelchair, avoids crowds",
+      "candidates": 0,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false
     }
   ],
+  "policyProbe": {
+    "candidates": 307,
+    "freePerOpl": 6,
+    "ok": true
+  },
   "totals": {
     "violations": 0,
     "distanceMismatches": 0,
-    "meanNdcgReranked": null,
-    "meanNdcgDate": null,
-    "meanNdcgStage2": null
+    "meanNdcgReranked": 0.9980176364928198,
+    "meanNdcgDate": 0.934890275144284,
+    "meanNdcgStage2": 1
   }
 }

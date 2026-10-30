@@ -9,14 +9,20 @@ import {
 } from "../src/enrichment";
 
 describe("enrichment prompt", () => {
-  it("loads the versioned prompt with the free rule", () => {
-    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v2");
+  it("loads the versioned prompt with the free and cost-fields rules", () => {
+    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v3");
     expect(ENRICH_TEMPERATURE).toBe(0.3);
     const prompt = loadEnrichPrompt();
-    expect(prompt).toContain("enrich.v2");
+    expect(prompt).toContain("enrich.v3");
     expect(prompt).toContain("free");
     expect(prompt).toContain("no charge");
     expect(prompt).toContain("Never infer");
+    // v2's example taught supplies sentences into fee_notes, where any
+    // non-null value blocks the OPL free policy; v3 restricts both price
+    // text fields to cost spans.
+    expect(prompt).toContain("fee_notes");
+    expect(prompt).toContain('"Supplies included" is never a fee note');
+    expect(prompt).toContain('"$5 materials fee"');
   });
 
   it("builds deterministic messages per event, date and pass", () => {

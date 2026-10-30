@@ -108,6 +108,8 @@ export interface RecommendDeps {
   llmConfig: LlmConfig;
   now?: Date;
   embeddingSimilarity?: Map<string, number>;
+  /** Stage-1 SQL cap override (the eval policy probe widens its net). */
+  stage1Limit?: number;
 }
 
 async function restJson(
@@ -302,7 +304,7 @@ export async function recommendStages(
   const rows = CandidateRowSchema.array().safeParse(
     await restJson(deps, "rpc/recommend_candidates", {
       method: "POST",
-      body: { p_prefs: prefs, p_limit: STAGE1_LIMIT },
+      body: { p_prefs: prefs, p_limit: deps.stage1Limit ?? STAGE1_LIMIT },
     }),
   );
   if (!rows.success) {

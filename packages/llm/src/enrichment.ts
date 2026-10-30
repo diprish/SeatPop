@@ -20,7 +20,7 @@ import type { ChatMessage } from "./types";
  */
 
 /** Bumped only with packages/llm/prompts/enrich.v*.md (re-enriches all). */
-export const ENRICH_PROMPT_VERSION = "enrich.v2";
+export const ENRICH_PROMPT_VERSION = "enrich.v3";
 
 /** Voting temperature for every enrichment pass (spec: adaptive voting). */
 export const ENRICH_TEMPERATURE = 0.3;

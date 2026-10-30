@@ -134,8 +134,8 @@ when filters show which fields matter.
 
 ### Source pricing policies (migration 0004 schema + 0006 data)
 
-- Numbered 0006 because remote already holds a 0005 row from earlier
-  work, which shadows any local 0005 file. The UPDATE is idempotent.
+- Numbered 0006 because the remote already holds an applied 0005 row,
+  which shadows any local 0005 file. The UPDATE is idempotent.
 
 - OPL children's programs, verbatim (Children's Programs section,
   [parenting page](https://collections.biblioottawalibrary.ca/en/parenting)):

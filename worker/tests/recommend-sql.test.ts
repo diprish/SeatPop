@@ -1,19 +1,27 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008/0009: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0011: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
-// in 0009 (explicit SRF column aliases), so function tests read 0009.
-// Behavioral proof comes from the live recommend eval (TS mirror
+// in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
+// tests read 0010, the live definition. 0011 is a data-only fee-noise
+// repair. Behavioral proof comes from the live recommend eval (TS mirror
 // re-checks returned rows).
 const SQL8 = readFileSync(
   new URL("../../supabase/migrations/0008_households.sql", import.meta.url),
   "utf8",
 );
-const SQL9 = readFileSync(
+const SQL10 = readFileSync(
   new URL(
-    "../../supabase/migrations/0009_recommend_srf_aliases.sql",
+    "../../supabase/migrations/0010_recommend_facet_pattern.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const SQL11 = readFileSync(
+  new URL(
+    "../../supabase/migrations/0011_clear_bogus_fee_notes.sql",
     import.meta.url,
   ),
   "utf8",
@@ -82,17 +90,25 @@ describe("migration 0008 tables", () => {
 });
 
 describe("recommend_candidates()", () => {
-  const fn = SQL9.slice(
-    SQL9.indexOf("create or replace function public.recommend_candidates"),
+  const fn = SQL10.slice(
+    SQL10.indexOf("create or replace function public.recommend_candidates"),
   );
 
   it("is a locked-down invoker-safe function open to guests", () => {
     expect(fn).toContain("security definer");
     expect(fn).toContain("set search_path = public");
-    expect(SQL9).toContain(
+    expect(SQL10).toContain(
       "grant execute on function public.recommend_candidates(jsonb, int)",
     );
-    expect(SQL9).toContain("to anon, authenticated");
+    expect(SQL10).toContain("to anon, authenticated");
+  });
+
+  it("extracts facets with single backslashes", () => {
+    // The regex value must be `\(([^)]+)\)$` (literal parens). Double
+    // backslashes match a literal backslash under conforming strings,
+    // so the facet never extracts and scoped policies silently die.
+    expect(fn).toContain("substring(s.name from '\\(([^)]+)\\)$')");
+    expect(fn).not.toContain("\\\\(");
   });
 
   it("gives every set-returning function an explicit column alias", () => {
@@ -183,7 +199,19 @@ describe("recommend_candidates()", () => {
   it("closes its dollar-quoted body exactly once", () => {
     // An unclosed body fails db push with "unterminated dollar-quoted
     // string" and rolls the whole migration back.
-    expect(SQL9.match(/\$\$/g)).toHaveLength(2);
+    expect(SQL10.match(/\$\$/g)).toHaveLength(2);
     expect(fn).toContain("500));\n$$;");
+  });
+});
+
+describe("migration 0011 fee-noise repair", () => {
+  it("clears only the exact bogus supplies sentence", () => {
+    expect(SQL11).toContain("set fee_notes = null");
+    expect(SQL11).toContain(
+      "we have all the supplies you need to satisfy your creativity!",
+    );
+    // A single targeted UPDATE: no schema change, no other column.
+    expect(SQL11.match(/update /g)).toHaveLength(1);
+    expect(SQL11).not.toMatch(/alter table|create table|drop /i);
   });
 });

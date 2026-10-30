@@ -38,9 +38,11 @@ import {
  *   "model-graded" everywhere they appear;
  * - with MODEL_API_KEY removed the script proves the fallback instead:
  *   stage-2 order kept, every reason templated, grades unavailable.
+ * - a free_only + kids probe must surface at least one "free (per OPL)"
+ *   row, proving scoped source policies apply end to end.
  *
- * Exits 1 on any violation or distance-math mismatch. Needs migration
- * 0008 applied plus SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
+ * Exits 1 on any violation, distance-math mismatch, or probe failure.
+ * Needs migration 0010 applied plus SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
  */
 
 const HouseholdFixtureSchema = z.object({
@@ -455,6 +457,28 @@ async function main(): Promise<number> {
     }
   }
 
+  // Policy probe (no models involved — runs in both modes): a bare
+  // free_only + kids search must surface OPL kids-slice events with the
+  // policy label. Zero means scoped policies silently stopped applying.
+  const probePrefs = PreferencesSchema.parse({
+    members: [{ age_band: "kids", include_adjacent: true }],
+    free_only: true,
+  });
+  const probe = await recommendStages(
+    { prefs: probePrefs },
+    // Full-width net (SQL clamps to 500): the policy rows must count
+    // wherever they fall in soonest-first order, not just the top 200.
+    { supabaseUrl, anonKey: serviceKey, llmConfig: config, stage1Limit: 500 },
+  );
+  const policyRows = probe.candidates.filter(
+    (row) => row.price_label === "free (per OPL)",
+  );
+  console.log(
+    `  policy probe: candidates=${probe.candidates.length} ` +
+      `free_per_opl=${policyRows.length}`,
+  );
+  const policyProbeOk = policyRows.length > 0;
+
   const totalViolations = reports.reduce((n, r) => n + r.violations.length, 0);
   const totalMismatches = reports.reduce((n, r) => n + r.distanceMismatches, 0);
   const gradedReports = reports.filter((r) => r.graded);
@@ -490,6 +514,11 @@ async function main(): Promise<number> {
         mode,
         grading: noKey ? "none (key removed)" : "model-graded (muse-wonder)",
         households: reports,
+        policyProbe: {
+          candidates: probe.candidates.length,
+          freePerOpl: policyRows.length,
+          ok: policyProbeOk,
+        },
         totals: {
           violations: totalViolations,
           distanceMismatches: totalMismatches,
@@ -504,13 +533,15 @@ async function main(): Promise<number> {
     "utf8",
   );
   console.log(`  wrote ${outPath}`);
-  if (totalViolations > 0 || totalMismatches > 0) {
+  if (totalViolations > 0 || totalMismatches > 0 || !policyProbeOk) {
     console.error(
-      "eval:recommend: FAIL — violations or distance mismatches above zero",
+      "eval:recommend: FAIL — violations, distance mismatches, or policy probe failure",
     );
     return 1;
   }
-  console.log("eval:recommend: PASS — zero violations, distances verified");
+  console.log(
+    "eval:recommend: PASS — zero violations, distances verified, policy probe ok",
+  );
   return 0;
 }
 
