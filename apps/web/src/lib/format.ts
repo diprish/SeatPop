@@ -1,14 +1,46 @@
 /** Pure display formatting for event cards (client-safe, tested). */
 
-export function formatWhen(starts_at: string, timezone: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+function dayLabel(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
+    timeZone: timezone,
+  }).formatToParts(date);
+  const get = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("weekday")} ${get("month")} ${get("day")}`;
+}
+
+function timeLabel(date: Date, timezone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
     timeZone: timezone,
-  }).format(new Date(starts_at));
+  }).format(date);
+}
+
+/**
+ * Event-local range: "Sat Oct 31 · 10:00 AM–11:00 AM" (ends_at when
+ * present and after the start), else "Sat Oct 31 · 10:00 AM". Multi-day
+ * events name both ends. Never a UTC string.
+ */
+export function formatWhenRange(
+  starts_at: string,
+  ends_at: string | null,
+  timezone: string,
+): string {
+  const start = new Date(starts_at);
+  const startDay = dayLabel(start, timezone);
+  const startTime = timeLabel(start, timezone);
+  if (!ends_at) return `${startDay} · ${startTime}`;
+  const end = new Date(ends_at);
+  if (!(end.getTime() > start.getTime())) return `${startDay} · ${startTime}`;
+  const endDay = dayLabel(end, timezone);
+  const endTime = timeLabel(end, timezone);
+  if (endDay === startDay) return `${startDay} · ${startTime}–${endTime}`;
+  return `${startDay} · ${startTime} – ${endDay} · ${endTime}`;
 }
 
 export type PriceTone = "free" | "muted" | "paid";

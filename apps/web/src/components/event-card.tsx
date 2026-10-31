@@ -8,7 +8,7 @@ import { NOT_FOR_US_REASONS } from "@/lib/feedback";
 import {
   ageLine,
   formatDistance,
-  formatWhen,
+  formatWhenRange,
   priceTone,
   splitReasonMarks,
   type PriceTone,
@@ -52,7 +52,7 @@ export default function EventCard({
         </Link>
       </h3>
       <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-        {formatWhen(item.starts_at, item.timezone)}
+        {formatWhenRange(item.starts_at, item.ends_at, item.timezone)}
         {item.venue_name ? ` · ${item.venue_name}` : ""}
         {distance ? ` · ${distance}` : ""}
       </p>

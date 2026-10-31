@@ -62,6 +62,7 @@ export default function Home() {
       setItems(data.items);
       setMeta(data.meta);
       saveHousehold(next);
+      setPanelOpen(false);
       if (data.items.length === 0) {
         setDiagnosing(true);
         try {
