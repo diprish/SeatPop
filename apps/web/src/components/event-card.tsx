@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Preferences } from "@seatpop/shared";
+import { sanitizeText, type Preferences } from "@seatpop/shared";
 import type { RecommendItemView } from "@/lib/api";
 import { NOT_FOR_US_REASONS } from "@/lib/feedback";
 import {
@@ -42,7 +42,7 @@ export default function EventCard({
     <article className="rounded border border-neutral-200 p-3 dark:border-neutral-800">
       <h3 className="font-semibold">
         <Link className="underline" href={`/events/${item.event_id}`}>
-          {item.title}
+          {sanitizeText(item.title)}
         </Link>
       </h3>
       <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">

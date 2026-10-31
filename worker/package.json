@@ -15,6 +15,7 @@
     "probe:opl": "tsx src/ingest/probe-opl.ts",
     "seed-sources": "tsx src/ingest/seed.ts",
     "seed:venues": "tsx src/seed-venues/run.ts",
+    "clean:descriptions": "tsx src/clean-descriptions/run.ts",
     "enrich": "tsx src/enrich/run.ts",
     "eval": "tsx src/eval/run-eval.ts",
     "eval:export": "tsx src/eval/export-csv.ts",

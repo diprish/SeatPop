@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { LlmConfig } from "@seatpop/llm";
+import { sanitizeText } from "@seatpop/shared";
 import { isDirectExecution } from "../script-entry";
 import { loadSeedEntries, resolveNewVenueCoords } from "../seed-venues/seed";
 import { resolveExtractionConfig } from "./extract";
@@ -264,7 +265,12 @@ async function ingestSource(
       source_id: source.id,
       source_url: draft.sourceUrl,
       title: draft.title,
-      description: draft.description,
+      // Stored descriptions are sanitized (entities, U+FFFD, mojibake,
+      // glued sentences); raw_text stays byte-identical for evidence.
+      description:
+        draft.description === undefined
+          ? undefined
+          : sanitizeText(draft.description),
       starts_at: draft.startsAtUtc,
       ends_at: draft.endsAtUtc,
       timezone: draft.timezone,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { sanitizeText } from "@seatpop/shared";
 import ErrorBanner from "@/components/error-banner";
 import { getEventDetail, type EventDetailView } from "@/lib/api";
 import {
@@ -126,7 +127,7 @@ export default function EventDetailPage() {
           ← For you
         </Link>
       </p>
-      <h1 className="mt-2 text-2xl font-bold">{detail.title}</h1>
+      <h1 className="mt-2 text-2xl font-bold">{sanitizeText(detail.title)}</h1>
       <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
         {formatWhenRange(detail.starts_at, detail.ends_at, detail.timezone)}
         {detail.venue ? ` · ${detail.venue.name}` : ""}
@@ -262,7 +263,9 @@ export default function EventDetailPage() {
       {detail.description && (
         <section aria-label="About" className="mt-4">
           <h2 className="font-semibold">About</h2>
-          <p className="mt-2 text-sm whitespace-pre-line">{detail.description}</p>
+          <p className="mt-2 text-sm whitespace-pre-line">
+            {sanitizeText(detail.description)}
+          </p>
         </section>
       )}
 

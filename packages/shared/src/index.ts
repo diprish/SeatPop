@@ -4,6 +4,7 @@ export * from "./preferences";
 export * from "./pricing";
 export * from "./redact";
 export * from "./rooms";
+export * from "./sanitize";
 export * from "./relax";
 export * from "./registration-windows";
 export * from "./verify";
