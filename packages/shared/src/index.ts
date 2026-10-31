@@ -3,6 +3,7 @@ import { z } from "zod";
 export * from "./preferences";
 export * from "./pricing";
 export * from "./redact";
+export * from "./relax";
 export * from "./registration-windows";
 export * from "./verify";
 

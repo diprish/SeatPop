@@ -7,6 +7,7 @@ export * from "./cache";
 export * from "./chips";
 export * from "./config";
 export * from "./constraints";
+export * from "./diagnose";
 export * from "./rate-limit";
 export * from "./rerank";
 export * from "./run";

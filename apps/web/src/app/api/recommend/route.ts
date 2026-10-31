@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PreferencesSchema } from "@seatpop/shared";
-import { RecommendError, runRecommend } from "@seatpop/worker/recommend";
+import {
+  RecommendError,
+  diagnoseEmpty,
+  runRecommend,
+} from "@seatpop/worker/recommend";
 import {
   bearerJwt,
   clientIp,
@@ -15,6 +19,8 @@ import {
  * Body: {prefs} (validated, stored nowhere) or {householdId} (loads the
  * signed-in user's saved household; needs Authorization: Bearer <jwt>).
  * Guest results cache for 5 minutes; household lookups always run fresh.
+ * {prefs, diagnose: true} also attaches per-constraint candidate counts
+ * (cheap SQL, no LLM) so an empty state can name the blocking filter.
  */
 
 const limiter = routeLimiter();
@@ -48,6 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const record = (typeof body === "object" && body !== null ? body : {}) as {
     prefs?: unknown;
     householdId?: unknown;
+    diagnose?: unknown;
   };
   const supabase = publicSupabase();
   if (!supabase) {
@@ -86,19 +93,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     const key = JSON.stringify(parsed.data);
     const hit = recommendCache.get(key);
+    let result: unknown;
+    let cached = false;
     if (hit !== undefined) {
-      return NextResponse.json({ ...(hit as object), cached: true });
+      result = hit;
+      cached = true;
+    } else {
+      result = await runRecommend(
+        { prefs: parsed.data },
+        {
+          supabaseUrl: supabase.url,
+          anonKey: supabase.anonKey,
+          llmConfig: serverLlmConfig(),
+        },
+      );
+      recommendCache.set(key, result);
     }
-    const result = await runRecommend(
-      { prefs: parsed.data },
-      {
-        supabaseUrl: supabase.url,
-        anonKey: supabase.anonKey,
-        llmConfig: serverLlmConfig(),
-      },
-    );
-    recommendCache.set(key, result);
-    return NextResponse.json({ ...result, cached: false });
+    const diagnosis =
+      record.diagnose === true
+        ? await diagnoseEmpty(parsed.data, {
+            supabaseUrl: supabase.url,
+            anonKey: supabase.anonKey,
+            llmConfig: serverLlmConfig(),
+          })
+        : undefined;
+    return NextResponse.json({
+      ...(result as object),
+      cached,
+      ...(diagnosis ? { diagnosis } : {}),
+    });
   } catch (error) {
     if (error instanceof RecommendError) {
       return NextResponse.json(

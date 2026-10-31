@@ -1,0 +1,172 @@
+import {
+  DAY_PARTS,
+  effectiveBandRange,
+  hourInPart,
+  type DayPart,
+  type Preferences,
+} from "@seatpop/shared";
+import type { EventDetailView, RecommendItemView } from "./api";
+
+/**
+ * "Why this?" rows: each matched field with its value and, when the
+ * detail payload is loaded, the verbatim evidence quote behind it.
+ * Client-safe and fully tested; every row states only what the data
+ * says (a null detail simply yields null quotes).
+ */
+
+export interface WhyRow {
+  field: string;
+  detail: string;
+  quote: string | null;
+}
+
+function quoteFor(
+  detail: EventDetailView | null,
+  ...fields: string[]
+): string | null {
+  if (!detail?.evidence) return null;
+  for (const field of fields) {
+    const quote = detail.evidence[field]?.quote;
+    if (quote) return quote;
+  }
+  return null;
+}
+
+function capitalize(word: string): string {
+  return word.slice(0, 1).toUpperCase() + word.slice(1);
+}
+
+function eventWeekdayPart(
+  starts_at: string,
+  timezone: string,
+): { weekday: string; part: DayPart } {
+  const date = new Date(starts_at);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: timezone,
+  })
+    .format(date)
+    .toLowerCase();
+  const hour =
+    Number(
+      new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        hour12: false,
+        timeZone: timezone,
+      }).format(date),
+    ) % 24;
+  const part = DAY_PARTS.find((candidate) => hourInPart(hour, candidate));
+  return { weekday, part: part ?? "night" };
+}
+
+export function computeWhy(
+  item: RecommendItemView,
+  prefs: Preferences,
+  detail: EventDetailView | null,
+): WhyRow[] {
+  const rows: WhyRow[] = [];
+
+  if (item.age_min !== null || item.age_max !== null) {
+    const lo = item.age_min ?? 0;
+    const hi = item.age_max ?? 130;
+    const fits = prefs.members
+      .filter((member) => {
+        const range = effectiveBandRange(
+          member.age_band,
+          member.include_adjacent,
+        );
+        return range.min <= hi && range.max >= lo;
+      })
+      .map((member) => member.age_band);
+    rows.push({
+      field: "Age",
+      detail: fits.length > 0 ? `Fits ${fits.join(", ")}` : "Overlaps no member band",
+      quote: quoteFor(detail, "age_min", "age_max"),
+    });
+  } else {
+    rows.push({
+      field: "Age",
+      detail: item.age_flag
+        ? `No stated ages (${item.age_flag})`
+        : "No stated ages — matched on defaults",
+      quote: null,
+    });
+  }
+
+  const basis =
+    detail?.price_basis === "source_policy"
+      ? " — from the venue's stated policy, not the listing"
+      : "";
+  rows.push({
+    field: "Price",
+    detail: `${item.price_label}${basis}`,
+    quote: detail?.price_evidence_quote ?? quoteFor(detail, "price_kind"),
+  });
+
+  if (item.distance_km !== null) {
+    const limit =
+      prefs.max_distance_km !== undefined && prefs.fsa
+        ? ` (limit ${prefs.max_distance_km} km from ${prefs.fsa})`
+        : " (no limit set)";
+    rows.push({
+      field: "Distance",
+      detail: `${item.distance_km.toFixed(1)} km away${limit}`,
+      quote: null,
+    });
+  }
+
+  const when = eventWeekdayPart(item.starts_at, item.timezone);
+  const whenLabel = `${capitalize(when.weekday)} ${when.part}`;
+  const constrained =
+    prefs.availability && Object.keys(prefs.availability).length > 0;
+  rows.push({
+    field: "Time",
+    detail: constrained ? `${whenLabel} — in your windows` : `${whenLabel} — any time works`,
+    quote: null,
+  });
+
+  if (prefs.language.length > 0 || item.language) {
+    let detailText: string;
+    if (!item.language) {
+      detailText = "Unstated — never excludes";
+    } else if (prefs.language.length > 0) {
+      detailText = `${item.language} — matches`;
+    } else {
+      detailText = item.language;
+    }
+    rows.push({
+      field: "Language",
+      detail: detailText,
+      quote: quoteFor(detail, "language"),
+    });
+  }
+
+  if (prefs.accessibility.length > 0) {
+    rows.push({
+      field: "Accessibility",
+      detail:
+        item.accessibility.length > 0
+          ? `States: ${item.accessibility.join(", ")}`
+          : "Unstated — never excludes",
+      quote: quoteFor(detail, "accessibility"),
+    });
+  }
+
+  if (prefs.interests.length > 0) {
+    const tags = item.tags.map((tag) => tag.toLowerCase());
+    const hits = prefs.interests.filter((interest) => {
+      const needle = interest.toLowerCase();
+      return tags.some((tag) => tag.includes(needle) || needle.includes(tag));
+    });
+    rows.push({
+      field: "Interests",
+      detail:
+        hits.length > 0
+          ? `Matches: ${hits.join(", ")}`
+          : "No tag overlap (ranked lower, not excluded)",
+      quote: null,
+    });
+  }
+
+  return rows;
+}

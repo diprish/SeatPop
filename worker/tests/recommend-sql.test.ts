@@ -1,13 +1,14 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008-0011: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0013: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
 // in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
 // tests read 0010, the live definition. 0011 is a data-only fee-noise
-// repair. Behavioral proof comes from the live recommend eval (TS mirror
-// re-checks returned rows).
+// repair; 0012 widens the public view with evidence quotes; 0013 defaults
+// owner ids. Behavioral proof comes from the live recommend eval (TS
+// mirror re-checks returned rows).
 const SQL8 = readFileSync(
   new URL("../../supabase/migrations/0008_households.sql", import.meta.url),
   "utf8",
@@ -22,6 +23,17 @@ const SQL10 = readFileSync(
 const SQL11 = readFileSync(
   new URL(
     "../../supabase/migrations/0011_clear_bogus_fee_notes.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const SQL12 = readFileSync(
+  new URL("../../supabase/migrations/0012_public_evidence.sql", import.meta.url),
+  "utf8",
+);
+const SQL13 = readFileSync(
+  new URL(
+    "../../supabase/migrations/0013_user_id_defaults.sql",
     import.meta.url,
   ),
   "utf8",
@@ -213,5 +225,26 @@ describe("migration 0011 fee-noise repair", () => {
     // A single targeted UPDATE: no schema change, no other column.
     expect(SQL11.match(/update /g)).toHaveLength(1);
     expect(SQL11).not.toMatch(/alter table|create table|drop /i);
+  });
+});
+
+describe("migration 0012 public evidence", () => {
+  it("adds the two quote columns and keeps the rest internal", () => {
+    expect(SQL12).toContain("create or replace view public.public_events");
+    expect(SQL12).toContain("en.evidence");
+    expect(SQL12).toContain("pr.evidence_quote");
+    expect(SQL12).toContain("pr.price_basis");
+    expect(SQL12).not.toMatch(/en\.(embedding|model|prompt_version|source_hash|confidence)/);
+  });
+});
+
+describe("migration 0013 user id defaults", () => {
+  it("defaults owner ids to auth.uid() on both tables", () => {
+    expect(SQL13).toContain(
+      "alter table public.households alter column user_id set default auth.uid()",
+    );
+    expect(SQL13).toContain(
+      "alter table public.feedback alter column user_id set default auth.uid()",
+    );
   });
 });
