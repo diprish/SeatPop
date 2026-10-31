@@ -5,7 +5,9 @@ import {
   formatDistance,
   formatReasonDates,
   formatWhenRange,
+  isPolicyPrice,
   priceBadgeClass,
+  priceBadgeLabel,
   priceTone,
   splitReasonMarks,
 } from "../src/lib/format";
@@ -53,6 +55,18 @@ describe("priceTone", () => {
     expect(priceTone("unknown")).toBe("muted");
     expect(priceTone("paid")).toBe("paid");
     expect(priceTone("donation")).toBe("paid");
+  });
+});
+
+describe("priceBadgeLabel", () => {
+  it("renames source-policy free, passes the rest through", () => {
+    expect(isPolicyPrice("free (per OPL)")).toBe(true);
+    expect(isPolicyPrice("Free")).toBe(false);
+    expect(isPolicyPrice("free (per OPL) tomorrow")).toBe(false);
+    expect(priceBadgeLabel("free (per OPL)")).toBe("Free · per OPL policy");
+    expect(priceBadgeLabel("Free")).toBe("Free");
+    expect(priceBadgeLabel("$12.00")).toBe("$12.00");
+    expect(priceBadgeLabel("Price not stated")).toBe("Price not stated");
   });
 });
 

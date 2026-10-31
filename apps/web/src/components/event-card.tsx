@@ -11,6 +11,7 @@ import {
   formatReasonDates,
   formatWhenRange,
   priceBadgeClass,
+  priceBadgeLabel,
   priceTone,
   splitReasonMarks,
 } from "@/lib/format";
@@ -54,7 +55,7 @@ export default function EventCard({
         <span
           className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${priceBadgeClass(priceTone(item.price_kind))}`}
         >
-          {item.price_label}
+          {priceBadgeLabel(item.price_label)}
         </span>
         {ages && <span className="ml-2 text-sm">{ages}</span>}
       </p>

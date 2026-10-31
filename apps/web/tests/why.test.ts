@@ -146,7 +146,28 @@ describe("computeWhy", () => {
       testDetail({ price_basis: "source_policy", price_evidence_quote: null }),
     );
     expect(rows.find((row) => row.field === "Price")?.detail).toBe(
-      "free (per OPL) — from the venue's stated policy, not the listing",
+      "Free · per OPL policy — from the venue's stated policy, not the listing",
     );
+  });
+
+  it("explains policy prices from the label when quotes failed to load", () => {
+    const rows = computeWhy(
+      testItem({ price_label: "free (per OPL)" }),
+      PREFS,
+      null,
+    );
+    expect(rows.find((row) => row.field === "Price")).toMatchObject({
+      detail:
+        "Free · per OPL policy — from the venue's stated policy, not the listing",
+      quote: null,
+    });
+  });
+
+  it("keeps event-text free plain with no policy note", () => {
+    const rows = computeWhy(testItem({ price_label: "Free" }), PREFS, null);
+    expect(rows.find((row) => row.field === "Price")).toMatchObject({
+      detail: "Free",
+      quote: null,
+    });
   });
 });

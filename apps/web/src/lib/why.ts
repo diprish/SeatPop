@@ -6,6 +6,7 @@ import {
   type Preferences,
 } from "@seatpop/shared";
 import type { EventDetailView, RecommendItemView } from "./api";
+import { isPolicyPrice, priceBadgeLabel } from "./format";
 
 /**
  * "Why this?" rows: each matched field with its value and, when the
@@ -93,13 +94,17 @@ export function computeWhy(
     });
   }
 
-  const basis =
-    detail?.price_basis === "source_policy"
-      ? " — from the venue's stated policy, not the listing"
-      : "";
+  // Loaded detail is the authority on price basis; when quotes failed
+  // to load, the SQL label still identifies policy prices.
+  const fromPolicy =
+    detail?.price_basis === "source_policy" ||
+    (detail === null && isPolicyPrice(item.price_label));
+  const basis = fromPolicy
+    ? " — from the venue's stated policy, not the listing"
+    : "";
   rows.push({
     field: "Price",
-    detail: `${item.price_label}${basis}`,
+    detail: `${priceBadgeLabel(item.price_label)}${basis}`,
     quote: detail?.price_evidence_quote ?? quoteFor(detail, "price_kind"),
   });
 

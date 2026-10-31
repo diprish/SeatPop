@@ -70,6 +70,23 @@ export function priceTone(price_kind: string): PriceTone {
   return "paid";
 }
 
+/** Badge text for source-policy free (SQL labels it "free (per OPL)"). */
+export const POLICY_BADGE_LABEL = "Free · per OPL policy";
+
+/** Source-policy price: the SQL label ends in "(per OPL)". */
+export function isPolicyPrice(priceLabel: string): boolean {
+  return priceLabel.endsWith("(per OPL)");
+}
+
+/**
+ * Card badge text: policy free reads "Free · per OPL policy";
+ * everything else shows the SQL label verbatim ("Free", "$12.00",
+ * "Price not stated").
+ */
+export function priceBadgeLabel(priceLabel: string): string {
+  return isPolicyPrice(priceLabel) ? POLICY_BADGE_LABEL : priceLabel;
+}
+
 export function ageLine(item: {
   age_min: number | null;
   age_max: number | null;

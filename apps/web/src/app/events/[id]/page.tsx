@@ -10,6 +10,7 @@ import {
   ageLine,
   formatDate,
   formatWhenRange,
+  POLICY_BADGE_LABEL,
   priceBadgeClass,
   priceTone,
 } from "@/lib/format";
@@ -139,7 +140,7 @@ export default function EventDetailPage() {
         >
           {detail.price_kind === "free"
             ? detail.price_basis === "source_policy"
-              ? "free (per OPL)"
+              ? POLICY_BADGE_LABEL
               : "Free"
             : detail.price_kind === "unknown"
               ? "Price not stated"
