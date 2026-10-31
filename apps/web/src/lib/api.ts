@@ -103,6 +103,7 @@ export interface EventDetailView {
   price_basis: string;
   evidence: Record<string, { value: unknown; quote: string | null }> | null;
   price_evidence_quote: string | null;
+  siblings: Array<{ id: string; venue_name: string; room: string | null }>;
 }
 
 export async function postJson<T>(url: string, body: unknown): Promise<T> {

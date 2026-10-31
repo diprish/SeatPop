@@ -10,6 +10,7 @@ import {
   PreferencesSchema,
   type Preferences,
 } from "@seatpop/shared";
+import { collapseRows } from "./collapse";
 import { FINAL_TOP_N, RERANK_TOP_N, STAGE1_LIMIT } from "./config";
 import {
   rerankCandidates,
@@ -319,13 +320,17 @@ export async function recommendStages(
     embeddingSimilarity: deps.embeddingSimilarity,
   });
   const byId = new Map(rows.data.map((row) => [row.event_id, row]));
-  const stage2: CandidateRow[] = [];
+  const scored: CandidateRow[] = [];
   const scores = new Map<string, number>();
   for (const r of ranked) {
     scores.set(r.scored.event_id, r.scored.score);
     const row = byId.get(r.event.event_id);
-    if (row) stage2.push(row);
+    if (row) scored.push(row);
   }
+  // Twins (same title + start + branch, different rooms) collapse to the
+  // top-scored row so the reranker never sees duplicates; the detail view
+  // lists the other rooms (findSiblings). Stage-1 counts stay raw.
+  const stage2 = collapseRows(scored);
   return { prefs, candidates: rows.data, stage2, scores };
 }
 

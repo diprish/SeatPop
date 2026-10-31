@@ -146,6 +146,21 @@ export default function EventDetailPage() {
         </span>
       </p>
 
+      {detail.siblings.length > 0 && (
+        <section aria-label="Other rooms" className="mt-4">
+          <h2 className="font-semibold">Also at this branch</h2>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
+            {detail.siblings.map((sibling) => (
+              <li key={sibling.id}>
+                <Link className="underline" href={`/events/${sibling.id}`}>
+                  {sibling.room ?? sibling.venue_name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section aria-label="Verified facts" className="mt-4">
         <h2 className="font-semibold">Verified facts</h2>
         <dl className="mt-2 space-y-3">

@@ -78,6 +78,7 @@ function testDetail(
       language: { value: "English", quote: "in English" },
     },
     price_evidence_quote: "Free admission",
+    siblings: [],
     ...overrides,
   };
 }
