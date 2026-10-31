@@ -48,6 +48,15 @@ import {
 
 export const ENRICH_EMBED_BATCH = 32;
 
+/**
+ * --strict failure for enrich: events that produced no usable pass fail
+ * loudly (budget stops already exit 1; transient no-training-route
+ * skips stay loud warnings — they retry on the next run).
+ */
+export function strictEnrichFailed(failed: number): boolean {
+  return failed > 0;
+}
+
 function loadEnvFile(): void {
   let dir = process.cwd();
   const chain: string[] = [];
@@ -163,7 +172,9 @@ usage: npm run enrich --workspace @seatpop/worker -- [options]
   --force              re-enrich even when the source hash matches
                        (comparison runs; overwrites rows).
   --dry-run            list what would be enriched; make no model calls.
-  --skip-embeddings    skip the local embedding sweep.`);
+  --skip-embeddings    skip the local embedding sweep.
+  --strict             exit 1 when any event produced no usable pass.
+                       The scheduled crawl uses this.`);
 }
 
 async function main(): Promise<number> {
@@ -183,6 +194,7 @@ async function main(): Promise<number> {
   const dryRun = args.includes("--dry-run");
   const skipEmbeddings = args.includes("--skip-embeddings");
   const force = args.includes("--force");
+  const strict = args.includes("--strict");
   const provider = resolveProvider(providerFlag);
   const supabaseUrl = process.env["SUPABASE_URL"]?.trim();
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
@@ -513,6 +525,12 @@ async function main(): Promise<number> {
     `  price_kind unknown: ${tallies.priceUnknown}/${tallies.priceTotal} ` +
       `(this run: ${stats.priceFromPolicy} from source policy)`,
   );
+  if (strict && strictEnrichFailed(stats.failed)) {
+    console.error(
+      `enrich strict: ${stats.failed} event(s) produced no usable pass`,
+    );
+    return 1;
+  }
   return stoppedByBudget ? 1 : 0;
 }
 

@@ -64,6 +64,17 @@ export interface IngestReport {
   sources: SourceReport[];
 }
 
+/**
+ * Sources that fail a --strict run. Only recorded-ok outcomes pass
+ * ("ok", honest "robots-disallowed", rehearsal "dry-run"); every other
+ * status — errors, no-retry HTTP, unknown kinds — fails loudly so a
+ * scheduled crawl never goes green on a broken source.
+ */
+export function strictFailures(report: IngestReport): SourceReport[] {
+  const ok = new Set(["ok", "robots-disallowed", "dry-run", "no-store"]);
+  return report.sources.filter((source) => !ok.has(source.status));
+}
+
 interface RunOptions {
   dryRun: boolean;
   full: boolean;
@@ -327,12 +338,14 @@ export async function runIngest(options: RunOptions): Promise<IngestReport> {
 
 function printUsage(): void {
   console.log(`seatpop ingest: fetch enabled sources into the events tables.
-usage: npm run ingest --workspace @seatpop/worker -- [--dry-run] [--full] [--source NAME]
+usage: npm run ingest --workspace @seatpop/worker -- [--dry-run] [--full] [--source NAME] [--strict]
   --dry-run     fetch and parse only; print counts, write nothing to the
                 database (html extraction still runs and may spend model
                 budget up to $2 on cache misses).
   --full        ignore the ETag cache and re-crawl everything.
-  --source NAME ingest one source by name.`);
+  --source NAME ingest one source by name.
+  --strict      exit 1 when any source errors (robots-disallowed stays a
+                recorded, non-failing skip). The scheduled crawl uses this.`);
 }
 
 async function main(): Promise<number> {
@@ -402,6 +415,15 @@ async function main(): Promise<number> {
       `fetched=${totals.fetched} upcoming=${totals.upcoming} inserted=${totals.inserted} ` +
       `linked=${totals.linked} unchanged=${totals.skippedUnchanged}`,
   );
+  if (args.includes("--strict")) {
+    const failures = strictFailures(report);
+    if (failures.length > 0) {
+      for (const failure of failures) {
+        console.error(`ingest strict: ${failure.name} status=${failure.status}`);
+      }
+      return 1;
+    }
+  }
   return 0;
 }
 
