@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { LlmConfig } from "@seatpop/llm";
 import { isDirectExecution } from "../script-entry";
+import { loadSeedEntries, resolveNewVenueCoords } from "../seed-venues/seed";
 import { resolveExtractionConfig } from "./extract";
 import {
   Fetcher,
@@ -241,15 +242,20 @@ async function ingestSource(
       if (found) {
         venueId = found.id;
       } else {
-        const geo = venueQuery
-          ? await geocoder.geocode(`${venueQuery}, Ottawa, ON`)
-          : null;
+        // Seed coordinates win outright (authoritative, no network);
+        // otherwise the geocoder runs exactly as before.
+        const seedCoords = await resolveNewVenueCoords(
+          venueLabel,
+          venueQuery,
+          loadSeedEntries(),
+          (query) => geocoder.geocode(query),
+        );
         const created = await insertVenue(store, {
           name: venueLabel,
           address: draft.venueAddress,
-          lat: geo?.lat,
-          lng: geo?.lng,
-          geocode_confidence: geo?.confidence,
+          lat: seedCoords.lat,
+          lng: seedCoords.lng,
+          geocode_confidence: seedCoords.confidence,
         });
         venueId = created.id;
       }

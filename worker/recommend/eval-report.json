@@ -1,42 +1,42 @@
 {
-  "generatedAt": "2026-10-30T05:45:07.644Z",
+  "generatedAt": "2026-10-30T16:00:15.915Z",
   "mode": "full (model-graded)",
   "grading": "model-graded (muse-wonder)",
   "households": [
     {
       "id": "h01",
       "description": "Single adult downtown, likes music, flexible",
-      "candidates": 10,
+      "candidates": 200,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.9920705459712793,
-      "ndcgDate": 0.7395611005771359,
-      "ndcgStage2": 1,
+      "ndcgReranked": 1,
+      "ndcgDate": 0.13826649153669965,
+      "ndcgStage2": 0.948168804342077,
       "graded": true,
       "fallback": false
     },
     {
       "id": "h02",
       "description": "Couple in the Glebe, $50 budget, weekend evenings",
-      "candidates": 0,
+      "candidates": 2,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
       "fallback": false
     },
     {
       "id": "h03",
       "description": "Two kids in Orleans, free only, Saturday mornings",
-      "candidates": 0,
+      "candidates": 1,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
       "fallback": false
     },
     {
@@ -54,13 +54,13 @@
     {
       "id": "h05",
       "description": "Teen in Barrhaven, sports, avoids crowds, $30",
-      "candidates": 0,
+      "candidates": 1,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
       "fallback": false
     },
     {
@@ -78,7 +78,7 @@
     {
       "id": "h07",
       "description": "Single French-speaking senior, free only",
-      "candidates": 0,
+      "candidates": 63,
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": null,
@@ -102,19 +102,7 @@
     {
       "id": "h09",
       "description": "Preschooler in Riverview, library, $10, Saturdays",
-      "candidates": 0,
-      "violations": [],
-      "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
-      "fallback": false
-    },
-    {
-      "id": "h10",
-      "description": "Adults plus grandparent downtown, museums, $40, wheelchair",
-      "candidates": 10,
+      "candidates": 1,
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": 1,
@@ -124,15 +112,27 @@
       "fallback": false
     },
     {
-      "id": "h11",
-      "description": "Single adult in Kanata, workshops, evenings, $60",
-      "candidates": 0,
+      "id": "h10",
+      "description": "Adults plus grandparent downtown, museums, $40, wheelchair",
+      "candidates": 200,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 0.2920150533621072,
+      "ndcgStage2": 0.7841270627824982,
+      "graded": true,
+      "fallback": false
+    },
+    {
+      "id": "h11",
+      "description": "Single adult in Kanata, workshops, evenings, $60",
+      "candidates": 6,
+      "violations": [],
+      "distanceMismatches": 0,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
       "fallback": false
     },
     {
@@ -162,13 +162,13 @@
     {
       "id": "h14",
       "description": "Baby in Vanier, free only, French, weekdays",
-      "candidates": 0,
+      "candidates": 20,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 0.7417915194480327,
+      "ndcgStage2": 0.7085319248809759,
+      "graded": true,
       "fallback": false
     },
     {
@@ -186,49 +186,49 @@
     {
       "id": "h16",
       "description": "Kids and preschooler in Manotick, free only, wide range",
-      "candidates": 0,
+      "candidates": 68,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 0.8586039965027206,
+      "ndcgDate": 0.41169787912655337,
+      "ndcgStage2": 0.6028717662539196,
+      "graded": true,
       "fallback": false
     },
     {
       "id": "h17",
       "description": "Seniors downtown, museums and music, weekday afternoons, $20",
-      "candidates": 0,
+      "candidates": 51,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 0.6429235234036081,
+      "ndcgStage2": 0.6285108926059098,
+      "graded": true,
       "fallback": false
     },
     {
       "id": "h18",
       "description": "Teen in Stittsville, sports and outdoors, Saturdays, $20",
-      "candidates": 0,
+      "candidates": 1,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
       "fallback": false
     },
     {
       "id": "h19",
       "description": "Adults in Blackburn Hamlet, arts and workshops, evenings, $45",
-      "candidates": 0,
+      "candidates": 11,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
+      "ndcgReranked": 1,
+      "ndcgDate": 0.49818925746641285,
+      "ndcgStage2": 0.8603443310417203,
+      "graded": true,
       "fallback": false
     },
     {
@@ -245,15 +245,15 @@
     }
   ],
   "policyProbe": {
-    "candidates": 307,
+    "candidates": 305,
     "freePerOpl": 6,
     "ok": true
   },
   "totals": {
     "violations": 0,
     "distanceMismatches": 0,
-    "meanNdcgReranked": 0.9980176364928198,
-    "meanNdcgDate": 0.934890275144284,
-    "meanNdcgStage2": 1
+    "meanNdcgReranked": 0.9899002854644801,
+    "meanNdcgDate": 0.7660631231673866,
+    "meanNdcgStage2": 0.8951824844219356
   }
 }

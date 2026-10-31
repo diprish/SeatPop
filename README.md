@@ -69,3 +69,10 @@ households behind a user JWT (`Authorization: Bearer`). Try it at
   CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
   Ottawa-area K-prefixed FSAs only; method and operator steps in
   `supabase/seeds/ottawa_fsa_from_geonames.py`.
+- Venue coordinates (`data/seed/venue-coordinates.json`) for Ottawa
+  Public Library branches contain information licensed under the City
+  of Ottawa Open Data Licence v2.0
+  (https://ottawa.ca/en/city-hall/get-know-your-city/open-data#open-data-licence-version-2-0).
+  Museum, theatre, and market coordinates cite the venues' Wikipedia
+  pages per entry (`source`); three entries are marked `"verified":
+  false` pending a map check.

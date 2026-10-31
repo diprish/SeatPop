@@ -134,3 +134,34 @@ often empty — the UI states counts honestly via the warnings array.
   unchanged (same 4 non-empty): the 6 Crafternoon rows miss every
   `free_only` household's time/distance windows, so emptiness is still
   the 10/797 coords gap, not the policy path.
+
+## Update: venue coordinates
+
+- `data/seed/venue-coordinates.json` holds 41 entries: 33 OPL branches
+  (City of Ottawa "Library Locations 2024" open data), Diefenbunker,
+  Ottawa Art Gallery, Nature, War Museum, Little Theatre, Westboro
+  market, Great Canadian Theatre Company, Dominion-Chalmers. One entry
+  per physical place; matching is normalized substring with longest
+  match winning (`worker/src/seed-venues/seed.ts`).
+- `npm run seed:venues` backfills rows where lat/lng are both null and
+  never overwrites; re-running changes nothing. Ingest venue creation
+  consults the seed first, geocoder second, so re-crawls keep coverage.
+- Coverage: **10/797 → 775/779** live events with coordinates (the pool
+  shrank as events expired; 61 venue rows updated). Recommend eval:
+  **4/20 → 15/20** households return candidates, **0 violations** (exit
+  rule intact), mean NDCG@10 over 14 graded: reranked **0.990**, date
+  0.766, stage-2 0.895 — the harness now clearly discriminates.
+  h07 (63 candidates) went ungraded: the judge hit the 4096 length cap.
+- Unverified entries (map-check queue, pinned by test): OAG (45.4253,
+  -75.6898, rounded from its geocoded row), GCTC (45.4001, -75.7318,
+  Wikipedia coords may predate the Wellington move), Westboro market
+  (45.3905, -75.7435, approximate Byron Park spot).
+- Still without coordinates (4 one-event rows, out of scope): Canadian
+  Museum of History Theatre, Lansdowne Indoor Market, National Gallery
+  of Canada, "Telephone, Canada" (extraction junk). Seed entries with
+  no venue yet (kept for ingest): Nature, Little Theatre, Fitzroy
+  Harbour, Vernon.
+- Verify: `npm run typecheck && npm run lint && npm test`;
+  `npm run seed:venues --workspace @seatpop/worker -- --dry-run`;
+  `npm run seed:venues --workspace @seatpop/worker`;
+  `npm run eval:recommend --workspace @seatpop/worker`.

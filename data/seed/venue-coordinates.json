@@ -1,0 +1,371 @@
+[
+  {
+    "key": "diefenbunker",
+    "match": ["Diefenbunker"],
+    "name": "Diefenbunker: Canada's Cold War Museum",
+    "lat": 45.3517,
+    "lng": -76.0472,
+    "source": "https://en.wikipedia.org/wiki/Diefenbunker",
+    "verified": true
+  },
+  {
+    "key": "ottawa-art-gallery",
+    "match": ["Ottawa Art Gallery", "Alma Duncan Salon", "Alma Duncan"],
+    "name": "Ottawa Art Gallery",
+    "lat": 45.4253,
+    "lng": -75.6898,
+    "source": "Rounded from the existing geocoded 'Ottawa Art Gallery' venue row (45.4253432, -75.6897864); needs a map check. OAG publishes its address (10 Daly Ave) but no coordinates.",
+    "verified": false
+  },
+  {
+    "key": "canadian-museum-of-nature",
+    "match": ["Canadian Museum of Nature", "Museum of Nature"],
+    "name": "Canadian Museum of Nature",
+    "lat": 45.4127,
+    "lng": -75.6888,
+    "source": "https://en.wikipedia.org/wiki/Canadian_Museum_of_Nature",
+    "verified": true
+  },
+  {
+    "key": "canadian-war-museum",
+    "match": ["Canadian War Museum", "War Museum"],
+    "name": "Canadian War Museum",
+    "lat": 45.4172,
+    "lng": -75.7172,
+    "source": "https://en.wikipedia.org/wiki/Canadian_War_Museum",
+    "verified": true
+  },
+  {
+    "key": "ottawa-little-theatre",
+    "match": ["Ottawa Little Theatre", "Little Theatre"],
+    "name": "Ottawa Little Theatre",
+    "lat": 45.4282,
+    "lng": -75.6858,
+    "source": "https://en.wikipedia.org/wiki/Ottawa_Little_Theatre",
+    "verified": true
+  },
+  {
+    "key": "westboro-farmers-market",
+    "match": ["Westboro Market", "Westboro Farmers", "Byron Linear Park"],
+    "name": "Westboro Farmers' Market (Byron Linear Park)",
+    "lat": 45.3905,
+    "lng": -75.7435,
+    "source": "Approximate: Byron Linear Park near Golden Ave, from the market's stated location; needs a map check.",
+    "verified": false
+  },
+  {
+    "key": "great-canadian-theatre-company",
+    "match": ["Great Canadian Theatre Company", "GCTC", "Irving Greenberg"],
+    "name": "Great Canadian Theatre Company",
+    "lat": 45.4001,
+    "lng": -75.7318,
+    "source": "Wikipedia page coordinates (https://en.wikipedia.org/wiki/Great_Canadian_Theatre_Company) — may predate the 2007 move to 1233 Wellington St W; needs a map check.",
+    "verified": false
+  },
+  {
+    "key": "carleton-dominion-chalmers-centre",
+    "match": ["Carleton Dominion-Chalmers Centre", "Dominion-Chalmers", "Dominion Chalmers"],
+    "name": "Carleton Dominion-Chalmers Centre",
+    "lat": 45.4168,
+    "lng": -75.6951,
+    "source": "https://en.wikipedia.org/wiki/Dominion-Chalmers_United_Church",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-alta-vista",
+    "match": ["Alta Vista at", "Alta Vista Branch", "Alta Vista Library"],
+    "name": "Alta Vista Branch",
+    "lat": 45.3782,
+    "lng": -75.6611,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-beaverbrook",
+    "match": ["Beaverbrook at", "Beaverbrook Branch", "Beaverbrook Library"],
+    "name": "Beaverbrook Branch",
+    "lat": 45.3198,
+    "lng": -75.8958,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-blackburn-hamlet",
+    "match": ["Blackburn Hamlet at", "Blackburn Hamlet Branch", "Blackburn Hamlet Library"],
+    "name": "Blackburn Hamlet Branch",
+    "lat": 45.4309,
+    "lng": -75.5641,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-carlingwood",
+    "match": ["Carlingwood at", "Carlingwood Branch", "Carlingwood Library"],
+    "name": "Carlingwood Branch",
+    "lat": 45.3729,
+    "lng": -75.7722,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-carp",
+    "match": ["Carp at", "Carp Branch", "Carp Library"],
+    "name": "Carp Branch",
+    "lat": 45.3488,
+    "lng": -76.0424,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-centennial",
+    "match": ["Centennial at", "Centennial Branch", "Centennial Library"],
+    "name": "Centennial Branch",
+    "lat": 45.3211,
+    "lng": -75.8261,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-constance-bay",
+    "match": ["Constance Bay at", "Constance Bay Branch", "Constance Bay Library"],
+    "name": "Constance Bay Branch",
+    "lat": 45.4992,
+    "lng": -76.0927,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-cumberland",
+    "match": ["Cumberland at", "Cumberland Branch", "Cumberland Library"],
+    "name": "Cumberland Branch",
+    "lat": 45.4705,
+    "lng": -75.4934,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-elmvale-acres",
+    "match": ["Elmvale Acres at", "Elmvale Acres Branch", "Elmvale Acres Library"],
+    "name": "Elmvale Acres Branch",
+    "lat": 45.399,
+    "lng": -75.6231,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-emerald-plaza",
+    "match": ["Emerald Plaza at", "Emerald Plaza Branch", "Emerald Plaza Library"],
+    "name": "Emerald Plaza Branch",
+    "lat": 45.3548,
+    "lng": -75.7357,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-fitzroy-harbour",
+    "match": ["Fitzroy Harbour at", "Fitzroy Harbour Branch", "Fitzroy Harbour Library"],
+    "name": "Fitzroy Harbour Branch",
+    "lat": 45.4724,
+    "lng": -76.2157,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-greely",
+    "match": ["Greely at", "Greely Branch", "Greely Library"],
+    "name": "Greely Branch",
+    "lat": 45.2623,
+    "lng": -75.5567,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-greenboro",
+    "match": ["Greenboro at", "Greenboro Branch", "Greenboro Library"],
+    "name": "Greenboro Branch",
+    "lat": 45.3631,
+    "lng": -75.6347,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-hazeldean",
+    "match": ["Hazeldean at", "Hazeldean Branch", "Hazeldean Library"],
+    "name": "Hazeldean Branch",
+    "lat": 45.2949,
+    "lng": -75.8865,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-main",
+    "match": ["Main at", "Main Branch", "Main Library", "120 Metcalfe"],
+    "name": "Main Branch",
+    "lat": 45.4204,
+    "lng": -75.6953,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-manotick",
+    "match": ["Manotick at", "Manotick Branch", "Manotick Library"],
+    "name": "Manotick Branch",
+    "lat": 45.2282,
+    "lng": -75.6811,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-metcalfe-village",
+    "match": ["Metcalfe Village at", "Metcalfe Village Branch", "Metcalfe Village Library"],
+    "name": "Metcalfe Village Branch",
+    "lat": 45.2293,
+    "lng": -75.4694,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-munster",
+    "match": ["Munster at", "Munster Branch", "Munster Library"],
+    "name": "Munster Branch",
+    "lat": 45.1652,
+    "lng": -75.9388,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-nepean-centrepointe",
+    "match": ["Nepean Centrepointe at", "Nepean Centrepointe Branch", "Nepean Centrepointe Library"],
+    "name": "Nepean Centrepointe Branch",
+    "lat": 45.3433,
+    "lng": -75.7635,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-north-gloucester",
+    "match": ["North Gloucester at", "North Gloucester Branch", "North Gloucester Library"],
+    "name": "North Gloucester Branch",
+    "lat": 45.4384,
+    "lng": -75.6013,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-north-gower",
+    "match": ["North Gower at", "North Gower Branch", "North Gower Library"],
+    "name": "North Gower Branch",
+    "lat": 45.1317,
+    "lng": -75.7167,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-orleans",
+    "match": ["Orleans at", "Orleans Branch", "Orleans Library"],
+    "name": "Orléans Branch",
+    "lat": 45.4553,
+    "lng": -75.5258,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-osgoode",
+    "match": ["Osgoode at", "Osgoode Branch", "Osgoode Library"],
+    "name": "Osgoode Branch",
+    "lat": 45.1535,
+    "lng": -75.5937,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-richmond",
+    "match": ["Richmond at", "Richmond Branch", "Richmond Library"],
+    "name": "Richmond Branch",
+    "lat": 45.1992,
+    "lng": -75.8337,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-rideau",
+    "match": ["Rideau at", "Rideau Branch", "Rideau Library"],
+    "name": "Rideau Branch",
+    "lat": 45.4299,
+    "lng": -75.6831,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-rockcliffe-park",
+    "match": ["Rockcliffe Park at", "Rockcliffe Park Branch", "Rockcliffe Park Library"],
+    "name": "Rockcliffe Park Branch",
+    "lat": 45.4508,
+    "lng": -75.6791,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-rosemount",
+    "match": ["Rosemount at", "Rosemount Branch", "Rosemount Library"],
+    "name": "Rosemount Branch",
+    "lat": 45.4016,
+    "lng": -75.7261,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-ruth-e-dickinson",
+    "match": ["Ruth E. Dickinson at", "Ruth E Dickinson at", "Dickinson at", "Ruth E. Dickinson Branch"],
+    "name": "Ruth E. Dickinson Branch",
+    "lat": 45.2815,
+    "lng": -75.7608,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-saint-laurent",
+    "match": ["Saint Laurent at", "St-Laurent at", "St Laurent at", "Saint Laurent Branch", "St-Laurent Branch"],
+    "name": "St-Laurent Branch",
+    "lat": 45.4357,
+    "lng": -75.6476,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-stittsville",
+    "match": ["Stittsville at", "Stittsville Branch", "Stittsville Library"],
+    "name": "Stittsville Branch",
+    "lat": 45.254,
+    "lng": -75.9155,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-sunnyside",
+    "match": ["Sunnyside at", "Sunnyside Branch", "Sunnyside Library"],
+    "name": "Sunnyside Branch",
+    "lat": 45.3953,
+    "lng": -75.684,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-vanier",
+    "match": ["Vanier at", "Vanier Branch", "Vanier Library"],
+    "name": "Vanier Branch",
+    "lat": 45.4423,
+    "lng": -75.6621,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  },
+  {
+    "key": "ottawa-public-library-vernon",
+    "match": ["Vernon at", "Vernon Branch", "Vernon Library"],
+    "name": "Vernon Branch",
+    "lat": 45.1638,
+    "lng": -75.4641,
+    "source": "City of Ottawa open data: Ottawa Public Library Locations 2024, Open Data Licence v2.0 (https://www.arcgis.com/home/item.html?id=a5649df290ce476db96fef45f7df77ab)",
+    "verified": true
+  }
+]

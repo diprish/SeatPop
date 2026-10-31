@@ -11,6 +11,7 @@ export default tseslint.config(
       "**/coverage/**",
       ".llm-cache/**",
       ".llm-ledger/**",
+      "**/next-env.d.ts",
     ],
   },
   js.configs.recommended,

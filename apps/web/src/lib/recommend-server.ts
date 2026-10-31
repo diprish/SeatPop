@@ -1,7 +1,7 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { NextRequest } from "next/server";
-import { resolveConfig, type LlmConfig } from "@seatpop/llm";
+import { loadDotenv, resolveConfig, type LlmConfig } from "@seatpop/llm";
 import { RateLimiter, TtlCache } from "@seatpop/worker/recommend";
 
 /**
@@ -21,6 +21,9 @@ export function serverLlmConfig(): LlmConfig {
 }
 
 export function publicSupabase(): { url: string; anonKey: string } | null {
+  // Next only reads apps/web/.env, but secrets live in the repo-root
+  // .env — fill-unset from it with the same loader the worker uses.
+  loadDotenv();
   const url = process.env["SUPABASE_URL"]?.trim();
   const anonKey = process.env["SUPABASE_ANON_KEY"]?.trim();
   if (!url || !anonKey) return null;
