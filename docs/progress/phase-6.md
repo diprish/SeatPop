@@ -83,6 +83,41 @@ fallback. Apply migrations with `npx supabase db push` (through 0013).
 In `docs/screenshots/`: `01-for-you.png`, `02-why-sheet.png`,
 `03-detail.png`, `04-trust.png`, `05-explore.png`.
 
+## Review fixes (one commit each, gates green throughout)
+
+1. **Twins collapse** (`8181c1b`): rows sharing normalized title,
+   start instant, and branch (venue before " at ") collapse in stage 2
+   to the top-scored row, so the reranker never sees duplicates;
+   stage-1 counts stay raw. The detail API finds twins by the same
+   shared key and the page lists them under "Also at this branch".
+2. **Sanitation** (`26198c5`): `sanitizeText` in `@seatpop/shared`
+   decodes entities (`&nbsp;`, `&amp;`, `&#038;`, numeric/hex),
+   removes U+FFFD/C1 controls, folds unambiguous UTF-8-as-Latin-1
+   mojibake to real characters, and splits glued sentences only where
+   safe (`treats.Friday`, `PMSaturday`, `18:00Samedi` — never
+   `U.S.A`, `K2S`, `receptionau`). Applied at ingest (raw_text
+   untouched) and at render as fallback. `clean:descriptions`
+   re-cleans existing rows (dry-run: 724/826 flagged, mostly `&nbsp;`
+   and glue); re-cleaned rows re-enrich next run via source hash.
+3. **Policy badge** (`6cbf54e`): policy free shows "Free · per OPL
+   policy" on cards and detail; event-text free stays "Free". The
+   Why Price row explains the policy basis from loaded detail,
+   falling back to the SQL label when quotes fail.
+4. **Scheduled crawl** (`4fd5046`): `crawl.yml` runs ingest then
+   enrich daily 06:17 UTC + manual dispatch, both `--strict` (any
+   source error or pass-less event exits 1; robots-disallowed stays
+   a recorded skip, budget stops already exit 1). Spend caps from
+   secrets (`LLM_MAX_USD_TOTAL/DAILY_LIVE`, `BASETEN_MAX_USD_TOTAL`;
+   per-run caps are code-forced $2/$5 and deliberately unwired).
+   Secret names in `docs/deploy.md`; politeness in code.
+5. **Explore label** (`cc4b3e5`): the distance label was inline and
+   wrapped beside the input — now block, stacked above. Focus order
+   (checkbox → distance → Search) and labels unchanged; the area
+   hint is wired via `aria-describedby`.
+
+Final: **424/424** across 57 files, all five fixes committed
+separately.
+
 ## Cut, and why
 
 - **Explore beyond free/age/distance** (date range, category, map): the
