@@ -89,6 +89,34 @@ export function formatDistance(km: number | null): string | null {
   return `${km.toFixed(1)} km`;
 }
 
+/**
+ * Model reasons sometimes embed raw UTC instants ("starts
+ * 2026-10-31T14:00"). Render those event-local instead; anything that
+ * isn't a valid instant passes through untouched.
+ */
+const ISO_DATETIME = /\b(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?\b/g;
+
+export function formatReasonDates(reason: string, timezone: string): string {
+  return reason.replace(
+    ISO_DATETIME,
+    (
+      whole: string,
+      year: string,
+      month: string,
+      day: string,
+      hour: string,
+      minute: string,
+      second: string | undefined,
+    ) => {
+      const date = new Date(
+        `${year}-${month}-${day}T${hour}:${minute}:${second ?? "00"}Z`,
+      );
+      if (Number.isNaN(date.getTime())) return whole;
+      return `${dayLabel(date, timezone)}, ${timeLabel(date, timezone)}`;
+    },
+  );
+}
+
 export interface ReasonPart {
   text: string;
   mark: "stated" | "inferred" | null;

@@ -248,7 +248,7 @@ export default function RecommendPage() {
                 )}
                 <p className="mt-1 text-sm">
                   {item.reason}{" "}
-                  <span className="text-xs text-neutral-400">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
                     {item.reasonFromModel ? "(AI reason)" : "(match)"}
                   </span>
                 </p>

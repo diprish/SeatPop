@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Preferences } from "@seatpop/shared";
 import {
   getEventDetail,
@@ -18,6 +18,7 @@ interface WhySheetProps {
 export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
   const [detail, setDetail] = useState<EventDetailView | null>(null);
   const [failed, setFailed] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -35,7 +36,26 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -52,6 +72,7 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
         className="absolute inset-0 cursor-default bg-black/50"
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={`Why ${item.title}`}
@@ -96,6 +117,7 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
             href={item.source_url}
             target="_blank"
             rel="noreferrer"
+            aria-label={`Official page for ${item.title}`}
           >
             Official page
           </a>

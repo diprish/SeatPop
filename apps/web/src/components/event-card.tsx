@@ -8,6 +8,7 @@ import { NOT_FOR_US_REASONS } from "@/lib/feedback";
 import {
   ageLine,
   formatDistance,
+  formatReasonDates,
   formatWhenRange,
   priceBadgeClass,
   priceTone,
@@ -63,7 +64,7 @@ export default function EventCard({
         </p>
       )}
       <p className="mt-1 text-sm">
-        {splitReasonMarks(item.reason).map((part, index) =>
+        {splitReasonMarks(formatReasonDates(item.reason, item.timezone)).map((part, index) =>
           part.mark ? (
             <span
               key={index}
@@ -79,7 +80,7 @@ export default function EventCard({
             <span key={index}>{part.text}</span>
           ),
         )}{" "}
-        <span className="text-xs text-neutral-400">
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
           {item.reasonFromModel ? "(AI reason)" : "(match)"}
         </span>
       </p>
@@ -112,6 +113,7 @@ export default function EventCard({
           href={item.source_url}
           target="_blank"
           rel="noreferrer"
+          aria-label={`Official page for ${item.title}`}
         >
           Official page ↗
         </a>

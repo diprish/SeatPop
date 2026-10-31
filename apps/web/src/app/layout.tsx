@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   description:
     "Find the right activity for each person in your household, book it in time.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

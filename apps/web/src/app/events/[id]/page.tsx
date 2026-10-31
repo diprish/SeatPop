@@ -257,6 +257,7 @@ export default function EventDetailPage() {
           href={detail.source_url}
           target="_blank"
           rel="noreferrer"
+          aria-label={`Official page for ${detail.title}`}
         >
           Official page
         </a>

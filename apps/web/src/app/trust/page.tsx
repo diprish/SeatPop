@@ -121,9 +121,9 @@ export default function TrustPage() {
                 <table className="mt-2 w-full text-sm">
                   <thead>
                     <tr className="text-left text-neutral-500">
-                      <th className="font-normal">Field</th>
-                      <th className="font-normal">Accuracy</th>
-                      <th className="font-normal">Null rate</th>
+                      <th scope="col" className="font-normal">Field</th>
+                      <th scope="col" className="font-normal">Accuracy</th>
+                      <th scope="col" className="font-normal">Null rate</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -177,8 +177,8 @@ export default function TrustPage() {
             <table className="mt-2 w-full">
               <thead>
                 <tr className="text-left text-neutral-500">
-                  <th className="font-normal">Method</th>
-                  <th className="font-normal">NDCG@10</th>
+                  <th scope="col" className="font-normal">Method</th>
+                  <th scope="col" className="font-normal">NDCG@10</th>
                 </tr>
               </thead>
               <tbody>

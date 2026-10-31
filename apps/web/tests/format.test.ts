@@ -3,6 +3,7 @@ import {
   ageLine,
   formatDate,
   formatDistance,
+  formatReasonDates,
   formatWhenRange,
   priceBadgeClass,
   priceTone,
@@ -99,6 +100,24 @@ describe("formatDate", () => {
     expect(formatDate("2026-11-01T04:00:00.000Z", "America/Toronto")).toBe(
       "Nov 1, 2026",
     );
+  });
+});
+
+describe("formatReasonDates", () => {
+  it("renders embedded UTC instants event-local", () => {
+    expect(
+      formatReasonDates(
+        "price Free (stated), starts 2026-10-31T14:00 (stated)",
+        "America/Toronto",
+      ),
+    ).toBe("price Free (stated), starts Sat Oct 31, 10:00 AM (stated)");
+  });
+
+  it("passes through non-instants and invalid dates", () => {
+    expect(formatReasonDates("just words", "America/Toronto")).toBe("just words");
+    expect(
+      formatReasonDates("at 2026-13-45T99:99", "America/Toronto"),
+    ).toBe("at 2026-13-45T99:99");
   });
 });
 
