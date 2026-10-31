@@ -137,7 +137,7 @@ export default function ExplorePage() {
             Free only
           </label>
           <div>
-            <label htmlFor="ex-distance" className="text-sm font-semibold">
+            <label htmlFor="ex-distance" className="block text-sm font-semibold">
               Distance (km{base.fsa ? ` near ${base.fsa}` : ""})
             </label>
             <input
@@ -148,10 +148,14 @@ export default function ExplorePage() {
               placeholder="Any"
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
+              aria-describedby={distanceNeedsArea ? "ex-distance-hint" : undefined}
               className="mt-1 w-28 rounded border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
             />
             {distanceNeedsArea && (
-              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+              <p
+                id="ex-distance-hint"
+                className="mt-1 text-xs text-amber-700 dark:text-amber-400"
+              >
                 Distance needs a household area — set one in For you.
               </p>
             )}
