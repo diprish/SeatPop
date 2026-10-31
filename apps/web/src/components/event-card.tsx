@@ -9,9 +9,9 @@ import {
   ageLine,
   formatDistance,
   formatWhenRange,
+  priceBadgeClass,
   priceTone,
   splitReasonMarks,
-  type PriceTone,
 } from "@/lib/format";
 import WhySheet from "@/components/why-sheet";
 
@@ -23,13 +23,6 @@ interface EventCardProps {
   onToggleSave: (item: RecommendItemView) => void;
   onNotForUs: (item: RecommendItemView, reason: string) => void;
 }
-
-const PRICE_BADGE: Record<PriceTone, string> = {
-  free: "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100",
-  muted:
-    "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300",
-  paid: "bg-neutral-900 text-white dark:bg-white dark:text-black",
-};
 
 export default function EventCard({
   item,
@@ -58,7 +51,7 @@ export default function EventCard({
       </p>
       <p className="mt-1">
         <span
-          className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${PRICE_BADGE[priceTone(item.price_kind)]}`}
+          className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${priceBadgeClass(priceTone(item.price_kind))}`}
         >
           {item.price_label}
         </span>

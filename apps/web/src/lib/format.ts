@@ -45,6 +45,25 @@ export function formatWhenRange(
 
 export type PriceTone = "free" | "muted" | "paid";
 
+export function priceBadgeClass(tone: PriceTone): string {
+  if (tone === "free") {
+    return "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100";
+  }
+  if (tone === "muted") {
+    return "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300";
+  }
+  return "bg-neutral-900 text-white dark:bg-white dark:text-black";
+}
+
+export function formatDate(iso: string, timezone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: timezone,
+  }).format(new Date(iso));
+}
+
 export function priceTone(price_kind: string): PriceTone {
   if (price_kind === "free") return "free";
   if (price_kind === "unknown") return "muted";

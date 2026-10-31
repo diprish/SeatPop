@@ -191,6 +191,8 @@ interface HouseholdReport {
   ndcgStage2: number | null;
   graded: boolean;
   fallback: boolean;
+  orderKept: boolean | null;
+  allTemplated: boolean | null;
 }
 
 async function gradeHousehold(
@@ -417,7 +419,7 @@ async function main(): Promise<number> {
       }
     }
     const fallback = result.meta.reranked === false && stages.stage2.length > 0;
-    reports.push({
+    const report: HouseholdReport = {
       id: household.id,
       description: household.description,
       candidates: stages.candidates.length,
@@ -428,7 +430,10 @@ async function main(): Promise<number> {
       ndcgStage2,
       graded,
       fallback,
-    });
+      orderKept: null,
+      allTemplated: null,
+    };
+    reports.push(report);
     const ndcg =
       graded && ndcgReranked !== null
         ? ` ndcg reranked=${ndcgReranked.toFixed(3)} date=${(ndcgDate as number).toFixed(3)} stage2=${(ndcgStage2 as number).toFixed(3)} (model-graded)`
@@ -447,6 +452,8 @@ async function main(): Promise<number> {
         stage2Ids.length === finalIds.length &&
         stage2Ids.every((id, i) => id === finalIds[i]);
       const allTemplated = result.items.every((item) => !item.reasonFromModel);
+      report.orderKept = orderKept;
+      report.allTemplated = allTemplated;
       console.log(
         `    fallback proof: order_kept=${orderKept} all_templated=${allTemplated}`,
       );
@@ -504,7 +511,13 @@ async function main(): Promise<number> {
     console.log("  NDCG unavailable (no grades: key removed or judge failed)");
   }
 
-  const outPath = path.join(evalDir(), "eval-report.json");
+  // No-key runs persist separately so the proof never overwrites the
+  // full model-graded report (the Trust page reads both).
+  const outPath = path.join(
+    evalDir(),
+    noKey ? "eval-report-fallback.json" : "eval-report.json",
+  );
+  const proven = reports.filter((r) => r.orderKept !== null);
   mkdirSync(path.dirname(outPath), { recursive: true });
   writeFileSync(
     outPath,
@@ -526,6 +539,15 @@ async function main(): Promise<number> {
           meanNdcgDate: mean((r) => r.ndcgDate),
           meanNdcgStage2: mean((r) => r.ndcgStage2),
         },
+        fallbackProof: noKey
+          ? {
+              households: proven.length,
+              orderKept:
+                proven.length > 0 && proven.every((r) => r.orderKept === true),
+              allTemplated:
+                proven.length > 0 && proven.every((r) => r.allTemplated === true),
+            }
+          : null,
       },
       null,
       2,

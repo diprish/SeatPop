@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   ageLine,
+  formatDate,
   formatDistance,
   formatWhenRange,
+  priceBadgeClass,
   priceTone,
   splitReasonMarks,
 } from "../src/lib/format";
@@ -88,5 +90,23 @@ describe("splitReasonMarks", () => {
       { text: "Just a reason", mark: null },
     ]);
     expect(splitReasonMarks("")).toEqual([]);
+  });
+});
+
+describe("formatDate", () => {
+  it("renders a short event-local date", () => {
+    // 04:00Z Nov 1 = Nov 1 in Toronto (EDT→EST overnight, still Nov 1).
+    expect(formatDate("2026-11-01T04:00:00.000Z", "America/Toronto")).toBe(
+      "Nov 1, 2026",
+    );
+  });
+});
+
+describe("priceBadgeClass", () => {
+  it("returns one class string per tone", () => {
+    for (const tone of ["free", "muted", "paid"] as const) {
+      expect(priceBadgeClass(tone).length).toBeGreaterThan(0);
+    }
+    expect(priceBadgeClass("free")).toContain("green");
   });
 });

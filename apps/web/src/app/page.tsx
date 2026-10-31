@@ -17,14 +17,11 @@ import {
   deleteFeedback,
   getJwt,
   hideEvent,
-  isSaved,
   loadHidden,
-  loadSaved,
   postFeedback,
-  toggleSaved,
   unhideEvent,
-  type SavedSnapshot,
 } from "@/lib/feedback";
+import { useFeedbackActions } from "@/lib/use-feedback-actions";
 import {
   SAMPLE_HOUSEHOLD,
   householdSummary,
@@ -45,10 +42,20 @@ export default function Home() {
   const [busy, setBusy] = useState<"search" | "parse" | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [text, setText] = useState("");
-  const [saved, setSaved] = useState<SavedSnapshot[]>([]);
   const [hidden, setHidden] = useState<Record<string, string>>({});
   const [showHidden, setShowHidden] = useState(false);
   const [syncNotes, setSyncNotes] = useState<Record<string, string>>({});
+
+  function noteSync(eventId: string, note: string | null): void {
+    setSyncNotes((notes) => {
+      const next = { ...notes };
+      if (note === null) delete next[eventId];
+      else next[eventId] = note;
+      return next;
+    });
+  }
+
+  const { saved, toggleSave } = useFeedbackActions(noteSync);
   const [diagnosis, setDiagnosis] = useState<Diagnosis | null>(null);
   const [diagnosing, setDiagnosing] = useState(false);
   const started = useRef(false);
@@ -84,7 +91,6 @@ export default function Home() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    setSaved(loadSaved());
     setHidden(loadHidden());
     const stored = loadHousehold();
     const initial = stored ?? SAMPLE_HOUSEHOLD;
@@ -105,30 +111,6 @@ export default function Home() {
       setBanner(error instanceof Error ? error.message : "parse failed");
     } finally {
       setBusy(null);
-    }
-  }
-
-  async function toggleSave(item: RecommendItemView): Promise<void> {
-    const next = toggleSaved(saved, item);
-    setSaved(next);
-    const jwt = getJwt();
-    if (!jwt) return;
-    try {
-      if (isSaved(next, item.event_id)) {
-        await postFeedback(jwt, item.event_id, "saved");
-      } else {
-        await deleteFeedback(jwt, item.event_id);
-      }
-      setSyncNotes((notes) => {
-        const rest = { ...notes };
-        delete rest[item.event_id];
-        return rest;
-      });
-    } catch {
-      setSyncNotes((notes) => ({
-        ...notes,
-        [item.event_id]: "Kept on this device; sync failed.",
-      }));
     }
   }
 

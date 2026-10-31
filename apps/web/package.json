@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-eval-report.mjs",
+    "prebuild": "node scripts/copy-eval-report.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
