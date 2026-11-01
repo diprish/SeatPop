@@ -17,6 +17,7 @@ import {
   splitReasonMarks,
 } from "@/lib/format";
 import WhySheet from "@/components/why-sheet";
+import WorthIt from "@/components/worth-it";
 
 interface EventCardProps {
   item: RecommendItemView;
@@ -145,6 +146,7 @@ export default function EventCard({
           {item.reasonFromModel ? "(AI reason)" : "(match)"}
         </span>
       </p>
+      <WorthIt eventId={item.event_id} title={item.title} />
       <div className="mt-2 flex flex-wrap gap-2 text-sm">
         <button
           type="button"

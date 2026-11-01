@@ -36,6 +36,41 @@ export function getVoteDeviceId(): string {
   }
 }
 
+const MY_VOTES_KEY = "seatpop_my_votes";
+
+function readMyVotes(): Record<string, 1 | -1> {
+  try {
+    const raw = localStorage.getItem(MY_VOTES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+    const out: Record<string, 1 | -1> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (value === 1 || value === -1) out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/** This device's own vote for an event, for the pressed highlight. */
+export function getMyVote(eventId: string): 1 | -1 | null {
+  return readMyVotes()[eventId] ?? null;
+}
+
+export function setMyVote(eventId: string, vote: 1 | -1): void {
+  try {
+    const votes = readMyVotes();
+    votes[eventId] = vote;
+    localStorage.setItem(MY_VOTES_KEY, JSON.stringify(votes));
+  } catch {
+    // Private mode: the highlight lasts this session via component state.
+  }
+}
+
 export interface VotesSummary {
   enough: boolean;
   total: number;

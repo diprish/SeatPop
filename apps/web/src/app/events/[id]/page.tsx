@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { sanitizeText } from "@seatpop/shared";
 import ErrorBanner from "@/components/error-banner";
+import WorthIt from "@/components/worth-it";
 import { getEventDetail, type EventDetailView } from "@/lib/api";
 import {
   ageLine,
@@ -154,6 +155,8 @@ export default function EventDetailPage() {
               : detail.price_text ?? detail.price_kind}
         </span>
       </p>
+
+      <WorthIt eventId={detail.id} title={detail.title} />
 
       {detail.siblings.length > 0 && (
         <section aria-label="Other rooms" className="mt-4">
