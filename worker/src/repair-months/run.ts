@@ -1,35 +1,37 @@
-import {
-  BudgetExceeded,
-  loadDotenv,
-  type LlmProvider,
-} from "@seatpop/llm";
-import { optionsForSource } from "../ingest/source-config";
+import { loadDotenv } from "@seatpop/llm";
 import type { StoreConfig } from "../ingest/store";
 import { isDirectExecution } from "../script-entry";
-import { resolveEnrichConfig, resolveProvider } from "../enrich/config";
-import { hashContext, processOneCandidate } from "../enrich/process-one";
+import { hashContext } from "../enrich/process-one";
 import {
-  listAgeQuotes,
   listCandidates,
+  listEnrichmentAges,
   listEventSourceNames,
+  patchEnrichmentAges,
 } from "../enrich/store";
-import { planMonthsRepair } from "./plan";
+import {
+  findMonthsRanges,
+  planMonthsRepair,
+  REPAIR_MODEL,
+  type MonthsCorrection,
+} from "./plan";
 
 /**
- * Fast-track re-enrichment for month-stated ages (enrich.v4).
+ * Deterministic repair for months stored as years (no model calls, no
+ * spend, no keys beyond Supabase): events whose listing text states a
+ * single months/mois range get age_min/age_max rewritten to converted
+ * years, the matched span stamped as the age evidence quotes, the
+ * model marked repair-months, and the source hash brought current so
+ * the next enrich run treats the row as done instead of re-voting it.
  *
- * The v4 prompt bump queues every row for lazy re-enrichment via the
- * source hash; this script repairs the actually-broken rows now: events
- * whose stored age quote contains "month" and whose hash is stale. Each
- * planned row runs the SAME vote → facet/policy → upsert assembly as a
- * normal enrich (processOneCandidate), so repair rows are shaped
- * identically. Rows without month quotes are never touched.
+ * Corrected rows carry real ages, so recommend_candidates derives
+ * age_fallback=false for them and the "check the age group" flag
+ * clears on its own — there is no stored flag to set.
  *
- * Idempotent: a repaired row's hash matches afterwards, so re-running
- * plans nothing. Spends model budget like enrich (same $5/run cap);
- * a budget stop ends loudly with a partial report (exit 1).
+ * Dry run by default; --apply writes. Idempotent: a repaired row
+ * plans nothing on re-run. Only rows whose listing text contains a
+ * months range are ever touched.
  *
- * Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY and model keys.
+ * Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
  */
 
 function valueOf(args: string[], flag: string): string | undefined {
@@ -37,19 +39,41 @@ function valueOf(args: string[], flag: string): string | undefined {
   return idx >= 0 ? args[idx + 1] : undefined;
 }
 
+function showAge(value: number | null): string {
+  return value === null ? "–" : String(value);
+}
+
+function printTable(plans: MonthsCorrection[]): void {
+  for (const plan of plans) {
+    const title =
+      plan.title.length > 52 ? `${plan.title.slice(0, 51)}…` : plan.title;
+    console.log(
+      `  ${plan.eventId.slice(0, 8)} ${showAge(plan.beforeMin)}–${showAge(plan.beforeMax)} → ${plan.afterMin}–${plan.afterMax} [${plan.quote}] ${title}`,
+    );
+  }
+}
+
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) {
     console.log(
-      "seatpop repair:months: re-enrich month-quoted ages under enrich.v4.\n" +
-        "usage: npm run repair:months --workspace @seatpop/worker [-- --dry-run] [--limit N] [--provider P]\n" +
-        "  --dry-run    list what would be re-enriched; make no model calls.\n" +
-        "  --limit N    re-enrich at most N events (soonest first).\n" +
-        "  --provider P contributor|spark|baseten (default: baseten).",
+      "seatpop repair:months: fix months stored as years (deterministic).\n" +
+        "usage: npm run repair:months --workspace @seatpop/worker [-- --apply] [--limit N]\n" +
+        "  (no flags)   dry run: print every planned correction; write nothing.\n" +
+        "  --apply      write the planned corrections to event_enrichment.\n" +
+        "  --limit N    apply to at most N events (soonest first).",
     );
     return 0;
   }
-  const dryRun = args.includes("--dry-run");
+  if (valueOf(args, "--provider") !== undefined || args.includes("--dry-run")) {
+    // The old model re-enrichment took --provider/--dry-run; the
+    // deterministic repair is always a dry run unless --apply is set.
+    console.error(
+      "repair:months is deterministic now: drop --provider/--dry-run (dry run is the default; --apply writes)",
+    );
+    return 2;
+  }
+  const apply = args.includes("--apply");
   const limitRaw = valueOf(args, "--limit");
   const limit = limitRaw === undefined ? undefined : Number(limitRaw);
   if (limitRaw !== undefined && (!Number.isInteger(limit) || (limit as number) <= 0)) {
@@ -64,113 +88,75 @@ async function main(): Promise<number> {
     return 2;
   }
   const store: StoreConfig = { url: supabaseUrl, serviceKey };
-  const provider = resolveProvider(valueOf(args, "--provider"));
-  const llmConfig = resolveEnrichConfig();
-  const modelOverride =
-    provider === "spark" ? llmConfig.models.spark : undefined;
-  const providerOverride: LlmProvider =
-    provider === "baseten" ? "baseten" : "meta";
 
   const candidates = await listCandidates(store);
-  const quotes = await listAgeQuotes(store);
+  const ages = await listEnrichmentAges(store);
   const listingSources = await listEventSourceNames(
     store,
     candidates.map((c) => c.id),
   );
-  const { facetLabelsFor, hashFor } = hashContext(listingSources);
-  const planned = planMonthsRepair(
-    candidates.map((candidate) => {
-      const quote = quotes.get(candidate.id);
-      return {
-        candidate,
-        ageMinQuote: quote?.ageMinQuote ?? null,
-        ageMaxQuote: quote?.ageMaxQuote ?? null,
-        currentHash: hashFor(candidate),
-      };
+  const { hashFor } = hashContext(listingSources);
+
+  let monthText = 0;
+  let unenriched = 0;
+  const plans = planMonthsRepair(
+    candidates.flatMap((candidate) => {
+      const stored = ages.get(candidate.id);
+      if (!stored) {
+        unenriched++;
+        return [];
+      }
+      if (
+        findMonthsRanges(`${candidate.title}\n${candidate.description ?? ""}`)
+          .length > 0
+      ) {
+        monthText++;
+      }
+      return [
+        {
+          eventId: candidate.id,
+          title: candidate.title,
+          description: candidate.description,
+          ageMin: stored.ageMin,
+          ageMax: stored.ageMax,
+          model: stored.model,
+        },
+      ];
     }),
   );
   console.log(
-    `repair:months: events=${candidates.length} ` +
-      `month_rows=${planned.length}${dryRun ? " (dry run — no writes)" : ""}`,
+    `repair:months: events=${candidates.length} enriched=${ages.size} ` +
+      `month_text=${monthText} planned=${plans.length} unenriched=${unenriched}` +
+      (apply ? "" : " (dry run — no writes; re-run with --apply)"),
   );
-  for (const candidate of planned.slice(0, 20)) {
-    const quote = quotes.get(candidate.id);
-    console.log(
-      `  planned ${candidate.starts_at.slice(0, 10)} ${candidate.title} ` +
-        `[${quote?.ageMinQuote ?? "–"} / ${quote?.ageMaxQuote ?? "–"}]`,
-    );
-  }
-  if (planned.length > 20) {
-    console.log(`  ... and ${planned.length - 20} more`);
-  }
-  if (dryRun) return 0;
+  printTable(plans);
+  if (!apply) return 0;
 
   const queue =
-    limit === undefined ? planned : planned.slice(0, limit as number);
-  const noTrainingFor = (id: string): boolean =>
-    [...new Set(listingSources.get(id) ?? [])].some(
-      (name) => optionsForSource(name).noTrainingRoute === true,
-    );
-  const now = new Date();
-  let basetenExhausted = false;
-  let processed = 0;
-  let failed = 0;
-  let skipped = 0;
-  let costUsd = 0;
-  for (const candidate of queue) {
-    const noTraining = noTrainingFor(candidate.id);
-    let outcome: Awaited<ReturnType<typeof processOneCandidate>>;
-    try {
-      outcome = await processOneCandidate(candidate, {
-        store,
-        llmConfig,
-        modelOverride,
-        providerOverride,
-        noTraining,
-        basetenExhausted,
-        now,
-        hashFor,
-        facetLabelsFor,
-      });
-    } catch (error) {
-      if (error instanceof BudgetExceeded && error.limit === "baseten_total") {
-        console.warn(
-          "repair:months: Baseten cap reached; no-training events skipped for this run",
-        );
-        basetenExhausted = true;
-        skipped++;
-        continue;
-      }
-      if (error instanceof BudgetExceeded) {
-        console.error(
-          `repair:months stopped: budget reached (${error.message}); partial report below`,
-        );
-        console.log(
-          `repair:months: processed=${processed} failed=${failed} skipped=${skipped} ` +
-            `cost_usd=${costUsd.toFixed(4)} STOPPED_BY_BUDGET`,
-        );
-        return 1;
-      }
-      throw error;
-    }
-    if (outcome.status === "skipped_baseten") {
-      skipped++;
-      continue;
-    }
-    if (outcome.status === "no_pass") {
-      failed++;
-      continue;
-    }
-    processed++;
-    for (const call of outcome.processed.result.calls) {
-      costUsd += call.costUsd;
-    }
-    console.log(`repair:months enriched ${candidate.id} ${candidate.title}`);
+    limit === undefined ? plans : plans.slice(0, limit as number);
+  const byId = new Map(candidates.map((c) => [c.id, c]));
+  let repaired = 0;
+  for (const plan of queue) {
+    const candidate = byId.get(plan.eventId);
+    const stored = ages.get(plan.eventId);
+    if (!candidate || !stored) continue;
+    const evidence = JSON.parse(JSON.stringify(stored.evidence ?? {})) as Record<
+      string,
+      { value: unknown; quote: unknown }
+    >;
+    evidence["age_min"] = { value: plan.afterMin, quote: plan.quote };
+    evidence["age_max"] = { value: plan.afterMax, quote: plan.quote };
+    await patchEnrichmentAges(store, plan.eventId, {
+      age_min: plan.afterMin,
+      age_max: plan.afterMax,
+      evidence,
+      model: REPAIR_MODEL,
+      source_hash: hashFor(candidate),
+    });
+    repaired++;
+    console.log(`repair:months repaired ${plan.eventId} ${plan.title}`);
   }
-  console.log(
-    `repair:months: processed=${processed} failed=${failed} skipped=${skipped} ` +
-      `cost_usd=${costUsd.toFixed(4)}`,
-  );
+  console.log(`repair:months: repaired=${repaired} failed=0`);
   return 0;
 }
 

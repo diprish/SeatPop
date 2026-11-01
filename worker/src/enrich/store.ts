@@ -138,35 +138,60 @@ export async function listEventSourceNames(
   return out;
 }
 
-export interface AgeQuotes {
-  ageMinQuote: string | null;
-  ageMaxQuote: string | null;
+export interface EnrichmentAges {
+  ageMin: number | null;
+  ageMax: number | null;
+  evidence: Record<string, { value?: unknown; quote?: unknown }> | null;
+  model: string | null;
 }
 
-/** Stored age evidence quotes per enriched event (months-repair finder). */
-export async function listAgeQuotes(
+/** Stored ages + evidence + model per enriched event (months-repair input). */
+export async function listEnrichmentAges(
   config: StoreConfig,
-): Promise<Map<string, AgeQuotes>> {
+): Promise<Map<string, EnrichmentAges>> {
   const rows = await rest<
     Array<{
       event_id: string;
-      evidence: Record<string, { quote?: unknown } | null> | null;
+      age_min: number | null;
+      age_max: number | null;
+      evidence: EnrichmentAges["evidence"];
+      model: string | null;
     }>
   >(config, "event_enrichment", {
-    query: "?select=event_id,evidence&limit=10000",
+    query: "?select=event_id,age_min,age_max,evidence,model&limit=10000",
   });
-  const out = new Map<string, AgeQuotes>();
+  const out = new Map<string, EnrichmentAges>();
   for (const row of rows) {
-    const quoteOf = (field: string): string | null => {
-      const quote = row.evidence?.[field]?.quote;
-      return typeof quote === "string" ? quote : null;
-    };
     out.set(row.event_id, {
-      ageMinQuote: quoteOf("age_min"),
-      ageMaxQuote: quoteOf("age_max"),
+      ageMin: row.age_min,
+      ageMax: row.age_max,
+      evidence: row.evidence,
+      model: row.model,
     });
   }
   return out;
+}
+
+export interface EnrichmentAgesPatch {
+  age_min: number;
+  age_max: number;
+  evidence: Record<string, { value: unknown; quote: unknown }>;
+  model: string;
+  source_hash: string;
+}
+
+/** Surgical age correction: one enriched row, ages + evidence + stamps. */
+export function patchEnrichmentAges(
+  config: StoreConfig,
+  eventId: string,
+  patch: EnrichmentAgesPatch,
+): Promise<void> {
+  return rest<void>(config, "event_enrichment", {
+    method: "PATCH",
+    query: `?event_id=eq.${encodeURIComponent(eventId)}`,
+    body: patch,
+    prefer: "return=minimal",
+  });
 }
 
 export interface EnrichmentUpsert {

@@ -135,17 +135,46 @@ export function priceBadgeLabel(priceLabel: string): string {
   return isPolicyPrice(priceLabel) ? POLICY_BADGE_LABEL : priceLabel;
 }
 
+const MONTHS_WORD = /\b[Mm][Oo][Nn][Tt][Hh][Ss]?(?![a-z])/;
+const MOIS_WORD = /\b[Mm][Oo][Ii][Ss](?![a-z])/;
+
+/**
+ * Age display, with a safety net for months stored as years: when the
+ * largest stated age is in [5, 36) and the listing text says
+ * month(s)/mois, the stored numbers are months-magnitudes — a
+ * months-quoted age can never legitimately reach 5 as years (the same
+ * ceiling verifyAge enforces) — so the label reads months, not years.
+ * Converted rows (max under 5) render as years, and magnitudes of 36+
+ * are years (36 months would have converted to 3). Months magnitudes
+ * under 5 are indistinguishable from years here; the deterministic
+ * repair script owns those. Frequency words ("every month") beside
+ * years-scale ages can misfire — rare, and visibly quotable.
+ */
 export function ageLine(item: {
   age_min: number | null;
   age_max: number | null;
+  title?: string | null;
+  description?: string | null;
+  age_text?: string | null;
 }): string | null {
   const { age_min, age_max } = item;
   if (age_min === null && age_max === null) return null;
+  const magnitude = age_max ?? age_min;
+  const text = [item.title ?? "", item.description ?? "", item.age_text ?? ""]
+    .join("\n");
+  const months =
+    magnitude !== null &&
+    magnitude >= 5 &&
+    magnitude < 36 &&
+    (MONTHS_WORD.test(text) || MOIS_WORD.test(text));
+  const suffix = months ? " months" : "";
   if (age_min !== null && age_max !== null) {
-    return age_min === age_max ? `Age ${age_min}` : `Ages ${age_min}–${age_max}`;
+    return age_min === age_max
+      ? `Age ${age_min}${suffix}`
+      : `Ages ${age_min}–${age_max}${suffix}`;
   }
-  if (age_min !== null) return `Ages ${age_min}+`;
-  return `Ages up to ${age_max}`;
+  if (age_min !== null) return `Ages ${age_min}+${suffix}`;
+  return `Ages up to ${age_max}${suffix}`;
 }
 
 export function formatDistance(km: number | null): string | null {

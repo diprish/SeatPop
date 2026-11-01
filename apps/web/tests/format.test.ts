@@ -144,6 +144,65 @@ describe("ageLine", () => {
     expect(ageLine({ age_min: null, age_max: 2 })).toBe("Ages up to 2");
     expect(ageLine({ age_min: null, age_max: null })).toBeNull();
   });
+
+  it("labels months magnitudes as months when the text says months", () => {
+    expect(
+      ageLine({
+        age_min: 19,
+        age_max: 35,
+        description: "Play for ages 19-35 months.",
+      }),
+    ).toBe("Ages 19–35 months");
+    expect(
+      ageLine({
+        age_min: 0,
+        age_max: 18,
+        description: "Songs for babies 0-18 months.",
+      }),
+    ).toBe("Ages 0–18 months");
+    expect(
+      ageLine({
+        age_min: 6,
+        age_max: null,
+        description: "6 months and up.",
+      }),
+    ).toBe("Ages 6+ months");
+    expect(
+      ageLine({
+        age_min: 0,
+        age_max: 18,
+        description: "Bébés de 0 à 18 mois.",
+      }),
+    ).toBe("Ages 0–18 months");
+    // Glued continuation from a tag strip (live Tuesday Babytime text).
+    expect(
+      ageLine({
+        age_min: 0,
+        age_max: 18,
+        description: "0-18 monthsPlease note: October 27 – no program",
+      }),
+    ).toBe("Ages 0–18 months");
+  });
+
+  it("keeps converted years and plain years unmarked", () => {
+    // Repaired rows say months in the text but store years (< 5).
+    expect(
+      ageLine({
+        age_min: 0,
+        age_max: 2,
+        description: "Songs for babies 0-18 months.",
+      }),
+    ).toBe("Ages 0–2");
+    expect(
+      ageLine({ age_min: 6, age_max: 12, description: "Ages 6-12." }),
+    ).toBe("Ages 6–12");
+    // "monthly" is a frequency, not a months age.
+    expect(
+      ageLine({ age_min: 6, age_max: 12, description: "Meets monthly." }),
+    ).toBe("Ages 6–12");
+    // Without listing text there is nothing to second-guess.
+    expect(ageLine({ age_min: 19, age_max: 35 })).toBe("Ages 19–35");
+  });
 });
 
 describe("formatDistance", () => {

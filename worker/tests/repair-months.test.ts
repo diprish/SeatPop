@@ -1,84 +1,184 @@
 import { describe, expect, it } from "vitest";
-import type { EnrichCandidate } from "../src/enrich/store";
 import {
+  findMonthsRanges,
+  monthsToYears,
   planMonthsRepair,
   type MonthsRepairRow,
 } from "../src/repair-months/plan";
 import { OWNER_MODEL } from "../src/seed-owner-events/seed";
 
-function candidate(overrides: Partial<EnrichCandidate> = {}): EnrichCandidate {
-  return {
-    id: "e1",
-    title: "Babytime",
-    description: "Songs for babies 0-18 months.",
-    starts_at: "2026-11-07T15:00:00.000Z",
-    timezone: "America/Toronto",
-    category: "library",
-    venueName: "Main Branch",
-    model: null,
-    sourceHash: "old",
-    policy: null,
-    ...overrides,
-  };
-}
-
 function row(overrides: Partial<MonthsRepairRow> = {}): MonthsRepairRow {
   return {
-    candidate: candidate(),
-    ageMinQuote: null,
-    ageMaxQuote: null,
-    currentHash: "new",
+    eventId: "e1",
+    title: "Toddlertime",
+    description: "Songs and play for ages 19-35 months. Drop-in.",
+    ageMin: 19,
+    ageMax: 35,
+    model: "muse-spark-1.3",
     ...overrides,
   };
 }
 
+describe("findMonthsRanges", () => {
+  it("matches dash, to, and French ranges", () => {
+    expect(findMonthsRanges("ages 19-35 months")).toMatchObject([
+      { minMonths: 19, maxMonths: 35, quote: "19-35 months" },
+    ]);
+    expect(findMonthsRanges("0–18 months")).toMatchObject([
+      { minMonths: 0, maxMonths: 18 },
+    ]);
+    expect(findMonthsRanges("6 to 24 months")).toMatchObject([
+      { minMonths: 6, maxMonths: 24 },
+    ]);
+    expect(findMonthsRanges("0 à 18 mois")).toMatchObject([
+      { minMonths: 0, maxMonths: 18, quote: "0 à 18 mois" },
+    ]);
+    expect(findMonthsRanges("babies 0 -18 months")).toMatchObject([
+      { minMonths: 0, maxMonths: 18 },
+    ]);
+  });
+
+  it("ignores singles, frequencies, and year ranges", () => {
+    expect(findMonthsRanges("6 months and up")).toEqual([]);
+    expect(findMonthsRanges("every month")).toEqual([]);
+    expect(findMonthsRanges("meets monthly")).toEqual([]);
+    expect(findMonthsRanges("ages 0-12 monthly")).toEqual([]);
+    expect(findMonthsRanges("first Wednesday of every month")).toEqual([]);
+    expect(findMonthsRanges("ages 3 to 5")).toEqual([]);
+    expect(findMonthsRanges("ages 0-12. Drop-in.")).toEqual([]);
+    expect(findMonthsRanges("35-19 months")).toEqual([]);
+  });
+
+  it("tolerates glued uppercase continuations from tag strips", () => {
+    // Live Tuesday Babytime text: the space after "months" was eaten.
+    expect(
+      findMonthsRanges("0-18 monthsPlease note: October 27 – no program"),
+    ).toMatchObject([{ minMonths: 0, maxMonths: 18, quote: "0-18 months" }]);
+    expect(findMonthsRanges("Ages 0-18 Months.")).toMatchObject([
+      { minMonths: 0, maxMonths: 18 },
+    ]);
+  });
+});
+
+describe("monthsToYears", () => {
+  it("floors the min and ceils the max", () => {
+    expect(monthsToYears(19, 35)).toEqual({ min: 1, max: 3 });
+    expect(monthsToYears(0, 18)).toEqual({ min: 0, max: 2 });
+    expect(monthsToYears(6, 24)).toEqual({ min: 0, max: 2 });
+    expect(monthsToYears(0, 5)).toEqual({ min: 0, max: 1 });
+  });
+});
+
 describe("planMonthsRepair", () => {
-  it("plans stale rows whose age quote mentions months", () => {
-    const planned = planMonthsRepair([
-      row({ ageMinQuote: "0-18 months" }),
-      row({
-        candidate: candidate({ id: "e2" }),
-        ageMaxQuote: "19-35 MONTHS",
-      }),
+  it("converts months magnitudes to years with the verbatim quote", () => {
+    const plans = planMonthsRepair([row()]);
+    expect(plans).toEqual([
+      {
+        eventId: "e1",
+        title: "Toddlertime",
+        quote: "19-35 months",
+        beforeMin: 19,
+        beforeMax: 35,
+        afterMin: 1,
+        afterMax: 3,
+      },
     ]);
-    expect(planned.map((c) => c.id)).toEqual(["e1", "e2"]);
   });
 
-  it("skips month rows that are already current", () => {
-    const planned = planMonthsRepair([
+  it("fills null sides and converts mixed rows per side", () => {
+    const plans = planMonthsRepair([
       row({
-        candidate: candidate({ sourceHash: "new" }),
-        ageMinQuote: "0-18 months",
+        eventId: "nulls",
+        description: "Play for 0-18 months.",
+        ageMin: null,
+        ageMax: null,
+      }),
+      row({
+        eventId: "mixed",
+        description: "Play for 0-18 months.",
+        ageMin: 0,
+        ageMax: 18,
       }),
     ]);
-    expect(planned).toEqual([]);
+    expect(plans).toMatchObject([
+      { eventId: "nulls", afterMin: 0, afterMax: 2 },
+      { eventId: "mixed", beforeMin: 0, beforeMax: 18, afterMin: 0, afterMax: 2 },
+    ]);
   });
 
-  it("never touches owner-transcribed rows, even when stale", () => {
-    const planned = planMonthsRepair([
+  it("leaves v4-correct and years-scale rows alone", () => {
+    const plans = planMonthsRepair([
       row({
-        candidate: candidate({ model: OWNER_MODEL }),
-        ageMinQuote: "0-18 months",
+        eventId: "v4",
+        description: "Play for 0-18 months.",
+        ageMin: 0,
+        ageMax: 1,
+      }),
+      row({
+        eventId: "years",
+        description: "Play for 0-18 months.",
+        ageMin: 0,
+        ageMax: 2,
       }),
     ]);
-    expect(planned).toEqual([]);
+    expect(plans).toEqual([]);
   });
 
-  it("never touches rows without month quotes", () => {
-    const planned = planMonthsRepair([
-      row({ ageMinQuote: "ages 3 to 5", ageMaxQuote: "ages 3 to 5" }),
-      row(),
+  it("accepts bilingual repeats of one range, skips distinct ones", () => {
+    const bilingual = planMonthsRepair([
+      row({
+        description: "babies 0 -18 months. Bébés de 0 à 18 mois.",
+        ageMin: 0,
+        ageMax: 18,
+      }),
     ]);
-    expect(planned).toEqual([]);
+    expect(bilingual).toHaveLength(1);
+    expect(bilingual[0]?.afterMax).toBe(2);
+
+    const ambiguous = planMonthsRepair([
+      row({ description: "0-6 months at 10am, 6-12 months at 11am." }),
+    ]);
+    expect(ambiguous).toEqual([]);
+  });
+
+  it("touches only rows whose listing text has a months range", () => {
+    const plans = planMonthsRepair([
+      row({ eventId: "years-text", description: "Ages 19-35. No months here." }),
+      row({ eventId: "null-text", description: null, title: "Crafts" }),
+    ]);
+    expect(plans).toEqual([]);
+  });
+
+  it("never touches owner-transcribed rows", () => {
+    const plans = planMonthsRepair([row({ model: OWNER_MODEL })]);
+    expect(plans).toEqual([]);
+  });
+
+  it("skips repairs that would invert the range", () => {
+    // Stored min 4 (years-scale, kept) with a max converting to 1:
+    // contradictory — leave for review, never write min > max.
+    const plans = planMonthsRepair([
+      row({
+        description: "Play for 0-6 months.",
+        ageMin: 4,
+        ageMax: 6,
+      }),
+    ]);
+    expect(plans).toEqual([]);
   });
 
   it("is idempotent: repaired rows plan nothing on re-run", () => {
-    const input = row({ ageMinQuote: "0-18 months" });
-    expect(planMonthsRepair([input])).toHaveLength(1);
-    const repaired: MonthsRepairRow = {
-      ...input,
-      candidate: { ...input.candidate, sourceHash: input.currentHash },
-    };
-    expect(planMonthsRepair([repaired])).toEqual([]);
+    const input = row();
+    const plans = planMonthsRepair([input]);
+    expect(plans).toHaveLength(1);
+    const repaired = planMonthsRepair([
+      {
+        ...input,
+        ageMin: plans[0]?.afterMin ?? null,
+        ageMax: plans[0]?.afterMax ?? null,
+        model: "repair-months",
+      },
+    ]);
+    expect(repaired).toEqual([]);
   });
 });
