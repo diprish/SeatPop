@@ -5,11 +5,13 @@ import {
   formatDistance,
   formatReasonDates,
   formatWhenRange,
+  formatWindowOpens,
   isPolicyPrice,
   priceBadgeClass,
   priceBadgeLabel,
   priceTone,
   splitReasonMarks,
+  truncateQuote,
 } from "../src/lib/format";
 
 describe("formatWhenRange", () => {
@@ -55,6 +57,43 @@ describe("priceTone", () => {
     expect(priceTone("unknown")).toBe("muted");
     expect(priceTone("paid")).toBe("paid");
     expect(priceTone("donation")).toBe("paid");
+  });
+});
+
+describe("formatWindowOpens", () => {
+  it("renders Toronto date and time, or the date alone", () => {
+    // Mar 4 2026 is a Wednesday; 19:00 EST stays the same day.
+    expect(formatWindowOpens("2026-03-04T19:00:00-05:00", false)).toBe(
+      "Wed Mar 4 · 7:00 PM",
+    );
+    expect(formatWindowOpens("2026-03-04T00:00:00-05:00", true)).toBe(
+      "Wed Mar 4",
+    );
+  });
+
+  it("uses the Toronto date across the DST boundary", () => {
+    // Nov 1 2026 00:30 EDT is still Nov 1 in Toronto (EST switch at 2am).
+    expect(formatWindowOpens("2026-11-01T00:30:00-04:00", false)).toBe(
+      "Sun Nov 1 · 12:30 AM",
+    );
+  });
+
+  it("returns null for invalid instants instead of inventing a date", () => {
+    expect(formatWindowOpens("not a date", false)).toBeNull();
+    expect(formatWindowOpens("not a date", true)).toBeNull();
+  });
+});
+
+describe("truncateQuote", () => {
+  it("passes short quotes through and trims long ones", () => {
+    expect(truncateQuote("Registration opens March 4.")).toBe(
+      "Registration opens March 4.",
+    );
+    expect(truncateQuote("  spaced   out  ")).toBe("spaced out");
+    const long = `Reg${"istration".repeat(20)}.`;
+    const truncated = truncateQuote(long, 120);
+    expect(truncated.endsWith("…")).toBe(true);
+    expect(truncated.length).toBeLessThanOrEqual(121);
   });
 });
 

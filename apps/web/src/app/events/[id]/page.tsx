@@ -10,6 +10,7 @@ import {
   ageLine,
   formatDate,
   formatWhenRange,
+  formatWindowOpens,
   POLICY_BADGE_LABEL,
   priceBadgeClass,
   priceTone,
@@ -119,6 +120,12 @@ export default function EventDetailPage() {
       : "Listed price (from the event text)";
   const opensAt = detail.registration_opens_at
     ? new Date(detail.registration_opens_at)
+    : null;
+  const windowOpens = detail.registration_window
+    ? formatWindowOpens(
+        detail.registration_window.opens_at,
+        detail.registration_window.opens_date_only,
+      )
     : null;
 
   return (
@@ -238,6 +245,32 @@ export default function EventDetailPage() {
           )}
         </dl>
       </section>
+
+      {detail.registration_window && windowOpens && (
+        <section aria-label="City registration window" className="mt-4">
+          <h2 className="font-semibold">City registration</h2>
+          <p className="mt-2 text-sm">
+            Registration opens {windowOpens}
+            {detail.registration_window.kind
+              ? ` · ${detail.registration_window.kind}`
+              : ""}
+          </p>
+          <p className="mt-1 border-l-2 border-neutral-300 pl-2 text-sm italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+            “{detail.registration_window.quote}”
+          </p>
+          <p className="mt-1 text-sm">
+            <a
+              className="underline"
+              href={detail.registration_window.source_url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`City registration page for ${detail.title}`}
+            >
+              City registration page
+            </a>
+          </p>
+        </section>
+      )}
 
       {(detail.registration_hint || detail.registration_opens_at) && (
         <section aria-label="Registration" className="mt-4">

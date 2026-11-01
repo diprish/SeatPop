@@ -17,6 +17,7 @@
     "seed:venues": "tsx src/seed-venues/run.ts",
     "clean:descriptions": "tsx src/clean-descriptions/run.ts",
     "repair:months": "tsx src/repair-months/run.ts",
+    "seed:registration-windows": "tsx src/seed-registration/run.ts",
     "enrich": "tsx src/enrich/run.ts",
     "eval": "tsx src/eval/run-eval.ts",
     "eval:export": "tsx src/eval/export-csv.ts",

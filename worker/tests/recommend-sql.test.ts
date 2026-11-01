@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008-0013: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0014: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
 // in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
@@ -34,6 +34,13 @@ const SQL12 = readFileSync(
 const SQL13 = readFileSync(
   new URL(
     "../../supabase/migrations/0013_user_id_defaults.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const SQL14 = readFileSync(
+  new URL(
+    "../../supabase/migrations/0014_registration_windows.sql",
     import.meta.url,
   ),
   "utf8",
@@ -246,5 +253,45 @@ describe("migration 0013 user id defaults", () => {
     expect(SQL13).toContain(
       "alter table public.feedback alter column user_id set default auth.uid()",
     );
+  });
+});
+
+describe("migration 0014 registration windows", () => {
+  it("stores transcribed windows with quote, link, and exact instant", () => {
+    expect(SQL14).toContain("create table public.registration_windows");
+    for (const column of [
+      "scope text not null",
+      "kind text not null",
+      "opens_at timestamptz not null",
+      "opens_date_only boolean not null",
+      "quote text not null",
+      "source_url text not null",
+    ]) {
+      expect(SQL14).toContain(column);
+    }
+    expect(SQL14).toContain("source_url like 'https://%'");
+    expect(SQL14).toContain("unique (scope, kind, opens_at, opens_date_only)");
+  });
+
+  it("is public-read, service-role-write like home_area", () => {
+    expect(SQL14).toContain(
+      "alter table public.registration_windows enable row level security",
+    );
+    expect(SQL14).toContain(
+      "create policy registration_windows_public_read on public.registration_windows",
+    );
+    expect(SQL14).toContain(
+      "grant select on public.registration_windows to anon, authenticated",
+    );
+    expect(SQL14).not.toMatch(/for (insert|update|delete) to /);
+  });
+
+  it("maps events to source names without exposing event_sources", () => {
+    expect(SQL14).toContain("create view public.public_event_sources");
+    expect(SQL14).toContain("es.event_id as event_id, s.name as source_name");
+    expect(SQL14).toContain(
+      "grant select on public.public_event_sources to anon, authenticated",
+    );
+    expect(SQL14).not.toMatch(/grant .* on public\.event_sources /);
   });
 });

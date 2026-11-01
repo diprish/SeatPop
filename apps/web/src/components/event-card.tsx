@@ -10,10 +10,12 @@ import {
   formatDistance,
   formatReasonDates,
   formatWhenRange,
+  formatWindowOpens,
   priceBadgeClass,
   priceBadgeLabel,
   priceTone,
   splitReasonMarks,
+  truncateQuote,
 } from "@/lib/format";
 import WhySheet from "@/components/why-sheet";
 
@@ -39,6 +41,12 @@ export default function EventCard({
   const [datesOpen, setDatesOpen] = useState(false);
   const ages = ageLine(item);
   const distance = formatDistance(item.distance_km);
+  const windowOpens = item.registration_window
+    ? formatWindowOpens(
+        item.registration_window.opens_at,
+        item.registration_window.opens_date_only,
+      )
+    : null;
 
   return (
     <article className="rounded border border-neutral-200 p-3 dark:border-neutral-800">
@@ -52,6 +60,25 @@ export default function EventCard({
         {item.venue_name ? ` · ${item.venue_name}` : ""}
         {distance ? ` · ${distance}` : ""}
       </p>
+      {item.registration_window && windowOpens && (
+        <div className="mt-1 text-sm">
+          <p>
+            Registration opens {windowOpens}{" "}
+            <a
+              className="underline"
+              href={item.registration_window.source_url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Registration source for ${item.title}`}
+            >
+              City page ↗
+            </a>
+          </p>
+          <p className="text-xs italic text-neutral-600 dark:text-neutral-300">
+            “{truncateQuote(item.registration_window.quote)}”
+          </p>
+        </div>
+      )}
       <p className="mt-1">
         <span
           className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${priceBadgeClass(priceTone(item.price_kind))}`}

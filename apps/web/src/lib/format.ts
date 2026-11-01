@@ -64,6 +64,29 @@ export function formatDate(iso: string, timezone: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * City registration opening in America/Toronto: "Wed Mar 4 · 7:00 PM",
+ * or "Wed Mar 4" for date-only windows (no invented time). Null when
+ * the stored instant is invalid — callers hide the block instead of
+ * showing a made-up date.
+ */
+export function formatWindowOpens(
+  opensAt: string,
+  dateOnly: boolean,
+): string | null {
+  const date = new Date(opensAt);
+  if (Number.isNaN(date.getTime())) return null;
+  const day = dayLabel(date, "America/Toronto");
+  if (dateOnly) return day;
+  return `${day} · ${timeLabel(date, "America/Toronto")}`;
+}
+
+/** One-line quote preview (the detail page shows the full verbatim text). */
+export function truncateQuote(quote: string, max = 120): string {
+  const flat = quote.replace(/\s+/g, " ").trim();
+  return flat.length > max ? `${flat.slice(0, max).trimEnd()}…` : flat;
+}
+
 export function priceTone(price_kind: string): PriceTone {
   if (price_kind === "free") return "free";
   if (price_kind === "unknown") return "muted";

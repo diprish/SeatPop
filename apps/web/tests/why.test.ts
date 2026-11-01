@@ -35,6 +35,7 @@ function testItem(overrides: Partial<RecommendItemView> = {}): RecommendItemView
     reason: "Fine (stated)",
     reasonFromModel: true,
     more_dates: [],
+    registration_window: null,
     ...overrides,
   };
 }
@@ -80,6 +81,7 @@ function testDetail(
     },
     price_evidence_quote: "Free admission",
     siblings: [],
+    registration_window: null,
     ...overrides,
   };
 }

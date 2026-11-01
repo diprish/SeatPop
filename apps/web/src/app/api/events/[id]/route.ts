@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { findSiblings } from "@seatpop/worker/recommend";
 import { clientIp, publicSupabase, routeLimiter } from "@/lib/recommend-server";
+import { attachWindows } from "@/lib/registration-server";
 
 /**
  * GET /api/events/[id]: one event with venue, enrichment facts, evidence
@@ -183,6 +184,24 @@ export async function GET(
         `sibling lookup failed for ${row.id}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+    // Registration window: degrades to null when the lookup fails —
+    // the event itself still renders.
+    let registration_window: {
+      scope: string;
+      kind: string;
+      opens_at: string;
+      opens_date_only: boolean;
+      quote: string;
+      source_url: string;
+    } | null = null;
+    try {
+      const attached = await attachWindows(supabase, [{ event_id: row.id }]);
+      registration_window = attached[0]?.registration_window ?? null;
+    } catch (error) {
+      console.warn(
+        `registration window unavailable for ${row.id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     return NextResponse.json({
       id: row.id,
       title: row.title,
@@ -217,6 +236,7 @@ export async function GET(
       evidence: row.evidence,
       price_evidence_quote: row.evidence_quote,
       siblings,
+      registration_window,
     });
   } catch (error) {
     console.error(

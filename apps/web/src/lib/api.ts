@@ -3,6 +3,15 @@ import type { Chip } from "@seatpop/worker/recommend/chips";
 
 /** Typed client for the web API routes (no node imports). */
 
+export interface RegistrationWindowView {
+  scope: string;
+  kind: string;
+  opens_at: string;
+  opens_date_only: boolean;
+  quote: string;
+  source_url: string;
+}
+
 export interface RecommendItemView {
   event_id: string;
   title: string;
@@ -39,6 +48,7 @@ export interface RecommendItemView {
     ends_at: string | null;
     timezone: string;
   }>;
+  registration_window: RegistrationWindowView | null;
 }
 
 export interface RecommendMetaView {
@@ -110,6 +120,7 @@ export interface EventDetailView {
   evidence: Record<string, { value: unknown; quote: string | null }> | null;
   price_evidence_quote: string | null;
   siblings: Array<{ id: string; venue_name: string; room: string | null }>;
+  registration_window: RegistrationWindowView | null;
 }
 
 export async function postJson<T>(url: string, body: unknown): Promise<T> {

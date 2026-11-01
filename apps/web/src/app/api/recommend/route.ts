@@ -4,7 +4,10 @@ import {
   RecommendError,
   diagnoseEmpty,
   runRecommend,
+  type RecommendResult,
+  type RegistrationWindow,
 } from "@seatpop/worker/recommend";
+import { attachWindows } from "@/lib/registration-server";
 import {
   bearerJwt,
   clientIp,
@@ -34,6 +37,38 @@ function statusFor(code: RecommendError["code"]): number {
       return 401;
     case "upstream":
       return 502;
+  }
+}
+
+/**
+ * Registration windows ride along with recommendations; when the lookup
+ * fails the items ship without them (null) instead of failing the search.
+ */
+async function withWindows(
+  supabase: { url: string; anonKey: string },
+  result: RecommendResult,
+): Promise<
+  RecommendResult & {
+    items: Array<
+      RecommendResult["items"][number] & {
+        registration_window: RegistrationWindow | null;
+      }
+    >;
+  }
+> {
+  try {
+    return {
+      ...result,
+      items: await attachWindows(supabase, result.items),
+    };
+  } catch (error) {
+    console.warn(
+      `registration windows unavailable: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, registration_window: null })),
+    };
   }
 }
 
@@ -74,7 +109,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           llmConfig: serverLlmConfig(),
         },
       );
-      return NextResponse.json({ ...result, cached: false });
+      return NextResponse.json({
+        ...(await withWindows(supabase, result)),
+        cached: false,
+      });
     }
     if (record.prefs === undefined) {
       return NextResponse.json(
@@ -99,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       result = hit;
       cached = true;
     } else {
-      result = await runRecommend(
+      const fresh = await runRecommend(
         { prefs: parsed.data },
         {
           supabaseUrl: supabase.url,
@@ -107,6 +145,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           llmConfig: serverLlmConfig(),
         },
       );
+      // Windows attach before caching (their 10-minute TTL outlives the
+      // 5-minute recommend cache, so cached items stay coherent).
+      result = await withWindows(supabase, fresh);
       recommendCache.set(key, result);
     }
     const diagnosis =
