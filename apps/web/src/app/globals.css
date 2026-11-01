@@ -2,12 +2,61 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/**
+ * SeatPop design tokens. Light values are the spec; dark values keep the
+ * warm cast with AA contrast or better. Colors and shadow resolve
+ * through runtime vars (@theme inline), so the .dark overrides below
+ * apply with no per-component dark: classes for shell colors. Accent
+ * orange is for large/bold/graphic accents only — too light for small
+ * body text on either theme.
+ */
+@theme inline {
+  --color-background: var(--sp-bg);
+  --color-surface: var(--sp-surface);
+  --color-ink: var(--sp-ink);
+  --color-muted: var(--sp-muted);
+  --color-primary: var(--sp-primary);
+  --color-accent: var(--sp-accent);
+  --color-line: var(--sp-line);
+  --shadow-card: var(--sp-shadow);
+}
+
+@theme {
+  --radius-card: 1rem;
+}
+
+/** 44px minimum touch target for icon buttons and nav hits. */
+@utility min-touch {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 :root {
   color-scheme: light;
+  --sp-bg: #faf7f2;
+  --sp-surface: #ffffff;
+  --sp-ink: #1f2937;
+  --sp-muted: #6b7280;
+  --sp-primary: #0f766e;
+  --sp-accent: #f97316;
+  --sp-line: #e7e2d9;
+  --sp-shadow:
+    0 1px 2px rgb(31 41 55 / 0.06),
+    0 8px 24px -12px rgb(31 41 55 / 0.18);
 }
 
 .dark {
   color-scheme: dark;
+  --sp-bg: #1c1917;
+  --sp-surface: #292524;
+  --sp-ink: #f5f5f4;
+  --sp-muted: #a8a29e;
+  --sp-primary: #2dd4bf;
+  --sp-accent: #fb923c;
+  --sp-line: #44403c;
+  --sp-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 8px 24px -12px rgb(0 0 0 / 0.5);
 }
 
 :focus-visible {

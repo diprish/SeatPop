@@ -207,5 +207,6 @@ describe("priceBadgeClass", () => {
       expect(priceBadgeClass(tone).length).toBeGreaterThan(0);
     }
     expect(priceBadgeClass("free")).toContain("green");
+    expect(priceBadgeClass("paid")).toContain("amber");
   });
 });

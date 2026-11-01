@@ -1,39 +1,72 @@
-# SeatPop eval report
+# Enrichment eval report
 
-## Recommend eval (worker/recommend/eval-report.json)
+Generated 2026-11-01T05:13:37.082Z · prompt enrich.v4 · golden worker/eval/golden/events.jsonl (60 events).
 
-20 synthetic households. Every returned row is re-checked against the
-TypeScript mirror of the SQL hard constraints, distances re-verified,
-and relevance graded by Muse Wonder (labeled model-graded throughout).
-Baselines: date order and stage-2 without rerank. A key-removed run
-proves the fallback (stage-2 order kept, templated reasons).
+Accuracy is exact-match per field against human labels (label only
+what the text says; blank means the text does not say). Cost is
+live spend only — cached passes cost $0 but keep their stored token
+counts. Events with no usable model pass are excluded from every
+denominator and counted as failed.
 
-| Metric | Result |
-|---|---|
-| Constraint violations in top 10 | 0 (all 20 households) |
-| Distance mismatches | 0 |
-| Mean NDCG@10, reranked | 0.990 (14/20 households graded) |
-| Mean NDCG@10, date order | 0.766 |
-| Mean NDCG@10, stage 2 only | 0.895 |
-| Policy probe (free per OPL) | ok (6 in 305 candidates) |
-| Fallback, key removed | order kept, all reasons templated |
+## Muse Spark 1.3 contributor (Meta API)
 
-The Trust page (`/trust`, live at
-https://seat-pop.vercel.app/trust) renders these reports from the
-snapshots copied at build time.
+Model `muse-spark-1.3-contributor` · scored 60 · failed 0.
 
-## Enrichment eval (pending)
+| field | accuracy | null rate |
+| --- | --- | --- |
+| age_min | 100.0% (60/60) | 86.7% |
+| age_max | 95.0% (57/60) | 90.0% |
+| price_kind | 98.3% (59/60) | 58.3% |
+| amount | 98.3% (59/60) | 98.3% |
+| setting | 95.0% (57/60) | 30.0% |
+| language | 100.0% (60/60) | 73.3% |
+| registration_hint | 86.7% (52/60) | 56.7% |
+| accessibility | 98.3% (59/60) | 96.7% |
 
-Not yet run: no `worker/eval/report.json` exists, so the Trust page
-shows "enrichment eval pending" and never fake numbers. When run
-(`npm run eval:import` then `npm run eval` in `@seatpop/worker`), it
-reports per-field accuracy, false-"free" count, wrong-price count,
-hallucinated-field count, null rate, tokens, and cost per 1,000 events
-for Muse Spark 1.3 contributor, Muse Spark 1.3 standard, and Muse Spark
-Open on Baseten. CI fails the run on false-free > 0 or wrong-price > 0.
+- false-"free": 1
+- wrong-price: 1
+- hallucinated fields: 7
+- tokens: in 188887, out 83050, reasoning 43223 (live passes 73, cached 54)
+- cost: $0.0132 total, $0.22 per 1,000 events
 
-## Ranking and email scaffolds
+## Muse Spark 1.3 (Meta API)
 
-Metric code exists (NDCG@10, top-10 constraint violations, junk-email
-false creations) with empty golden files; the recommend eval above is
-the reporting instance.
+Model `muse-spark-1.3` · scored 60 · failed 0.
+
+| field | accuracy | null rate |
+| --- | --- | --- |
+| age_min | 100.0% (60/60) | 86.7% |
+| age_max | 95.0% (57/60) | 90.0% |
+| price_kind | 98.3% (59/60) | 58.3% |
+| amount | 98.3% (59/60) | 98.3% |
+| setting | 95.0% (57/60) | 30.0% |
+| language | 100.0% (60/60) | 73.3% |
+| registration_hint | 86.7% (52/60) | 55.0% |
+| accessibility | 98.3% (59/60) | 96.7% |
+
+- false-"free": 1
+- wrong-price: 1
+- hallucinated fields: 7
+- tokens: in 196435, out 88543, reasoning 47091 (live passes 75, cached 57)
+- cost: $0.3058 total, $5.10 per 1,000 events
+
+## Muse Spark Open (Baseten)
+
+Model `meta-models/muse-spark-open-1026` · scored 60 · failed 0.
+
+| field | accuracy | null rate |
+| --- | --- | --- |
+| age_min | 100.0% (60/60) | 86.7% |
+| age_max | 95.0% (57/60) | 90.0% |
+| price_kind | 98.3% (59/60) | 58.3% |
+| amount | 98.3% (59/60) | 98.3% |
+| setting | 95.0% (57/60) | 30.0% |
+| language | 100.0% (60/60) | 73.3% |
+| registration_hint | 86.7% (52/60) | 56.7% |
+| accessibility | 96.7% (58/60) | 96.7% |
+
+- false-"free": 1
+- wrong-price: 1
+- hallucinated fields: 7
+- tokens: in 218539, out 127803, reasoning 75288 (live passes 78, cached 57)
+- cost: $0.3647 total, $6.08 per 1,000 events

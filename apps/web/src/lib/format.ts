@@ -52,7 +52,7 @@ export function priceBadgeClass(tone: PriceTone): string {
   if (tone === "muted") {
     return "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300";
   }
-  return "bg-neutral-900 text-white dark:bg-white dark:text-black";
+  return "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200";
 }
 
 export function formatDate(iso: string, timezone: string): string {
