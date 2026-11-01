@@ -1,4 +1,9 @@
-import type { Preferences } from "@seatpop/shared";
+import {
+  candidateAgeTier,
+  countExactFits,
+  type AgeFitMember,
+  type Preferences,
+} from "@seatpop/shared";
 import { RECOMMEND_WEIGHTS, type RecommendWeights } from "./config";
 
 /**
@@ -15,6 +20,8 @@ export interface ScoreEvent {
   category: string | null;
   tags: string[];
   fetched_at: string;
+  age_min: number | null;
+  age_max: number | null;
 }
 
 export interface ScoreSignals {
@@ -24,6 +31,7 @@ export interface ScoreSignals {
   embedding: number;
   novelty: number;
   avoidHit: boolean;
+  ageFit: number;
 }
 
 export interface ScoredEvent {
@@ -95,6 +103,26 @@ export function avoidHit(
   return avoid.some((term) => wordHit(hay, term));
 }
 
+/**
+ * Age fit: exact-band fits score 0.9–1.0 (rising with the share of
+ * members fit exactly), unknown ages 0.5, adjacent-only 0. The tier
+ * gaps are what the ageFit weight multiplies into strict ordering —
+ * see the config comment. A memberless prefs object is neutral.
+ */
+export function ageFitSignal(
+  event: Pick<ScoreEvent, "age_min" | "age_max" | "category">,
+  members: AgeFitMember[],
+): number {
+  if (members.length === 0) return 0.5;
+  const tier = candidateAgeTier(
+    { age_min: event.age_min, age_max: event.age_max, category: event.category },
+    members,
+  );
+  if (tier === "unknown") return 0.5;
+  if (tier === "adjacent") return 0;
+  return 0.9 + (0.1 * countExactFits(event, members)) / members.length;
+}
+
 export interface ScoreOptions {
   weights?: RecommendWeights;
   nowMs?: number;
@@ -108,7 +136,7 @@ export interface ScoreOptions {
 
 export function scoreEvent(
   event: ScoreEvent,
-  prefs: Pick<Preferences, "interests" | "avoid">,
+  prefs: Pick<Preferences, "interests" | "avoid" | "members">,
   options: ScoreOptions = {},
 ): ScoredEvent {
   const weights = options.weights ?? RECOMMEND_WEIGHTS;
@@ -121,13 +149,15 @@ export function scoreEvent(
     embedding: Math.min(1, Math.max(0, embedding)),
     novelty: noveltySignal(event.fetched_at, nowMs),
     avoidHit: avoidHit(event, prefs.avoid),
+    ageFit: ageFitSignal(event, prefs.members),
   };
   const score =
     weights.timeFit * signals.timeFit +
     weights.proximity * signals.proximity +
     weights.interests * signals.interests +
     weights.embedding * signals.embedding +
-    weights.novelty * signals.novelty -
+    weights.novelty * signals.novelty +
+    weights.ageFit * signals.ageFit -
     (signals.avoidHit ? weights.avoid : 0);
   return { event_id: event.event_id, score, signals };
 }
@@ -138,7 +168,7 @@ export function scoreEvent(
  */
 export function orderByScore<T extends ScoreEvent>(
   candidates: T[],
-  prefs: Pick<Preferences, "interests" | "avoid">,
+  prefs: Pick<Preferences, "interests" | "avoid" | "members">,
   options: ScoreOptions = {},
 ): Array<{ event: T; scored: ScoredEvent }> {
   const ranked = candidates.map((event) => ({

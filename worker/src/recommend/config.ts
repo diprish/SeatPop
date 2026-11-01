@@ -17,6 +17,17 @@ export interface RecommendWeights {
   novelty: number;
   /** Subtracted when event tags/category hit the avoid list. */
   avoid: number;
+  /**
+   * Exact age-band fits outrank unknown ages, which outrank
+   * adjacent-only fits — strictly. The tier gap (0.4 of signal between
+   * exact-min 0.9 and unknown 0.5, 0.5 between unknown and adjacent 0)
+   * times this weight must exceed the spread of all other signals
+   * combined (positives sum 10, avoid penalty 4, spread 14), so an
+   * adjacent-only candidate can never outscore an exact fit however
+   * attractive it is otherwise. Pinned by the invariant test in
+   * recommend-score.test.ts — retune there first.
+   */
+  ageFit: number;
 }
 
 export const RECOMMEND_WEIGHTS: RecommendWeights = {
@@ -26,6 +37,7 @@ export const RECOMMEND_WEIGHTS: RecommendWeights = {
   embedding: 2,
   novelty: 1,
   avoid: 4,
+  ageFit: 40,
 };
 
 /** Stage-1 SQL candidate cap (mirrors recommend_candidates default). */

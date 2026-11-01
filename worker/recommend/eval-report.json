@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T16:00:15.915Z",
+  "generatedAt": "2026-11-01T23:04:50.740Z",
   "mode": "full (model-graded)",
   "grading": "model-graded (muse-wonder)",
   "households": [
@@ -10,10 +10,12 @@
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": 1,
-      "ndcgDate": 0.13826649153669965,
-      "ndcgStage2": 0.948168804342077,
+      "ndcgDate": 0,
+      "ndcgStage2": 0,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h02",
@@ -25,19 +27,23 @@
       "ndcgDate": 1,
       "ndcgStage2": 1,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h03",
       "description": "Two kids in Orleans, free only, Saturday mornings",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 1,
-      "ndcgStage2": 1,
-      "graded": true,
-      "fallback": false
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h04",
@@ -49,19 +55,23 @@
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h05",
       "description": "Teen in Barrhaven, sports, avoids crowds, $30",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 1,
-      "ndcgStage2": 1,
-      "graded": true,
-      "fallback": false
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h06",
@@ -73,19 +83,23 @@
       "ndcgDate": 1,
       "ndcgStage2": 1,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h07",
       "description": "Single French-speaking senior, free only",
-      "candidates": 63,
+      "candidates": 48,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": null,
-      "ndcgDate": null,
-      "ndcgStage2": null,
-      "graded": false,
-      "fallback": false
+      "ndcgReranked": 1,
+      "ndcgDate": 1,
+      "ndcgStage2": 1,
+      "graded": true,
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h08",
@@ -97,19 +111,23 @@
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h09",
       "description": "Preschooler in Riverview, library, $10, Saturdays",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 1,
-      "ndcgStage2": 1,
-      "graded": true,
-      "fallback": false
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h10",
@@ -117,11 +135,13 @@
       "candidates": 200,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 0.2920150533621072,
-      "ndcgStage2": 0.7841270627824982,
+      "ndcgReranked": 0.8352821950087925,
+      "ndcgDate": 0.13487466829862643,
+      "ndcgStage2": 0.6000429729655028,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h11",
@@ -129,11 +149,13 @@
       "candidates": 6,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
+      "ndcgReranked": 0.49352327967774806,
       "ndcgDate": 1,
-      "ndcgStage2": 1,
+      "ndcgStage2": 0.49352327967774806,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h12",
@@ -145,7 +167,9 @@
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h13",
@@ -157,7 +181,9 @@
       "ndcgDate": 1,
       "ndcgStage2": 1,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h14",
@@ -165,11 +191,13 @@
       "candidates": 20,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 0.7417915194480327,
-      "ndcgStage2": 0.7085319248809759,
+      "ndcgReranked": 0.4810735279593775,
+      "ndcgDate": 0.8787036720563268,
+      "ndcgStage2": 0.4810735279593775,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h15",
@@ -181,43 +209,51 @@
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h16",
       "description": "Kids and preschooler in Manotick, free only, wide range",
-      "candidates": 68,
+      "candidates": 62,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.8586039965027206,
-      "ndcgDate": 0.41169787912655337,
-      "ndcgStage2": 0.6028717662539196,
+      "ndcgReranked": 0.9174702828017932,
+      "ndcgDate": 0.5435598009071464,
+      "ndcgStage2": 0.9017106871380401,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h17",
       "description": "Seniors downtown, museums and music, weekday afternoons, $20",
-      "candidates": 51,
+      "candidates": 50,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 0.6429235234036081,
-      "ndcgStage2": 0.6285108926059098,
+      "ndcgReranked": 0.5481351590340573,
+      "ndcgDate": 0.7453016244178956,
+      "ndcgStage2": 0.9363792118010483,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h18",
       "description": "Teen in Stittsville, sports and outdoors, Saturdays, $20",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 1,
-      "ndcgDate": 1,
-      "ndcgStage2": 1,
-      "graded": true,
-      "fallback": false
+      "ndcgReranked": null,
+      "ndcgDate": null,
+      "ndcgStage2": null,
+      "graded": false,
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h19",
@@ -227,9 +263,11 @@
       "distanceMismatches": 0,
       "ndcgReranked": 1,
       "ndcgDate": 0.49818925746641285,
-      "ndcgStage2": 0.8603443310417203,
+      "ndcgStage2": 0.9060254355346823,
       "graded": true,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h20",
@@ -241,19 +279,22 @@
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": false
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     }
   ],
   "policyProbe": {
-    "candidates": 305,
+    "candidates": 246,
     "freePerOpl": 6,
     "ok": true
   },
   "totals": {
     "violations": 0,
     "distanceMismatches": 0,
-    "meanNdcgReranked": 0.9899002854644801,
-    "meanNdcgDate": 0.7660631231673866,
-    "meanNdcgStage2": 0.8951824844219356
-  }
+    "meanNdcgReranked": 0.8432258585892517,
+    "meanNdcgDate": 0.7091480930133098,
+    "meanNdcgStage2": 0.7562504650069454
+  },
+  "fallbackProof": null
 }

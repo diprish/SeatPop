@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+export * from "./age-fit";
 export * from "./ics";
 export * from "./preferences";
 export * from "./pricing";

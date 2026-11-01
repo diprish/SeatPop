@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   groupSeries,
   hasSeriesPattern,
+  limitConsecutiveRuns,
   seriesKey,
+  titleFamily,
   type SeriesRow,
 } from "../src/recommend/series";
 
@@ -116,5 +118,82 @@ describe("groupSeries", () => {
 
   it("handles empty input", () => {
     expect(groupSeries([])).toEqual([]);
+  });
+});
+
+describe("titleFamily", () => {
+  it("merges suffix and infix variants into one family", () => {
+    expect(titleFamily("Babytime")).toBe(
+      titleFamily("Babytime & Stay and Play | Bébés à la biblio"),
+    );
+    // Live shape: same program, no separator to strip.
+    expect(titleFamily("Babytime")).toBe(
+      titleFamily("Babytime followed by a Play and Stay"),
+    );
+    expect(titleFamily("Babytime - Fall Session 2 (10:15 am)")).toBe(
+      "babytime",
+    );
+    expect(titleFamily("Morning Social / Matinée conviviale")).toBe("morning");
+    expect(titleFamily("Storytime (Ages 3-5)")).toBe("storytime");
+  });
+
+  it("groups by lead word, apart otherwise", () => {
+    // Same lead word: one family on purpose (a varied top 10 spreads
+    // Lego Club and Lego Robotics apart rather than stacking them).
+    expect(titleFamily("Lego Club")).toBe(titleFamily("Lego Robotics"));
+    expect(titleFamily("Babytime")).not.toBe(titleFamily("Toddler Mornings"));
+    expect(titleFamily("Babytime")).not.toBe(
+      titleFamily("Bilingual Babytime + Stay & Play"),
+    );
+  });
+});
+
+describe("limitConsecutiveRuns", () => {
+  const byTitle = (title: string): string => titleFamily(title);
+
+  function runsOf(titles: string[]): number[] {
+    const runs: number[] = [];
+    let run = 0;
+    let prev = "";
+    for (const title of titles) {
+      const key = byTitle(title);
+      if (key === prev) run++;
+      else {
+        if (run > 0) runs.push(run);
+        run = 1;
+        prev = key;
+      }
+    }
+    if (run > 0) runs.push(run);
+    return runs;
+  }
+
+  it("breaks runs of three without dropping or reordering needlessly", () => {
+    const input = [
+      "Babytime",
+      "Babytime & Stay and Play",
+      "Babytime | Bébés",
+      "Babytime followed by a Play and Stay",
+      "Lego Club",
+      "Chess Night",
+    ];
+    const out = limitConsecutiveRuns(input, byTitle);
+    expect([...out].sort()).toEqual([...input].sort());
+    expect(Math.max(...runsOf(out))).toBeLessThanOrEqual(2);
+    // The first two keep their lead; only the overruns move.
+    expect(out.slice(0, 2)).toEqual([
+      "Babytime",
+      "Babytime & Stay and Play",
+    ]);
+  });
+
+  it("is idempotent on an already-diverse list", () => {
+    const input = ["Babytime", "Lego Club", "Babytime & Play", "Chess Night"];
+    expect(limitConsecutiveRuns(input, byTitle)).toEqual(input);
+  });
+
+  it("degrades gracefully when one family owns the list", () => {
+    const input = ["Babytime", "Babytime & Play", "Babytime | Bébés"];
+    expect(limitConsecutiveRuns(input, byTitle)).toEqual(input);
   });
 });

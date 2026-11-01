@@ -87,6 +87,82 @@ export function hasSeriesPattern(sortedStarts: string[]): boolean {
 }
 
 /**
+ * Title family: the first word of the normalized title, ignoring
+ * variant suffixes ("Babytime", "Babytime & Stay and Play", and
+ * "Babytime followed by a Play and Stay" are one family). Series
+ * collapse already merges identical titles; this is about
+ * similar-title variants that would otherwise stack in the top 10.
+ * First-word grouping also merges distinct programs sharing a lead
+ * word ("Lego Club" / "Lego Robotics") — spreading those apart still
+ * serves a varied top 10, so the rule keeps them together.
+ */
+export function titleFamily(title: string): string {
+  const cut = [" & ", " | ", " / ", " - ", " (", ": "]
+    .map((sep) => title.indexOf(sep))
+    .filter((index) => index > 0);
+  const head = cut.length > 0 ? title.slice(0, Math.min(...cut)) : title;
+  return normalizeTitle(head).split(" ")[0] ?? "";
+}
+
+/** True when inserting key at index completes a run longer than maxRun. */
+function completesRun(
+  keys: string[],
+  index: number,
+  key: string,
+  maxRun: number,
+): boolean {
+  let left = 0;
+  for (let i = index - 1; i >= 0 && keys[i] === key; i--) left++;
+  let right = 0;
+  for (let i = index; i < keys.length && keys[i] === key; i++) right++;
+  return left + 1 + right > maxRun;
+}
+
+/**
+ * Cap consecutive same-family items at maxRun (default 2), stable:
+ * items that would overrun sink to the earliest gap at or after their
+ * original rank that takes them without completing a run. Idempotent —
+ * an already-diverse list passes through untouched. Degrades
+ * gracefully when one family owns the list (leftovers append in
+ * order, runs and all).
+ */
+export function limitConsecutiveRuns<T>(
+  items: T[],
+  keyOf: (item: T) => string,
+  maxRun = 2,
+): T[] {
+  const out: T[] = [];
+  const outKeys: string[] = [];
+  const pending: Array<{ item: T; from: number }> = [];
+  for (const item of items) {
+    const key = keyOf(item);
+    if (completesRun(outKeys, outKeys.length, key, maxRun)) {
+      pending.push({ item, from: out.length });
+    } else {
+      out.push(item);
+      outKeys.push(key);
+    }
+  }
+  for (const { item, from } of pending) {
+    const key = keyOf(item);
+    let placed = false;
+    for (let index = from; index <= outKeys.length; index++) {
+      if (!completesRun(outKeys, index, key, maxRun)) {
+        out.splice(index, 0, item);
+        outKeys.splice(index, 0, key);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      out.push(item);
+      outKeys.push(key);
+    }
+  }
+  return out;
+}
+
+/**
  * Group scored rows (twins-collapsed) into series slots. Multi-member
  * groups occupy consecutive slots from their first-seen (best-scored)
  * position; members without a cadence return as singles there.

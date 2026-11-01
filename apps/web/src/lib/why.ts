@@ -1,7 +1,8 @@
 import {
   DAY_PARTS,
-  effectiveBandRange,
+  fitLevelsForHousehold,
   hourInPart,
+  type AgeBand,
   type DayPart,
   type Preferences,
 } from "@seatpop/shared";
@@ -68,20 +69,30 @@ export function computeWhy(
   const rows: WhyRow[] = [];
 
   if (item.age_min !== null || item.age_max !== null) {
-    const lo = item.age_min ?? 0;
-    const hi = item.age_max ?? 130;
-    const fits = prefs.members
-      .filter((member) => {
-        const range = effectiveBandRange(
-          member.age_band,
-          member.include_adjacent,
-        );
-        return range.min <= hi && range.max >= lo;
-      })
-      .map((member) => member.age_band);
+    const levels = fitLevelsForHousehold(
+      { age_min: item.age_min, age_max: item.age_max },
+      prefs.members,
+    );
+    const bandsAt = (want: string): AgeBand[] => {
+      const bands: AgeBand[] = [];
+      prefs.members.forEach((member, index) => {
+        if (levels[index] === want && !bands.includes(member.age_band)) {
+          bands.push(member.age_band);
+        }
+      });
+      return bands;
+    };
+    const exact = bandsAt("exact");
+    const adjacent = bandsAt("adjacent");
+    const parts: string[] = [];
+    if (exact.length > 0) parts.push(`Fits ${exact.join(", ")}`);
+    if (adjacent.length > 0) {
+      const noun = adjacent.length > 1 ? "age bands" : "age band";
+      parts.push(`Close to the ${adjacent.join(", ")} ${noun}`);
+    }
     rows.push({
       field: "Age",
-      detail: fits.length > 0 ? `Fits ${fits.join(", ")}` : "Overlaps no member band",
+      detail: parts.length > 0 ? parts.join("; ") : "Overlaps no member band",
       quote: quoteFor(detail, "age_min", "age_max"),
     });
   } else {

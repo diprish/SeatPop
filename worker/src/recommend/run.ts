@@ -12,8 +12,14 @@ import {
 } from "@seatpop/shared";
 import { collapseRows } from "./collapse";
 import { FINAL_TOP_N, RERANK_TOP_N, STAGE1_LIMIT } from "./config";
-import { groupSeries, type SeriesSlot } from "./series";
 import {
+  groupSeries,
+  limitConsecutiveRuns,
+  titleFamily,
+  type SeriesSlot,
+} from "./series";
+import {
+  bandFits,
   rerankCandidates,
   templatedReason,
   type RerankCandidate,
@@ -260,6 +266,8 @@ function toScoreEvent(row: CandidateRow): ScoreEvent {
     category: row.category,
     tags: row.tags,
     fetched_at: row.fetched_at,
+    age_min: row.age_min,
+    age_max: row.age_max,
   };
 }
 
@@ -341,8 +349,12 @@ export async function recommendStages(
   // top-scored row so the reranker never sees duplicates; the detail view
   // lists the other rooms (findSiblings). Series (same title + venue on
   // a weekly/regular cadence) group into one slot showing the next
-  // occurrence. Stage-1 counts stay raw.
-  const stage2 = groupSeries(collapseRows(scored));
+  // occurrence. Similar-title variants then spread so no family runs
+  // longer than two. Stage-1 counts stay raw.
+  const stage2 = limitConsecutiveRuns(
+    groupSeries(collapseRows(scored)),
+    (slot) => titleFamily(slot.row.title),
+  );
   return { prefs, candidates: rows.data, stage2, scores };
 }
 
@@ -395,10 +407,17 @@ export async function runRecommend(
           fallback: reranked.fallback,
         };
 
+  // The rerank can restack families stage 2 spread, so diversify the
+  // final order too (a no-op on the already-diverse fallback order).
+  const ordered = limitConsecutiveRuns(
+    items.flatMap((item) => {
+      const row = byId.get(item.event_id);
+      return row ? [{ row, item }] : [];
+    }),
+    ({ row }) => titleFamily(row.title),
+  );
   const finalItems: RecommendItem[] = [];
-  for (const item of items.slice(0, FINAL_TOP_N)) {
-    const row = byId.get(item.event_id);
-    if (!row) continue;
+  for (const { row, item } of ordered.slice(0, FINAL_TOP_N)) {
     const more =
       slotById.get(item.event_id)?.more.map((occurrence) => ({
         event_id: occurrence.event_id,
@@ -409,7 +428,10 @@ export async function runRecommend(
     finalItems.push({
       ...row,
       score: scores.get(item.event_id) ?? 0,
-      reason: item.reason !== "" ? item.reason : templatedReason(row),
+      reason:
+        item.reason !== ""
+          ? item.reason
+          : templatedReason(row, bandFits(row, prefs)),
       reasonFromModel: item.fromModel,
       more_dates: more,
     });

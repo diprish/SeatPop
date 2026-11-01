@@ -101,7 +101,7 @@ describe("computeWhy", () => {
     const rows = computeWhy(testItem(), PREFS, testDetail());
     const byField = new Map(rows.map((row) => [row.field, row]));
     expect(byField.get("Age")).toMatchObject({
-      detail: "Fits kids",
+      detail: "Close to the kids age band",
       quote: "ages 3 to 5",
     });
     expect(byField.get("Price")).toMatchObject({
@@ -172,5 +172,32 @@ describe("computeWhy", () => {
       detail: "Free",
       quote: null,
     });
+  });
+
+  it("says 'Fits' only for exact-band matches", () => {
+    const exact = computeWhy(testItem({ age_min: 6, age_max: 12 }), PREFS, null);
+    expect(exact.find((row) => row.field === "Age")?.detail).toBe("Fits kids");
+
+    const mixed = computeWhy(
+      testItem({ age_min: 6, age_max: 12 }),
+      PreferencesSchema.parse({
+        members: [{ age_band: "kids" }, { age_band: "preschool" }],
+      }),
+      null,
+    );
+    expect(mixed.find((row) => row.field === "Age")?.detail).toBe(
+      "Fits kids; Close to the preschool age band",
+    );
+
+    const adjacent = computeWhy(
+      testItem({ age_min: 3, age_max: 5 }),
+      PreferencesSchema.parse({
+        members: [{ age_band: "kids" }, { age_band: "baby" }],
+      }),
+      null,
+    );
+    expect(adjacent.find((row) => row.field === "Age")?.detail).toBe(
+      "Close to the kids, baby age bands",
+    );
   });
 });

@@ -7,6 +7,7 @@ import {
 } from "@seatpop/llm";
 import type { Preferences } from "@seatpop/shared";
 import {
+  claimedFitBands,
   reasonMarked,
   rerankCandidates,
   templatedReason,
@@ -165,5 +166,62 @@ describe("rerank", () => {
     });
     expect(outcome).toEqual({ items: [], model: null, fallback: false });
     expect(seen).toHaveLength(0);
+  });
+
+  it("sends per-band fit levels and the fits-only-if-exact rule", async () => {
+    const seen: ChatRequest[] = [];
+    await rerankCandidates([candidate("e1")], PREFS, {
+      config: config(),
+      chatFn: scriptedChat(
+        JSON.stringify([{ event_id: "e1", reason: "Free entry (stated)" }]),
+        seen,
+      ),
+    });
+    expect(seen).toHaveLength(1);
+    const messages = seen[0]?.messages ?? [];
+    const system = messages.find((m) => m.role === "system")?.content ?? "";
+    const user = messages.find((m) => m.role === "user")?.content ?? "";
+    expect(user).toContain("agefit=kids:exact");
+    expect(system).toContain("Never write that an event 'fits <band>'");
+    expect(system).toContain("close to");
+  });
+
+  it("rejects 'fits <band>' for adjacent-only matches, keeps exact ones", async () => {
+    const adjacent: RerankCandidate = {
+      ...candidate("e1"),
+      age_min: 3,
+      age_max: 5,
+    };
+    const rejected = await rerankCandidates([adjacent], PREFS, {
+      config: config(),
+      chatFn: scriptedChat(
+        JSON.stringify([{ event_id: "e1", reason: "Fits kids (inferred)" }]),
+        [],
+      ),
+    });
+    expect(rejected.items[0]?.fromModel).toBe(false);
+    expect(rejected.items[0]?.reason).toContain("close to your kids' age");
+    expect(rejected.items[0]?.reason).not.toMatch(/fits\s+kids/i);
+
+    const exact = await rerankCandidates([candidate("e2")], PREFS, {
+      config: config(),
+      chatFn: scriptedChat(
+        JSON.stringify([{ event_id: "e2", reason: "Fits kids (stated)" }]),
+        [],
+      ),
+    });
+    expect(exact.items[0]).toMatchObject({
+      reason: "Fits kids (stated)",
+      fromModel: true,
+    });
+  });
+
+  it("detects fit claims with the band nearby, nothing else", () => {
+    expect(claimedFitBands("Fits well (stated)")).toEqual([]);
+    expect(claimedFitBands("Evening show (stated), suits kids (inferred)")).toEqual(
+      [],
+    );
+    expect(claimedFitBands("Fits preschool (inferred)")).toEqual(["preschool"]);
+    expect(claimedFitBands("A good fit for kids (stated)")).toEqual(["kids"]);
   });
 });
