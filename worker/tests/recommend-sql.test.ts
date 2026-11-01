@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008-0016: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0017: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
 // in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
@@ -51,6 +51,10 @@ const SQL15 = readFileSync(
 );
 const SQL16 = readFileSync(
   new URL("../../supabase/migrations/0016_bookings.sql", import.meta.url),
+  "utf8",
+);
+const SQL17 = readFileSync(
+  new URL("../../supabase/migrations/0017_feed_end_times.sql", import.meta.url),
   "utf8",
 );
 
@@ -391,5 +395,17 @@ describe("migration 0016 bookings", () => {
     expect(SQL16).toContain(
       "grant execute on function public.bookings_for_feed(text)",
     );
+  });
+});
+
+describe("migration 0017 feed end times", () => {
+  it("resolves the feed end to null on a mismatched start", () => {
+    expect(SQL17).toContain(
+      "create or replace function public.bookings_for_feed(p_token text)",
+    );
+    expect(SQL17).toContain(
+      "case when b.starts_at is null or b.starts_at = e.starts_at",
+    );
+    expect(SQL17).toContain("then e.ends_at end as ends_at");
   });
 });
