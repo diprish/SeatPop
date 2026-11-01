@@ -15,12 +15,12 @@ import {
 import {
   groundingQuote,
   normalizeEvidence,
+  verifyAge,
   verifyAmount,
   verifyBool,
   verifyCrowd,
   verifyDuration,
   verifyEnergy,
-  verifyInt,
   verifyPriceKind,
   verifyRegDate,
   verifySetting,
@@ -131,7 +131,7 @@ function verifyField(
   switch (field) {
     case "age_min":
     case "age_max":
-      kept = verifyInt(
+      kept = verifyAge(
         typeof value === "number" ? value : null,
         quote,
         sourceNorm,

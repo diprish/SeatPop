@@ -135,6 +135,37 @@ export async function listEventSourceNames(
   return out;
 }
 
+export interface AgeQuotes {
+  ageMinQuote: string | null;
+  ageMaxQuote: string | null;
+}
+
+/** Stored age evidence quotes per enriched event (months-repair finder). */
+export async function listAgeQuotes(
+  config: StoreConfig,
+): Promise<Map<string, AgeQuotes>> {
+  const rows = await rest<
+    Array<{
+      event_id: string;
+      evidence: Record<string, { quote?: unknown } | null> | null;
+    }>
+  >(config, "event_enrichment", {
+    query: "?select=event_id,evidence&limit=10000",
+  });
+  const out = new Map<string, AgeQuotes>();
+  for (const row of rows) {
+    const quoteOf = (field: string): string | null => {
+      const quote = row.evidence?.[field]?.quote;
+      return typeof quote === "string" ? quote : null;
+    };
+    out.set(row.event_id, {
+      ageMinQuote: quoteOf("age_min"),
+      ageMaxQuote: quoteOf("age_max"),
+    });
+  }
+  return out;
+}
+
 export interface EnrichmentUpsert {
   event_id: string;
   age_min: number | null;

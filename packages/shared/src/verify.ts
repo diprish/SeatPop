@@ -91,6 +91,46 @@ export function verifyInt(
   return value;
 }
 
+const MONTHS_WORD = /\bmonths?\b/;
+const YEARS_WORD = /\byears?\b/;
+
+/**
+ * Whole-year ages, with month-span conversion. A quote WITHOUT "month"
+ * behaves like verifyInt (the digits must appear). A quote WITH "month"
+ * additionally licenses floor(months/12) for every integer it holds
+ * ("19-35 months" yields 1 and 2; "0-18 months" yields 0 and 1), and can
+ * never yield an age >= 5 unless the quote also says years.
+ */
+export function verifyAge(
+  value: number | null | undefined,
+  quote: string | null | undefined,
+  sourceNorm: string,
+  opts: { min: number; max: number },
+): number | null {
+  const q = groundingQuote(quote, sourceNorm);
+  if (
+    q === null ||
+    value === null ||
+    value === undefined ||
+    !Number.isInteger(value) ||
+    value < opts.min ||
+    value > opts.max
+  ) {
+    return null;
+  }
+  const digits = [...q.matchAll(/\d+/g)].map((match) => Number(match[0]));
+  const months = MONTHS_WORD.test(q);
+  const allowed = new Set(digits);
+  if (months) {
+    for (const monthsCount of digits) {
+      allowed.add(Math.floor(monthsCount / 12));
+    }
+  }
+  if (!allowed.has(value)) return null;
+  if (months && value >= 5 && !YEARS_WORD.test(q)) return null;
+  return value;
+}
+
 /** Booleans ground in any source span (no textual value to match). */
 export function verifyBool(
   value: boolean | null | undefined,

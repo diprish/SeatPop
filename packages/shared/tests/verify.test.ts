@@ -4,6 +4,7 @@ import {
   normalizeEvidence,
   parseDurationMinutes,
   parseFacetAges,
+  verifyAge,
   verifyAmount,
   verifyBool,
   verifyCrowd,
@@ -192,5 +193,48 @@ describe("evidence verifier", () => {
     expect(parseFacetAges("Teen")).toBeNull();
     expect(parseFacetAges("Adult")).toBeNull();
     expect(parseFacetAges("Baby")).toBeNull();
+  });
+});
+
+const BABYTIME = norm(
+  "Babytime. Stories, rhymes and songs for babies 0-18 months and a " +
+    "parent or caregiver followed by Stay and Play.",
+);
+
+describe("month-stated ages", () => {
+  it("floors both ends of month ranges to whole years", () => {
+    expect(verifyAge(0, "0-18 months", BABYTIME, { min: 0, max: 130 })).toBe(0);
+    expect(verifyAge(1, "0-18 months", BABYTIME, { min: 0, max: 130 })).toBe(1);
+    const toddler = norm("Toddlertime. Play for ages 19-35 months.");
+    expect(verifyAge(1, "19-35 months", toddler, { min: 0, max: 130 })).toBe(1);
+    expect(verifyAge(2, "19-35 months", toddler, { min: 0, max: 130 })).toBe(2);
+    const up = norm("Babies. For 6 months and up.");
+    expect(verifyAge(0, "6 months and up", up, { min: 0, max: 130 })).toBe(0);
+  });
+
+  it("rejects raw month numbers as years", () => {
+    expect(verifyAge(18, "0-18 months", BABYTIME, { min: 0, max: 130 })).toBeNull();
+    const toddler = norm("Toddlertime. Play for ages 19-35 months.");
+    expect(verifyAge(35, "19-35 months", toddler, { min: 0, max: 130 })).toBeNull();
+    const up = norm("Babies. For 6 months and up.");
+    expect(verifyAge(6, "6 months and up", up, { min: 0, max: 130 })).toBeNull();
+  });
+
+  it("keeps year quotes on the digits rule", () => {
+    const years = norm("Club. Ages 10 to 12.");
+    expect(verifyAge(10, "Ages 10 to 12", years, { min: 0, max: 130 })).toBe(10);
+    expect(verifyAge(12, "Ages 10 to 12", years, { min: 0, max: 130 })).toBe(12);
+    expect(verifyAge(11, "Ages 10 to 12", years, { min: 0, max: 130 })).toBeNull();
+  });
+
+  it("lets a quote saying years yield five and up", () => {
+    const mixed = norm("Play. 18 months to 5 years.");
+    expect(verifyAge(5, "18 months to 5 years", mixed, { min: 0, max: 130 })).toBe(5);
+    expect(verifyAge(1, "18 months to 5 years", mixed, { min: 0, max: 130 })).toBe(1);
+  });
+
+  it("still requires the quote to ground in the source", () => {
+    expect(verifyAge(1, "19-35 months", BABYTIME, { min: 0, max: 130 })).toBeNull();
+    expect(verifyAge(1, null, BABYTIME, { min: 0, max: 130 })).toBeNull();
   });
 });

@@ -317,3 +317,44 @@ describe("enrichment voting", () => {
     }
   });
 });
+
+describe("month-stated ages", () => {
+  // Verbatim live Babytime row (month quotes previously enriched to 0-18).
+  const BABYTIME_INPUT: EnrichEventInput = {
+    id: "e-baby",
+    title: "Babytime",
+    description:
+      "Stories, rhymes and songs for babies 0-18 months and a parent or caregiver followed by Stay and Play. Storytime @ 11:00 Stay and Play @ 11:30 Drop-In",
+    venueName: null,
+  };
+
+  function monthsReply(min: number | null, max: number | null): string {
+    return JSON.stringify({
+      age_min: field(min, "0-18 months"),
+      age_max: field(max, "0-18 months"),
+      summary_short: { value: "Babytime songs and rhymes." },
+      tags: { value: ["babies", "songs"] },
+    });
+  }
+
+  it("votes floored years from month quotes end to end", async () => {
+    const result = await voteEnrichment(BABYTIME_INPUT, {
+      config: config(),
+      chatFn: scriptedChat([monthsReply(0, 1), monthsReply(0, 1)]),
+      now: new Date("2026-10-28T12:00:00.000Z"),
+    });
+    expect(result?.values.age_min).toBe(0);
+    expect(result?.values.age_max).toBe(1);
+    expect(result?.quotes.age_min).toBe("0-18 months");
+  });
+
+  it("nulls raw month numbers that pass as years", async () => {
+    const result = await voteEnrichment(BABYTIME_INPUT, {
+      config: config(),
+      chatFn: scriptedChat([monthsReply(0, 18), monthsReply(0, 18)]),
+      now: new Date("2026-10-28T12:00:00.000Z"),
+    });
+    expect(result?.values.age_min).toBe(0);
+    expect(result?.values.age_max).toBeNull();
+  });
+});

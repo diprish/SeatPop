@@ -10,10 +10,10 @@ import {
 
 describe("enrichment prompt", () => {
   it("loads the versioned prompt with the free and cost-fields rules", () => {
-    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v3");
+    expect(ENRICH_PROMPT_VERSION).toBe("enrich.v4");
     expect(ENRICH_TEMPERATURE).toBe(0.3);
     const prompt = loadEnrichPrompt();
-    expect(prompt).toContain("enrich.v3");
+    expect(prompt).toContain("enrich.v4");
     expect(prompt).toContain("free");
     expect(prompt).toContain("no charge");
     expect(prompt).toContain("Never infer");
@@ -23,6 +23,10 @@ describe("enrichment prompt", () => {
     expect(prompt).toContain("fee_notes");
     expect(prompt).toContain('"Supplies included" is never a fee note');
     expect(prompt).toContain('"$5 materials fee"');
+    // v4 converts month-stated ages to floored whole years.
+    expect(prompt).toContain("divide by 12 and round DOWN");
+    expect(prompt).toContain('"19-35 months" gives');
+    expect(prompt).toContain("Babytime (0-18 months)");
   });
 
   it("builds deterministic messages per event, date and pass", () => {

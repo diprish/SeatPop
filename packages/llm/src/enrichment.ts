@@ -16,11 +16,13 @@ import type { ChatMessage } from "./types";
  *
  * v2 changes: setting/energy/crowd use fixed vocabularies grounded by
  * cue words (not value-in-quote), and durations accept number words.
+ * v3 changes: price_text/fee_notes take cost spans only.
+ * v4 changes: month-stated ages convert to floored whole years.
  * The verifier side lives in packages/shared/verify.ts.
  */
 
 /** Bumped only with packages/llm/prompts/enrich.v*.md (re-enriches all). */
-export const ENRICH_PROMPT_VERSION = "enrich.v3";
+export const ENRICH_PROMPT_VERSION = "enrich.v4";
 
 /** Voting temperature for every enrichment pass (spec: adaptive voting). */
 export const ENRICH_TEMPERATURE = 0.3;

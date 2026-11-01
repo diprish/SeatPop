@@ -10,8 +10,11 @@ import { optionsForSource } from "../ingest/source-config";
 import type { StoreConfig } from "../ingest/store";
 import { isDirectExecution } from "../script-entry";
 import { resolveEnrichConfig, resolveProvider } from "./config";
-import { applyFacetAges, applyPricingPolicy } from "./policy";
-import { zonedLocalToUtc } from "../ingest/tz";
+import {
+  hashContext,
+  processOneCandidate,
+  type ProcessOneOutcome,
+} from "./process-one";
 import {
   embedTextFor,
   localEmbed,
@@ -24,17 +27,9 @@ import {
   listMissingEmbeddings,
   reportTallies,
   updateEmbedding,
-  upsertEnrichment,
-  upsertPricing,
   type EnrichCandidate,
 } from "./store";
-import {
-  REVIEW_CONFIDENCE_BELOW,
-  sourceHashFor,
-  voteEnrichment,
-  type VerifiedValue,
-  type VoteResult,
-} from "./vote";
+import { REVIEW_CONFIDENCE_BELOW, type VerifiedValue } from "./vote";
 
 /**
  * Phase-2 enrichment runner: new or changed events only (by source_hash),
@@ -82,39 +77,6 @@ function loadEnvFile(): void {
     }
   }
 }
-
-function regOpensAtUtc(
-  value: VerifiedValue,
-  timezone: string,
-): string | null {
-  if (typeof value !== "string") return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!m) return null;
-  try {
-    return zonedLocalToUtc(
-      {
-        year: Number(m[1]),
-        month: Number(m[2]),
-        day: Number(m[3]),
-        hour: 0,
-        minute: 0,
-        second: 0,
-      },
-      timezone,
-    );
-  } catch {
-    return null;
-  }
-}
-
-const numOrNull = (v: VerifiedValue): number | null =>
-  typeof v === "number" ? v : null;
-const strOrNull = (v: VerifiedValue): string | null =>
-  typeof v === "string" ? v : null;
-const boolOrNull = (v: VerifiedValue): boolean | null =>
-  typeof v === "boolean" ? v : null;
-const listOrEmpty = (v: VerifiedValue): string[] =>
-  Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
 
 interface RunStats {
   processed: number;
@@ -215,25 +177,7 @@ async function main(): Promise<number> {
     store,
     candidates.map((c) => c.id),
   );
-  // Facet labels from every listing source (OPL age slices); a policy or
-  // facet change re-enriches the event via the hash inputs.
-  const facetLabelsFor = (c: EnrichCandidate): string[] =>
-    [...new Set(listingSources.get(c.id) ?? [])]
-      .map((name) => optionsForSource(name).ageFacet?.label)
-      .filter((label): label is string => label !== undefined)
-      .sort();
-  const policyStringFor = (c: EnrichCandidate): string =>
-    c.policy
-      ? [c.policy.kind, c.policy.quote, c.policy.url, ...(c.policy.scope ?? [])].join("\n")
-      : "";
-  const hashFor = (c: EnrichCandidate): string =>
-    sourceHashFor({
-      title: c.title,
-      description: c.description,
-      venueName: c.venueName,
-      policy: policyStringFor(c),
-      facets: facetLabelsFor(c).join(","),
-    });
+  const { facetLabelsFor, hashFor } = hashContext(listingSources);
   const pending = force
     ? [...candidates]
     : candidates.filter((c) => hashFor(c) !== c.sourceHash);
@@ -273,27 +217,19 @@ async function main(): Promise<number> {
 
   for (const candidate of queue) {
     const noTraining = noTrainingFor(candidate);
-    if (noTraining && basetenExhausted) {
-      stats.skipped++;
-      continue;
-    }
-    let result: VoteResult | null;
+    let outcome: ProcessOneOutcome;
     try {
-      result = await voteEnrichment(
-        {
-          id: candidate.id,
-          title: candidate.title,
-          description: candidate.description,
-          venueName: candidate.venueName,
-        },
-        {
-          config: llmConfig,
-          model: noTraining ? undefined : modelOverride,
-          provider: noTraining ? "baseten" : providerOverride,
-          fallback: noTraining ? "none" : undefined,
-          now,
-        },
-      );
+      outcome = await processOneCandidate(candidate, {
+        store,
+        llmConfig,
+        modelOverride,
+        providerOverride,
+        noTraining,
+        basetenExhausted,
+        now,
+        hashFor,
+        facetLabelsFor,
+      });
     } catch (error) {
       if (error instanceof BudgetExceeded && error.limit === "baseten_total") {
         console.warn(
@@ -312,81 +248,17 @@ async function main(): Promise<number> {
       }
       throw error;
     }
-    if (!result) {
-      if (noTraining) stats.skipped++;
-      else stats.failed++;
-      console.warn(`enrich: ${candidate.id} produced no usable pass; skipped`);
+    if (outcome.status === "skipped_baseten") {
+      stats.skipped++;
       continue;
     }
-    const facetLabels = facetLabelsFor(candidate);
-    const facet = applyFacetAges(
-      numOrNull(result.values.age_min),
-      numOrNull(result.values.age_max),
-      facetLabels,
-    );
-    const pricing = applyPricingPolicy(
-      result.values,
-      result.quotes.price_kind,
-      candidate.policy,
-      facetLabels,
-    );
-    if (pricing.applied) stats.priceFromPolicy++;
-    const evidence: Record<
-      string,
-      { value: unknown; quote: string | null; basis?: string }
-    > = {};
-    for (const field of ENRICHED_FIELDS) {
-      evidence[field] = {
-        value: result.values[field],
-        quote: result.quotes[field],
-      };
+    if (outcome.status === "no_pass") {
+      if (noTraining) stats.skipped++;
+      else stats.failed++;
+      continue;
     }
-    evidence["summary_short"] = { value: result.summary, quote: null };
-    evidence["tags"] = { value: result.tags, quote: null };
-    evidence["age_facet"] = {
-      value: facet.labels.length > 0 ? facet.labels : null,
-      quote: null,
-    };
-    evidence["price_kind"] = {
-      value: pricing.priceKind,
-      quote: pricing.evidenceQuote,
-      basis: pricing.basis,
-    };
-    await upsertEnrichment(store, {
-      event_id: candidate.id,
-      age_min: facet.ageMin,
-      age_max: facet.ageMax,
-      needs_adult: boolOrNull(result.values.needs_adult),
-      setting: strOrNull(result.values.setting),
-      energy: strOrNull(result.values.energy),
-      crowd: strOrNull(result.values.crowd),
-      duration_min: numOrNull(result.values.duration_min),
-      language: strOrNull(result.values.language),
-      accessibility: listOrEmpty(result.values.accessibility),
-      registration_hint: strOrNull(result.values.registration_hint),
-      registration_opens_at: regOpensAtUtc(
-        result.values.registration_opens_at,
-        candidate.timezone,
-      ),
-      summary_short: result.summary,
-      tags: result.tags,
-      evidence,
-      model: result.model,
-      prompt_version: ENRICH_PROMPT_VERSION,
-      source_hash: hashFor(candidate),
-      confidence: result.confidence,
-    });
-    await upsertPricing(store, {
-      event_id: candidate.id,
-      price_kind: pricing.priceKind,
-      amount_min_cents: numOrNull(result.values.amount_min_cents),
-      amount_max_cents: numOrNull(result.values.amount_max_cents),
-      currency: strOrNull(result.values.currency),
-      price_text: strOrNull(result.values.price_text),
-      evidence_quote: pricing.evidenceQuote,
-      fee_notes: strOrNull(result.values.fee_notes),
-      price_basis: pricing.basis,
-    });
+    const { result, facet, pricing } = outcome.processed;
+    if (pricing.applied) stats.priceFromPolicy++;
     stats.processed++;
     stats.models.add(result.model);
     if (result.calls.every((c) => c.cached)) stats.fullyCached++;
