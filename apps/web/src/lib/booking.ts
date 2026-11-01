@@ -1,4 +1,5 @@
 import type { RecommendItemView } from "./api";
+import { getJwt } from "./feedback";
 import { ageLine, formatWindowOpens } from "./format";
 
 /**
@@ -121,4 +122,162 @@ export function toggleBookingStep(
   const next = { ...current, [eventId]: [...checked] };
   writeJson(next);
   return next;
+}
+
+export const BOOKINGS_KEY = "seatpop_bookings";
+export const FEED_TOKEN_KEY = "seatpop_feed_token";
+
+/** Device snapshot of a confirmed booking (the server row holds facts). */
+export interface BookingLocal {
+  booking_id: string;
+  delete_token: string;
+  confirmation_id: string | null;
+  starts_at: string | null;
+  confirmation_quote: string | null;
+  datetime_quote: string | null;
+  item: RecommendItemView;
+}
+
+function readBookings(): Record<string, BookingLocal> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(BOOKINGS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : {};
+    return typeof parsed === "object" && parsed !== null
+      ? (parsed as Record<string, BookingLocal>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeBookings(value: unknown): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BOOKINGS_KEY, JSON.stringify(value));
+  } catch {
+    // Private mode: the session state still works.
+  }
+}
+
+export function loadBookings(): Record<string, BookingLocal> {
+  return readBookings();
+}
+
+export function saveBookingLocal(
+  current: Record<string, BookingLocal>,
+  eventId: string,
+  booking: BookingLocal,
+): Record<string, BookingLocal> {
+  const next = { ...current, [eventId]: booking };
+  writeBookings(next);
+  return next;
+}
+
+export function deleteBookingLocal(
+  current: Record<string, BookingLocal>,
+  eventId: string,
+): Record<string, BookingLocal> {
+  const next = { ...current };
+  delete next[eventId];
+  writeBookings(next);
+  return next;
+}
+
+/** The family feed token: one per device, minted on first booking. */
+export function loadFeedToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(FEED_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveFeedToken(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(FEED_TOKEN_KEY, token);
+  } catch {
+    // Private mode: the session state still works.
+  }
+}
+
+export function newFeedToken(): string {
+  return globalThis.crypto.randomUUID();
+}
+
+export interface BookingParsed {
+  booking: {
+    confirmation_id: string | null;
+    confirmation_quote: string | null;
+    starts_at: string | null;
+    datetime_quote: string | null;
+  };
+  mismatch: boolean;
+}
+
+export async function postBookingParse(
+  text: string,
+  eventStartsAt: string,
+): Promise<BookingParsed> {
+  const response = await fetch("/api/bookings/parse", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, event_starts_at: eventStartsAt }),
+  });
+  const json = (await response.json()) as BookingParsed & { error?: string };
+  if (!response.ok) {
+    throw new Error(json.error ?? `confirmation parse failed (${response.status})`);
+  }
+  return json;
+}
+
+export async function postBooking(input: {
+  event_id: string;
+  confirmation_id: string | null;
+  starts_at: string | null;
+  evidence: {
+    confirmation_quote: string | null;
+    datetime_quote: string | null;
+  } | null;
+  feed_token: string;
+}): Promise<{ id: string; delete_token: string }> {
+  const jwt = getJwt();
+  const response = await fetch("/api/bookings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+    },
+    body: JSON.stringify(input),
+  });
+  const json = (await response.json()) as {
+    id: string;
+    delete_token: string;
+    error?: string;
+  };
+  if (!response.ok) {
+    throw new Error(json.error ?? `booking failed (${response.status})`);
+  }
+  return json;
+}
+
+export async function deleteBookingApi(
+  id: string,
+  token: string,
+): Promise<void> {
+  const jwt = getJwt();
+  const response = await fetch("/api/bookings", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+    },
+    body: JSON.stringify({ id, delete_token: token }),
+  });
+  const json = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(json.error ?? `booking delete failed (${response.status})`);
+  }
 }

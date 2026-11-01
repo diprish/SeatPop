@@ -44,3 +44,28 @@ export function redactPostalCodes(text: string): string {
 export function redactPii(text: string): string {
   return redactPostalCodes(redactPhones(redactEmails(text)));
 }
+
+const STREET_SUFFIX =
+  "St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Cres|Crescent|Ct|Court|Dr|Drive|Ln|Lane|Way|Pl|Place|Ter|Terrace";
+
+/**
+ * Street addresses → [address]. Number + capitalized words + a street
+ * suffix ("123 Main St", "456 Oak Ave"). Unit markers ("Apt 4") are left
+ * behind — harmless without the street. Venue names that look like
+ * addresses ("10 Daly Ave") redact too: the venue is already known from
+ * the event row, so no booking fact is lost.
+ */
+export function redactAddresses(text: string): string {
+  return text.replace(
+    new RegExp(
+      `\\b\\d{1,5}\\s+[A-Za-z][A-Za-z.'-]*(?:\\s+[A-Za-z][A-Za-z.'-]*){0,3}\\s+(?:${STREET_SUFFIX})\\b\\.?`,
+      "gi",
+    ),
+    "[address]",
+  );
+}
+
+/** Confirmation-paste redaction: emails, phones, addresses, postals. */
+export function redactBookingPii(text: string): string {
+  return redactAddresses(redactPii(text));
+}

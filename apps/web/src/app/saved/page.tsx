@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Preferences } from "@seatpop/shared";
+import BookingCapture from "@/components/booking-capture";
 import BookingChecklist from "@/components/booking-checklist";
 import EventCard from "@/components/event-card";
 import RemindMe from "@/components/remind-me";
@@ -127,6 +128,7 @@ export default function SavedPage() {
               />
               <RemindMe item={entry.item} />
               <BookingChecklist item={entry.item} />
+              <BookingCapture item={entry.item} />
             </div>
           ))}
         </div>

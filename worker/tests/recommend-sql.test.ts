@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008-0015: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0016: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
 // in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
@@ -47,6 +47,10 @@ const SQL14 = readFileSync(
 );
 const SQL15 = readFileSync(
   new URL("../../supabase/migrations/0015_reminders.sql", import.meta.url),
+  "utf8",
+);
+const SQL16 = readFileSync(
+  new URL("../../supabase/migrations/0016_bookings.sql", import.meta.url),
   "utf8",
 );
 
@@ -339,6 +343,53 @@ describe("migration 0015 reminders", () => {
     expect(SQL15).toContain("where id = p_id and delete_token = p_token");
     expect(SQL15).toContain(
       "grant execute on function public.delete_reminder(uuid, text)",
+    );
+  });
+});
+
+describe("migration 0016 bookings", () => {
+  it("stores one booking per event per family feed", () => {
+    expect(SQL16).toContain("create table public.bookings");
+    for (const column of [
+      "event_id uuid not null",
+      "confirmation_id text",
+      "starts_at timestamptz",
+      "evidence jsonb",
+      "feed_token text not null",
+      "delete_token text not null",
+    ]) {
+      expect(SQL16).toContain(column);
+    }
+    expect(SQL16).toContain("unique (event_id, feed_token)");
+    expect(SQL16).toContain("alter column user_id set default auth.uid()");
+  });
+
+  it("is insert-only for app roles like reminders", () => {
+    expect(SQL16).toContain(
+      "alter table public.bookings enable row level security",
+    );
+    expect(SQL16).toContain(
+      "create policy bookings_insert on public.bookings",
+    );
+    expect(SQL16).not.toMatch(/for (select|update|delete) to /);
+    expect(SQL16).not.toMatch(/grant select on public\.bookings/);
+  });
+
+  it("deletes and feeds only through token-checked definer functions", () => {
+    expect(SQL16).toContain(
+      "create or replace function public.delete_booking(p_id uuid, p_token text)",
+    );
+    expect(SQL16).toContain("where id = p_id and delete_token = p_token");
+    expect(SQL16).toContain(
+      "create or replace function public.bookings_for_feed(p_token text)",
+    );
+    expect(SQL16).toContain("where b.feed_token = p_token");
+    expect(SQL16).toContain("coalesce(b.starts_at, e.starts_at)");
+    expect(SQL16).toContain(
+      "grant execute on function public.delete_booking(uuid, text)",
+    );
+    expect(SQL16).toContain(
+      "grant execute on function public.bookings_for_feed(text)",
     );
   });
 });

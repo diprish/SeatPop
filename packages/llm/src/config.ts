@@ -93,6 +93,7 @@ export const TASK_REASONING: Record<TaskKind, ReasoningEffort> = {
   parsing: "minimal",
   listing_extraction: "minimal",
   profile_parse: "minimal",
+  booking_parse: "minimal",
   rerank: "minimal",
   plan: "high",
   judge: "max",
@@ -129,6 +130,9 @@ export function modelForTask(
     case "profile_parse":
       // Household text: standard Spark only (never contributor, never
       // Baseten — enforced by PUBLIC_TEXT_TASKS exclusion + the gate).
+      return models.spark;
+    case "booking_parse":
+      // Redacted confirmation text: standard Spark only, same as above.
       return models.spark;
     case "judge":
       return models.wonder;

@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { RecommendItemView } from "../src/lib/api";
 import {
   bookingSteps,
+  deleteBookingLocal,
+  loadBookings,
+  saveBookingLocal,
   toggleBookingStep,
 } from "../src/lib/booking";
 
@@ -95,5 +98,25 @@ describe("booking progress", () => {
     const unchecked = toggleBookingStep(checked, "e1", "open");
     expect(unchecked["e1"]).toEqual([]);
     expect(toggleBookingStep(unchecked, "e2", "open")["e2"]).toEqual(["open"]);
+  });
+});
+
+describe("booking snapshots", () => {
+  it("saves, loads, and deletes per-event bookings", () => {
+    expect(loadBookings()).toEqual({});
+    const snapshot = {
+      booking_id: "b1",
+      delete_token: "tok",
+      confirmation_id: "ABC123",
+      starts_at: "2031-03-08T15:00:00.000Z",
+      confirmation_quote: "Confirmation ABC123",
+      datetime_quote: "on March 8 at 10:00 AM",
+      item: item(),
+    };
+    const saved = saveBookingLocal({}, "e1", snapshot);
+    expect(saved["e1"]).toEqual(snapshot);
+    const removed = deleteBookingLocal(saved, "e1");
+    expect(removed).toEqual({});
+    expect(deleteBookingLocal(removed, "missing")).toEqual({});
   });
 });
