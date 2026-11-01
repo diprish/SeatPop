@@ -39,11 +39,29 @@ for the Trust page; missing files are skipped and the page shows
 "pending". Apply migrations first with `npx supabase db push` (through
 `0013_user_id_defaults.sql`).
 
+## Reminder emails
+
+`.github/workflows/reminders.yml` runs `send:reminders` every 15
+minutes plus on manual dispatch: unsent rows with `remind_at` reached
+send oldest-first through Resend, then mark `sent_at` (idempotent —
+sent rows are never re-selected; at-least-once by design). Any
+failure fails the run with the failed ids; dry-run with
+`npm run send:reminders --workspace @seatpop/worker -- --dry-run`
+(masked recipients, sends nothing).
+
+Repo secrets required (names only):
+
+- `RESEND_API_KEY`: Resend sending key.
+- `RESEND_FROM`: sender identity, e.g. `SeatPop <reminders@…>`.
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: reminder reads are
+  service-role-only by RLS (no SELECT policy).
+
 ## Notes
 
 - No `NEXT_PUBLIC_*` variables exist: the client bundle reads no
   secrets. `process.env` appears only in API routes, the server-only
-  `lib/recommend-server.ts`, and `next.config.ts`.
+  `lib/recommend-server.ts`, `lib/registration-server.ts`, and
+  `next.config.ts`.
 - The app is stateless except localStorage (guest household, saves,
   hides, theme). Rate limits are per process and in-memory.
 

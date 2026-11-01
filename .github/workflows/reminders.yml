@@ -1,0 +1,29 @@
+name: reminders
+
+on:
+  schedule:
+    # Every 15 minutes: reminders fire within a quarter hour of remind_at.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Sends due reminders, marks them sent (idempotent: sent rows are
+      # never re-selected). Any failure fails the run loudly with the
+      # failed ids; successes stay marked.
+      - name: Send due reminders
+        run: npm run send:reminders --workspace @seatpop/worker
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
