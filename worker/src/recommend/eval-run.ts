@@ -385,7 +385,9 @@ async function main(): Promise<number> {
 
     // Baselines + Wonder grades (model-graded; skipped without a key).
     const dateTop = stages.candidates.slice(0, FINAL_TOP_N);
-    const stage2Top = stages.stage2.slice(0, FINAL_TOP_N);
+    const stage2Top = stages.stage2
+      .slice(0, FINAL_TOP_N)
+      .map((slot) => slot.row);
     let ndcgReranked: number | null = null;
     let ndcgDate: number | null = null;
     let ndcgStage2: number | null = null;
@@ -446,7 +448,9 @@ async function main(): Promise<number> {
 
     // Fallback proof (no-key mode): stage-2 order kept, all templated.
     if (noKey && final.length > 0) {
-      const stage2Ids = stages.stage2.slice(0, FINAL_TOP_N).map((r) => r.event_id);
+      const stage2Ids = stages.stage2
+        .slice(0, FINAL_TOP_N)
+        .map((slot) => slot.row.event_id);
       const finalIds = final.map((r) => r.event_id);
       const orderKept =
         stage2Ids.length === finalIds.length &&

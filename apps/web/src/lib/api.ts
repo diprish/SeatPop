@@ -33,6 +33,12 @@ export interface RecommendItemView {
   score: number;
   reason: string;
   reasonFromModel: boolean;
+  more_dates: Array<{
+    event_id: string;
+    starts_at: string;
+    ends_at: string | null;
+    timezone: string;
+  }>;
 }
 
 export interface RecommendMetaView {

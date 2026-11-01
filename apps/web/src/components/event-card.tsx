@@ -36,6 +36,7 @@ export default function EventCard({
 }: EventCardProps) {
   const [whyOpen, setWhyOpen] = useState(false);
   const [hideOpen, setHideOpen] = useState(false);
+  const [datesOpen, setDatesOpen] = useState(false);
   const ages = ageLine(item);
   const distance = formatDistance(item.distance_km);
 
@@ -63,6 +64,38 @@ export default function EventCard({
         <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
           {item.age_flag}
         </p>
+      )}
+      {item.more_dates.length > 0 && (
+        <div className="mt-1">
+          <button
+            type="button"
+            aria-expanded={datesOpen}
+            onClick={() => setDatesOpen((open) => !open)}
+            className="text-sm underline"
+          >
+            +{item.more_dates.length} more date
+            {item.more_dates.length === 1 ? "" : "s"}
+          </button>
+          {datesOpen && (
+            <ul className="mt-1 space-y-1 text-sm">
+              {item.more_dates.slice(0, 5).map((date) => (
+                <li key={date.event_id}>
+                  <Link
+                    className="underline"
+                    href={`/events/${date.event_id}`}
+                  >
+                    {formatWhenRange(date.starts_at, date.ends_at, date.timezone)}
+                  </Link>
+                </li>
+              ))}
+              {item.more_dates.length > 5 && (
+                <li className="text-neutral-500 dark:text-neutral-400">
+                  …and {item.more_dates.length - 5} more
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
       )}
       <p className="mt-1 text-sm">
         {splitReasonMarks(formatReasonDates(item.reason, item.timezone)).map((part, index) =>

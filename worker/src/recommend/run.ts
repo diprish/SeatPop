@@ -12,6 +12,7 @@ import {
 } from "@seatpop/shared";
 import { collapseRows } from "./collapse";
 import { FINAL_TOP_N, RERANK_TOP_N, STAGE1_LIMIT } from "./config";
+import { groupSeries, type SeriesSlot } from "./series";
 import {
   rerankCandidates,
   templatedReason,
@@ -75,10 +76,19 @@ export const CandidateRowSchema = z.object({
 });
 export type CandidateRow = z.infer<typeof CandidateRowSchema>;
 
+export interface RecommendOccurrence {
+  event_id: string;
+  starts_at: string;
+  ends_at: string | null;
+  timezone: string;
+}
+
 export interface RecommendItem extends CandidateRow {
   score: number;
   reason: string;
   reasonFromModel: boolean;
+  /** Later series occurrences, soonest first (empty for singles). */
+  more_dates: RecommendOccurrence[];
 }
 
 export interface RecommendMeta {
@@ -273,8 +283,8 @@ export interface RecommendStages {
   prefs: Preferences;
   /** SQL candidates in date order (baseline A reads the first 10). */
   candidates: CandidateRow[];
-  /** Stage-2 order (baseline B reads the first 10). */
-  stage2: CandidateRow[];
+  /** Stage-2 slots: scored, twins-collapsed, series-grouped. */
+  stage2: Array<SeriesSlot<CandidateRow>>;
   scores: Map<string, number>;
 }
 
@@ -329,8 +339,10 @@ export async function recommendStages(
   }
   // Twins (same title + start + branch, different rooms) collapse to the
   // top-scored row so the reranker never sees duplicates; the detail view
-  // lists the other rooms (findSiblings). Stage-1 counts stay raw.
-  const stage2 = collapseRows(scored);
+  // lists the other rooms (findSiblings). Series (same title + venue on
+  // a weekly/regular cadence) group into one slot showing the next
+  // occurrence. Stage-1 counts stay raw.
+  const stage2 = groupSeries(collapseRows(scored));
   return { prefs, candidates: rows.data, stage2, scores };
 }
 
@@ -343,12 +355,15 @@ export async function runRecommend(
     deps,
   );
   const byId = new Map(candidates.map((row) => [row.event_id, row]));
+  const slotById = new Map(
+    stage2.map((slot) => [slot.row.event_id, slot] as const),
+  );
   const shortlist = stage2.slice(0, RERANK_TOP_N);
 
   let reranked;
   try {
     reranked = await rerankCandidates(
-      shortlist.map(toRerankCandidate),
+      shortlist.map((slot) => toRerankCandidate(slot.row)),
       prefs,
       {
         config: deps.llmConfig,
@@ -368,8 +383,8 @@ export async function runRecommend(
   const { items, fallback } =
     reranked === null
       ? {
-          items: shortlist.map((row) => ({
-            event_id: row.event_id,
+          items: shortlist.map((slot) => ({
+            event_id: slot.row.event_id,
             reason: "",
             fromModel: false,
           })),
@@ -384,11 +399,19 @@ export async function runRecommend(
   for (const item of items.slice(0, FINAL_TOP_N)) {
     const row = byId.get(item.event_id);
     if (!row) continue;
+    const more =
+      slotById.get(item.event_id)?.more.map((occurrence) => ({
+        event_id: occurrence.event_id,
+        starts_at: occurrence.starts_at,
+        ends_at: occurrence.ends_at,
+        timezone: occurrence.timezone,
+      })) ?? [];
     finalItems.push({
       ...row,
       score: scores.get(item.event_id) ?? 0,
       reason: item.reason !== "" ? item.reason : templatedReason(row),
       reasonFromModel: item.fromModel,
+      more_dates: more,
     });
   }
   const warnings: string[] = [];

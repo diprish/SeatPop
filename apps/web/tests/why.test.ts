@@ -34,6 +34,7 @@ function testItem(overrides: Partial<RecommendItemView> = {}): RecommendItemView
     score: 1,
     reason: "Fine (stated)",
     reasonFromModel: true,
+    more_dates: [],
     ...overrides,
   };
 }
