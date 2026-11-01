@@ -118,6 +118,28 @@ In `docs/screenshots/`: `01-for-you.png`, `02-why-sheet.png`,
 Final: **424/424** across 57 files, all five fixes committed
 separately.
 
+## Follow-up fixes (one commit each, gates green throughout)
+
+- **Fix A: month-stated ages** (`036facb`): `enrich.v4` converts
+  month spans to floored whole years ("19-35 months" → 1-2, "0-18
+  months" → 0-1, "6 months and up" → min 0), quotes stay verbatim.
+  New `verifyAge`: month quotes license `floor(m/12)` values and can
+  never yield ≥5 unless the quote also says years; year quotes keep
+  the digits rule. Regression tests on the verbatim live Babytime
+  text (unit + end-to-end vote). `repair:months` re-enriches
+  month-quote rows below v4 through the same assembly the runner
+  now shares (`process-one.ts` + shared `hashContext`, so neither
+  path drifts); idempotent, dry-run first, nothing else touched.
+  The v4 bump itself queues all rows for lazy re-enrichment.
+- **Fix B: series collapse** (`9671df1`): stage 2 groups same
+  normalized title + venue into one slot on a weekly/regular
+  cadence (pairs need 6–8 days; 3+ need all-weekly or all-equal
+  gaps, DST-tolerant). Slots rank at the best member's position,
+  display the next occurrence, and carry `more_dates`; the top-10
+  holds one slot per series. Constraints stay per-occurrence
+  (grouping only sees SQL-passing candidates). Cards get an
+  expandable "+N more dates" list; eval reads representatives.
+
 ## Cut, and why
 
 - **Explore beyond free/age/distance** (date range, category, map): the
