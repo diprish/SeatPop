@@ -123,6 +123,12 @@ async function main(): Promise<number> {
     goldenPath: "worker/eval/golden/events.jsonl",
     goldenEvents: queue.length,
     models: [],
+    excluded: queue
+      .filter((golden) => golden.excluded)
+      .map((golden) => ({
+        event_id: golden.event_id,
+        reason: golden.exclude_reason ?? "(no reason recorded)",
+      })),
   };
 
   for (const modelConfig of MODEL_CONFIGS) {
@@ -130,6 +136,7 @@ async function main(): Promise<number> {
     let modelSeen = "";
     for (let i = 0; i < queue.length; i++) {
       const golden = queue[i] as (typeof queue)[number];
+      if (golden.excluded) continue;
       let result: VoteResult | null;
       try {
         result = await voteEnrichment(

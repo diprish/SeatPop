@@ -55,12 +55,23 @@ export const EvalModelReportSchema = z.object({
 });
 export type EvalModelReport = z.infer<typeof EvalModelReportSchema>;
 
+export const ExcludedRowSchema = z.object({
+  event_id: z.string().min(1),
+  reason: z.string().min(1),
+});
+export type ExcludedRow = z.infer<typeof ExcludedRowSchema>;
+
 export const EvalReportSchema = z.object({
   generatedAt: z.string().datetime(),
   promptVersion: z.string().min(1),
   goldenPath: z.string().min(1),
   goldenEvents: z.number().int().nonnegative(),
   models: z.array(EvalModelReportSchema),
+  /**
+   * Golden rows excluded from scoring as ambiguous (labels kept, out
+   * of every denominator). Default keeps pre-exclusion reports parsing.
+   */
+  excluded: z.array(ExcludedRowSchema).default([]),
 });
 export type EvalReport = z.infer<typeof EvalReportSchema>;
 
@@ -122,13 +133,20 @@ const MODEL_TITLES: Record<EvalModelKey, string> = {
 
 const pct = (rate: number): string => `${(rate * 100).toFixed(1)}%`;
 
-/** Render the Markdown report: one accuracy table per model. */
+/** Render the Markdown report: gate verdict, exclusions, then one accuracy table per model. */
 export function renderMarkdownReport(report: EvalReport): string {
+  const gate = checkReportGate(report);
   const lines: string[] = [
     "# Enrichment eval report",
     "",
     `Generated ${report.generatedAt} · prompt ${report.promptVersion} · ` +
       `golden ${report.goldenPath} (${report.goldenEvents} events).`,
+    "",
+    gate.ok
+      ? "Gate: PASS — zero false-free and zero wrong-price across all recorded runs."
+      : `Gate: FAIL — ${gate.offenders
+          .map((o) => `${o.key} (false-free ${o.falseFree}, wrong-price ${o.wrongPrice})`)
+          .join("; ")}.`,
     "",
     "Accuracy is exact-match per field against human labels (label only",
     "what the text says; blank means the text does not say). Cost is",
@@ -137,6 +155,18 @@ export function renderMarkdownReport(report: EvalReport): string {
     "denominator and counted as failed.",
     "",
   ];
+  if (report.excluded.length > 0) {
+    lines.push(
+      `Excluded from scoring as ambiguous (${report.excluded.length}): labels kept, out of every denominator.`,
+      "",
+    );
+    for (const row of report.excluded) {
+      lines.push(`- ${row.event_id}: ${row.reason}`);
+    }
+    lines.push("");
+  } else {
+    lines.push("Excluded from scoring: none.", "");
+  }
   for (const model of report.models) {
     lines.push(`## ${MODEL_TITLES[model.key]}`);
     lines.push("");

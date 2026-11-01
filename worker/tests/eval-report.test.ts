@@ -22,6 +22,8 @@ function golden(): GoldenEvent {
     venue_name: "Hall",
     source: "S",
     category: "arts",
+    excluded: false,
+    exclude_reason: null,
     labels: {
       age_min: 10,
       age_max: null,
@@ -81,6 +83,7 @@ function report(): EvalReport {
     models: [
       modelReportFor("contributor", "meta", "muse-spark-1.3-contributor", score),
     ],
+    excluded: [],
   };
 }
 
@@ -120,5 +123,37 @@ describe("eval report", () => {
     expect(markdown).toContain("- hallucinated fields: 0");
     expect(markdown).toContain("(live passes 1, cached 1)");
     expect(markdown).toContain("$1.00 per 1,000 events");
+  });
+
+  it("prints the gate verdict in the header", () => {
+    expect(renderMarkdownReport(report())).toContain("Gate: PASS");
+    const bad = report();
+    bad.models[0] = {
+      ...(bad.models[0] as (typeof bad.models)[number]),
+      wrongPrice: 1,
+    };
+    const markdown = renderMarkdownReport(bad);
+    expect(markdown).toContain("Gate: FAIL");
+    expect(markdown).toContain("contributor (false-free 0, wrong-price 1)");
+  });
+
+  it("lists ambiguous exclusions with reasons, never silently", () => {
+    expect(renderMarkdownReport(report())).toContain(
+      "Excluded from scoring: none.",
+    );
+    const withExclusion = report();
+    withExclusion.excluded = [
+      { event_id: "e9", reason: "free and unknown both honest" },
+    ];
+    const markdown = renderMarkdownReport(withExclusion);
+    expect(markdown).toContain("Excluded from scoring as ambiguous (1)");
+    expect(markdown).toContain("- e9: free and unknown both honest");
+  });
+
+  it("accepts pre-exclusion reports without the field", () => {
+    const { excluded: _dropped, ...legacy } = report();
+    const parsed = EvalReportSchema.safeParse(legacy);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.excluded).toEqual([]);
   });
 });

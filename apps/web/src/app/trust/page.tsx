@@ -96,6 +96,24 @@ export default function TrustPage() {
           <ErrorBanner message={enrichment.message} />
         )}
         {enrichment.status === "ready" &&
+          enrichment.data.excluded.length > 0 && (
+            <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
+              <p className="font-medium">
+                Excluded from scoring as ambiguous (
+                {enrichment.data.excluded.length}): labels kept, out of every
+                denominator.
+              </p>
+              <ul className="mt-1 list-disc pl-5">
+                {enrichment.data.excluded.map((row) => (
+                  <li key={row.eventId}>
+                    <span className="font-mono text-xs">{row.eventId}</span>:{" "}
+                    {row.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        {enrichment.status === "ready" &&
           enrichment.data.models.map((model) => {
             const gatePass = model.falseFree === 0 && model.wrongPrice === 0;
             return (

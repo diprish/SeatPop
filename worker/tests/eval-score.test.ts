@@ -8,7 +8,11 @@ import type {
 import type { GoldenEvent, GoldenLabels } from "../src/eval/golden";
 import { scoreModel } from "../src/eval/score";
 
-function golden(id: string, labels: Partial<GoldenLabels>): GoldenEvent {
+function golden(
+  id: string,
+  labels: Partial<GoldenLabels>,
+  excluded = false,
+): GoldenEvent {
   return {
     event_id: id,
     title: `Title ${id}`,
@@ -16,6 +20,8 @@ function golden(id: string, labels: Partial<GoldenLabels>): GoldenEvent {
     venue_name: "Hall",
     source: "S",
     category: "arts",
+    excluded,
+    exclude_reason: excluded ? "both readings honest" : null,
     labels: {
       age_min: null,
       age_max: null,
@@ -184,6 +190,26 @@ describe("enrichment scoring", () => {
     expect(score.eventsFailed).toBe(1);
     expect(score.fields.age_min.total).toBe(1);
     expect(score.fields.age_min.accuracy).toBe(1);
+  });
+
+  it("skips ambiguous-excluded rows in every denominator", () => {
+    const goldens = [
+      golden("e1", { price_kind: "unknown" }, true),
+      golden("e2", {}),
+    ];
+    const score = scoreModel(
+      goldens,
+      new Map([
+        ["e1", vote({ price_kind: "free" })],
+        ["e2", vote({})],
+      ]),
+    );
+    // e1 would be false-free if scored; exclusion removes it fully.
+    expect(score.eventsScored).toBe(1);
+    expect(score.eventsFailed).toBe(0);
+    expect(score.falseFree).toBe(0);
+    expect(score.fields.price_kind.total).toBe(1);
+    expect(score.fields.price_kind.accuracy).toBe(1);
   });
 
   it("totals tokens and prices cost per 1,000 scored events", () => {

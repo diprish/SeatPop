@@ -56,8 +56,41 @@ export const GoldenEventSchema = z.object({
   source: z.string(),
   category: z.string().nullable(),
   labels: GoldenLabelsSchema,
+  /**
+   * Ambiguous rows are excluded from scoring but never deleted: the
+   * labels stay, the exclusion reason travels with the row, and every
+   * report lists it. Defaults keep pre-exclusion goldens parsing.
+   */
+  excluded: z.boolean().default(false),
+  exclude_reason: z.string().nullable().default(null),
 });
 export type GoldenEvent = z.infer<typeof GoldenEventSchema>;
+
+/**
+ * Exclusion marker for the CSV notes column. A notes cell starting
+ * with AMBIGUOUS-EXCLUDED: removes the row from scoring; the reason
+ * after the colon is required (an exclusion without a documented
+ * reason is an import error) and is rendered in every report.
+ */
+export const EXCLUSION_MARKER = "AMBIGUOUS-EXCLUDED:";
+
+export function parseExclusionMarker(
+  notes: string,
+): { excluded: boolean; reason: string | null; error: string | null } {
+  const trimmed = notes.trim();
+  if (!trimmed.startsWith(EXCLUSION_MARKER)) {
+    return { excluded: false, reason: null, error: null };
+  }
+  const reason = trimmed.slice(EXCLUSION_MARKER.length).trim();
+  if (reason === "") {
+    return {
+      excluded: false,
+      reason: null,
+      error: `${EXCLUSION_MARKER} needs a documented reason after the colon`,
+    };
+  }
+  return { excluded: true, reason, error: null };
+}
 
 export interface AmountCents {
   minCents: number;
@@ -233,6 +266,8 @@ export function importCsvToGolden(
     if (get(14).toLowerCase() !== "x") {
       reasons.push('labeled must be "x" (the row is not marked done)');
     }
+    const exclusion = parseExclusionMarker(get(15));
+    if (exclusion.error) reasons.push(exclusion.error);
     if (reasons.length > 0) {
       errors.push({ line, eventId, reasons });
       continue;
@@ -256,6 +291,8 @@ export function importCsvToGolden(
       source: get(4),
       category: blankToNull(get(5)),
       labels,
+      excluded: exclusion.excluded,
+      exclude_reason: exclusion.reason,
     });
     if (!eventParsed.success) {
       errors.push({

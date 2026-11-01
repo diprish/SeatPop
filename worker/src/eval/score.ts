@@ -227,7 +227,9 @@ function freshFieldScore(): FieldScore {
  * Score one model's voted outputs against the golden labels. Events whose
  * enrichment produced no usable pass (null) are counted as failed and
  * excluded from every denominator — silently scoring them as all-wrong
- * would conflate pipeline failures with extraction errors.
+ * would conflate pipeline failures with extraction errors. Rows marked
+ * ambiguous-excluded skip scoring entirely (their labels stay, and the
+ * report lists them, but they enter no denominator).
  */
 export function scoreModel(
   goldens: GoldenEvent[],
@@ -250,6 +252,7 @@ export function scoreModel(
   let costUsd = 0;
 
   for (const golden of goldens) {
+    if (golden.excluded) continue;
     const output = outputs.get(golden.event_id) ?? null;
     if (!output) {
       eventsFailed++;

@@ -33,11 +33,18 @@ export interface EnrichmentModelSummary {
   costPer1kUsd: number | null;
 }
 
+export interface ExcludedGolden {
+  eventId: string;
+  reason: string;
+}
+
 export interface EnrichmentSummary {
   generatedAt: string;
   promptVersion: string;
   goldenEvents: number;
   models: EnrichmentModelSummary[];
+  /** Golden rows excluded from scoring as ambiguous (labels kept). */
+  excluded: ExcludedGolden[];
 }
 
 function parseModel(json: unknown): EnrichmentModelSummary | null {
@@ -106,7 +113,18 @@ export function parseEnrichmentReport(json: unknown): EnrichmentSummary | null {
     if (!summary) return null;
     parsed.push(summary);
   }
-  return { generatedAt, promptVersion, goldenEvents, models: parsed };
+  // Pre-exclusion reports lack the field; malformed entries are dropped.
+  const excluded: ExcludedGolden[] = [];
+  const raw = root?.["excluded"];
+  if (Array.isArray(raw)) {
+    for (const entry of raw) {
+      const row = obj(entry);
+      const eventId = str(row?.["event_id"]);
+      const reason = str(row?.["reason"]);
+      if (eventId && reason) excluded.push({ eventId, reason });
+    }
+  }
+  return { generatedAt, promptVersion, goldenEvents, models: parsed, excluded };
 }
 
 export interface RecommendSummary {

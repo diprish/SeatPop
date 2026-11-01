@@ -34,6 +34,7 @@ describe("parseEnrichmentReport", () => {
     const parsed = parseEnrichmentReport(valid);
     expect(parsed?.goldenEvents).toBe(60);
     expect(parsed?.models).toHaveLength(1);
+    expect(parsed?.excluded).toEqual([]);
     expect(parsed?.models[0]?.fields).toEqual([
       { field: "age_min", accuracy: 0.9, nullRate: 0.1 },
       { field: "price_kind", accuracy: 1, nullRate: 0 },

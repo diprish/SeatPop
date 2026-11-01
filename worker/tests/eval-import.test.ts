@@ -73,6 +73,8 @@ describe("csv import", () => {
       venue_name: "Grand Hall",
       source: "Chamberfest",
       category: "music",
+      excluded: false,
+      exclude_reason: null,
       labels: {
         age_min: 10,
         age_max: 12,
@@ -102,6 +104,31 @@ describe("csv import", () => {
       registration_hint: null,
       accessibility: [],
     });
+  });
+
+  it("marks ambiguous-excluded rows with their documented reason", () => {
+    const note = "AMBIGUOUS-EXCLUDED: free and unknown both honest";
+    const result = importCsvToGolden(
+      csv(labelRow("e1", DONE(["", "", "unknown", "", "", "", "", "", "", note]))),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.events[0]?.excluded).toBe(true);
+    expect(result.events[0]?.exclude_reason).toBe(
+      "free and unknown both honest",
+    );
+    // Labels stay: exclusion removes scoring, not data.
+    expect(result.events[0]?.labels.price_kind).toBe("unknown");
+  });
+
+  it("rejects an exclusion marker without a reason", () => {
+    const result = importCsvToGolden(
+      csv(labelRow("e1", DONE(["", "", "", "", "", "", "", "", "", "AMBIGUOUS-EXCLUDED:  "]))),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.reasons.join(" ")).toContain("documented reason");
   });
 
   it("splits accessibility on semicolons", () => {
@@ -220,6 +247,9 @@ describe("golden jsonl", () => {
     );
     expect(events).toHaveLength(1);
     expect(events[0]?.event_id).toBe("e1");
+    // Pre-exclusion rows parse with defaults.
+    expect(events[0]?.excluded).toBe(false);
+    expect(events[0]?.exclude_reason).toBeNull();
   });
 
   it("throws with the offending line number", () => {
