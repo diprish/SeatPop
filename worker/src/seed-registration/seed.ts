@@ -19,7 +19,7 @@ const WindowInputSchema = z.object({
   quote: z.string(),
   source_url: z.string(),
 });
-type WindowInput = z.infer<typeof WindowInputSchema>;
+export type WindowInput = z.infer<typeof WindowInputSchema>;
 
 const SeedFileSchema = z.object({
   schemaVersion: z.literal(REGISTRATION_SCHEMA_VERSION),

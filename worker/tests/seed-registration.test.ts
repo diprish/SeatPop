@@ -7,9 +7,10 @@ import {
   loadRegistrationSeed,
   torontoMidnightIso,
   validateWindow,
+  type WindowInput,
 } from "../src/seed-registration/seed";
 
-function window(overrides: Record<string, string> = {}): Record<string, string> {
+function window(overrides: Partial<WindowInput> = {}): WindowInput {
   return {
     scope: "Testville Aquatics",
     kind: "swimming",
