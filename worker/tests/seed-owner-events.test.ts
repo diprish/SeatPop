@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { sourceHashFor } from "../src/enrich/vote";
+import { rest, type Deps } from "../src/seed-owner-events/run";
 import {
   buildOwnerEnrichment,
   buildOwnerPricing,
@@ -186,6 +187,28 @@ describe("isOwnerRow", () => {
 describe("loadOwnerSeed", () => {
   it("loads the (currently empty) committed seed file", () => {
     expect(loadOwnerSeed()).toEqual([]);
+  });
+});
+
+describe("rest", () => {
+  const deps: Deps = { url: "https://example.test", serviceKey: "k" };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("resolves undefined on empty bodies with a compound minimal prefer", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 204 })),
+    );
+    await expect(
+      rest(deps, "event_sources", "?on_conflict=x", {
+        method: "POST",
+        body: {},
+        prefer: "return=minimal,resolution=merge-duplicates",
+      }),
+    ).resolves.toBeUndefined();
   });
 });
 

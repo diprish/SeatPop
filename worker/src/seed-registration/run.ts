@@ -13,12 +13,12 @@ import { loadRegistrationSeed, type ValidatedWindow } from "./seed";
  * public). --dry-run prints the plan and writes nothing.
  */
 
-interface Deps {
+export interface Deps {
   url: string;
   serviceKey: string;
 }
 
-async function rest<T>(
+export async function rest<T>(
   deps: Deps,
   tablePath: string,
   query: string,
@@ -41,7 +41,7 @@ async function rest<T>(
   if (!response.ok) {
     throw new Error(`supabase ${tablePath} failed: HTTP ${response.status}`);
   }
-  if (init?.prefer === "return=minimal") return undefined as T;
+  if (init?.prefer?.includes("return=minimal")) return undefined as T;
   return (await response.json()) as T;
 }
 
@@ -80,7 +80,7 @@ async function main(): Promise<number> {
   );
   for (const window of windows.slice(0, 20)) {
     console.log(
-      `  ${window.scope} / ${window.kind || "(any)"} opens ${window.opens_at}` +
+      `  ${window.scope} / ${window.kind || "(any)"}${window.label ? ` / ${window.label}` : ""} opens ${window.opens_at}` +
         (window.opens_date_only ? " (date only)" : ""),
     );
   }
@@ -99,6 +99,7 @@ async function main(): Promise<number> {
         opens_date_only: window.opens_date_only,
         quote: window.quote,
         source_url: window.source_url,
+        label: window.label,
       },
       prefer: "return=minimal,resolution=merge-duplicates",
     });

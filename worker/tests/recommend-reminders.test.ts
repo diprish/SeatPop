@@ -10,6 +10,7 @@ function window(overrides: Partial<RegistrationWindow> = {}): RegistrationWindow
     opens_date_only: false,
     quote: "Registration opens March 4 at 7 pm.",
     source_url: "https://example.test/registration",
+    label: null,
     ...overrides,
   };
 }

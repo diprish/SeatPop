@@ -50,6 +50,7 @@ interface EventFacts {
   timezone: string;
   venue_id: string | null;
   source_url: string;
+  category: string | null;
 }
 
 async function rest<T>(
@@ -164,7 +165,7 @@ async function main(): Promise<number> {
   const events = await rest<EventFacts[]>(
     deps,
     "events",
-    `?select=id,title,starts_at,ends_at,timezone,venue_id,source_url&id=in.(${eventIds.map((id) => encodeURIComponent(id)).join(",")})`,
+    `?select=id,title,starts_at,ends_at,timezone,venue_id,source_url,category&id=in.(${eventIds.map((id) => encodeURIComponent(id)).join(",")})`,
   );
   const byEvent = new Map(events.map((event) => [event.id, event]));
   const venueIds = [
@@ -186,7 +187,7 @@ async function main(): Promise<number> {
   const windows = await rest<RegistrationWindow[]>(
     deps,
     "registration_windows",
-    "?select=scope,kind,opens_at,opens_date_only,quote,source_url&limit=500",
+    "?select=scope,kind,opens_at,opens_date_only,quote,source_url,label&limit=500",
   );
   const sourceRows = await rest<Array<{ event_id: string; source_name: string }>>(
     deps,
@@ -208,7 +209,10 @@ async function main(): Promise<number> {
       if (!event) throw new Error(`event ${row.event_id} missing`);
       const window =
         row.basis === "registration_window"
-          ? matchWindow(windows, sourcesByEvent.get(row.event_id) ?? [])
+          ? matchWindow(windows, sourcesByEvent.get(row.event_id) ?? [], Date.now(), {
+              title: event.title,
+              category: event.category,
+            })
           : null;
       const facts: ReminderEmailFacts = {
         title: event.title,

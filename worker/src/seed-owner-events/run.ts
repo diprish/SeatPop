@@ -28,12 +28,12 @@ import {
  * the plan but writes nothing.
  */
 
-interface Deps {
+export interface Deps {
   url: string;
   serviceKey: string;
 }
 
-async function rest<T>(
+export async function rest<T>(
   deps: Deps,
   tablePath: string,
   query: string,
@@ -56,7 +56,7 @@ async function rest<T>(
   if (!response.ok) {
     throw new Error(`supabase ${tablePath} failed: HTTP ${response.status}`);
   }
-  if (init?.prefer === "return=minimal") return undefined as T;
+  if (init?.prefer?.includes("return=minimal")) return undefined as T;
   return (await response.json()) as T;
 }
 

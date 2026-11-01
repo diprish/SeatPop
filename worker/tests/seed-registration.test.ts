@@ -1,8 +1,9 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { rest, type Deps } from "../src/seed-registration/run";
 import {
   loadRegistrationSeed,
   torontoMidnightIso,
@@ -55,7 +56,21 @@ describe("validateWindow", () => {
         opens_date_only: false,
         quote: "Registration opens March 4 at 7 pm.",
         source_url: "https://example.test/registration",
+        label: null,
       },
+    });
+  });
+
+  it("keeps the label, trimming it and nulling blanks", () => {
+    const checked = validateWindow(window({ label: "  Swim  " }), 0);
+    expect(checked).toEqual({
+      ok: true,
+      window: expect.objectContaining({ label: "Swim" }),
+    });
+    const blank = validateWindow(window({ label: "   " }), 0);
+    expect(blank).toEqual({
+      ok: true,
+      window: expect.objectContaining({ label: null }),
     });
   });
 
@@ -122,5 +137,83 @@ describe("loadRegistrationSeed", () => {
   it("accepts an empty window list (nothing transcribed yet)", () => {
     const url = writeSeed({ schemaVersion: 1, windows: [] });
     expect(loadRegistrationSeed(url)).toEqual([]);
+  });
+
+  it("loads the committed City transcription verbatim", () => {
+    const windows = loadRegistrationSeed();
+    expect(windows).toHaveLength(3);
+    expect(windows[0]).toEqual({
+      scope: "City of Ottawa Recreation",
+      kind: "listings_visible",
+      opens_at: "2026-11-03T00:00:00-05:00",
+      opens_date_only: true,
+      quote: "View online November 3.",
+      source_url:
+        "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      label: "Winter activities",
+    });
+    expect(windows[1]).toEqual({
+      scope: "City of Ottawa Recreation",
+      kind: "registration_opens",
+      opens_at: "2026-11-18T02:00:00.000Z",
+      opens_date_only: false,
+      quote: "All winter swimming activities November 17 at 9 pm.",
+      source_url:
+        "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      label: "All winter swimming activities",
+    });
+    expect(windows[2]).toEqual({
+      scope: "City of Ottawa Recreation",
+      kind: "registration_opens",
+      opens_at: "2026-11-20T02:00:00.000Z",
+      opens_date_only: false,
+      quote: "All winter activities November 19 at 9 pm.",
+      source_url:
+        "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      label: "All winter activities",
+    });
+  });
+});
+
+describe("rest", () => {
+  const deps: Deps = { url: "https://example.test", serviceKey: "k" };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("resolves undefined on empty bodies with a compound minimal prefer", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 204 })),
+    );
+    await expect(
+      rest(deps, "registration_windows", "?on_conflict=x", {
+        method: "POST",
+        body: {},
+        prefer: "return=minimal,resolution=merge-duplicates",
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("parses JSON bodies otherwise", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json([{ id: "r1" }])),
+    );
+    await expect(rest(deps, "sources", "?x=1")).resolves.toEqual([
+      { id: "r1" },
+    ]);
+  });
+});
+
+describe("migration 0020", () => {
+  it("adds the window label column", () => {
+    const migration = readFileSync(
+      new URL("../../supabase/migrations/0020_window_labels.sql", import.meta.url),
+      "utf8",
+    );
+    expect(migration).toContain("alter table public.registration_windows");
+    expect(migration).toContain("add column label text");
   });
 });

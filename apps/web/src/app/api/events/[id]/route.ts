@@ -193,9 +193,12 @@ export async function GET(
       opens_date_only: boolean;
       quote: string;
       source_url: string;
+      label: string | null;
     } | null = null;
     try {
-      const attached = await attachWindows(supabase, [{ event_id: row.id }]);
+      const attached = await attachWindows(supabase, [
+        { event_id: row.id, title: row.title, category: row.category },
+      ]);
       registration_window = attached[0]?.registration_window ?? null;
     } catch (error) {
       console.warn(

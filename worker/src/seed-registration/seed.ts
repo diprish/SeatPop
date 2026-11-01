@@ -18,6 +18,7 @@ const WindowInputSchema = z.object({
   opens_at: z.string(),
   quote: z.string(),
   source_url: z.string(),
+  label: z.string().optional(),
 });
 export type WindowInput = z.infer<typeof WindowInputSchema>;
 
@@ -33,6 +34,7 @@ export interface ValidatedWindow {
   opens_date_only: boolean;
   quote: string;
   source_url: string;
+  label: string | null;
 }
 
 export function seedFileUrl(): URL {
@@ -131,6 +133,7 @@ export function validateWindow(
       };
     }
   }
+  const label = raw.label === undefined || raw.label.trim() === "" ? null : raw.label.trim();
   return {
     ok: true,
     window: {
@@ -140,6 +143,7 @@ export function validateWindow(
       opens_date_only,
       quote,
       source_url: sourceUrl,
+      label,
     },
   };
 }

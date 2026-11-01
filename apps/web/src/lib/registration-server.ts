@@ -17,6 +17,7 @@ const WindowRowSchema = z.object({
   opens_date_only: z.boolean(),
   quote: z.string(),
   source_url: z.string(),
+  label: z.string().nullable(),
 });
 
 const EventSourceRowSchema = z.object({
@@ -53,7 +54,7 @@ export async function loadWindows(
     await restJson(
       base,
       anonKey,
-      "registration_windows?select=scope,kind,opens_at,opens_date_only,quote,source_url&order=opens_at.asc&limit=500",
+      "registration_windows?select=scope,kind,opens_at,opens_date_only,quote,source_url,label&order=opens_at.asc&limit=500",
     ),
   );
   cachedWindows = { at: Date.now(), windows };
@@ -83,7 +84,9 @@ export async function loadEventSourceNames(
 }
 
 /** Attach the matching window (or null) to each item. */
-export async function attachWindows<T extends { event_id: string }>(
+export async function attachWindows<
+  T extends { event_id: string; title: string; category: string | null },
+>(
   supabase: { url: string; anonKey: string },
   items: T[],
 ): Promise<Array<T & { registration_window: RegistrationWindow | null }>> {
@@ -99,6 +102,9 @@ export async function attachWindows<T extends { event_id: string }>(
   const now = Date.now();
   return items.map((item) => ({
     ...item,
-    registration_window: matchWindow(windows, sources.get(item.event_id) ?? [], now),
+    registration_window: matchWindow(windows, sources.get(item.event_id) ?? [], now, {
+      title: item.title,
+      category: item.category,
+    }),
   }));
 }

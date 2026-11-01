@@ -54,3 +54,31 @@ npx supabase db push   # 0019 first (the loader reads sources.notes)
 npm run seed:owner-events --workspace @seatpop/worker -- --dry-run
 npm run seed:owner-events --workspace @seatpop/worker
 ```
+
+## Step 2: City registration windows
+
+`data/seed/city-registration-dates.json` now holds the three
+owner-transcribed windows, all scoped to `City of Ottawa Recreation`:
+
+- `listings_visible`, 2026-11-03 (date only): "View online November 3."
+- `registration_opens`, 2026-11-17T21:00:00-05:00: "All winter swimming
+  activities November 17 at 9 pm." (label: All winter swimming activities)
+- `registration_opens`, 2026-11-19T21:00:00-05:00: "All winter
+  activities November 19 at 9 pm." (label: All winter activities)
+
+Migration `0020` adds the `registration_windows.label` column; scope
+always names a listing source now. Matching (`matchWindow`, used by
+recommend attach, reminder scheduling, and the sender):
+
+- only `kind = 'registration_opens'` rows are returned — a
+  `listings_visible` row is a viewing notice, and presenting it as a
+  registration opening would mislabel the City's date;
+- swim-labeled windows match only events whose title or category says
+  swim; every other event falls back to the general window;
+- soonest upcoming opening still wins; past windows never show.
+
+```sh
+npx supabase db push   # 0020 first (the loader writes label)
+npm run seed:registration-windows --workspace @seatpop/worker -- --dry-run
+npm run seed:registration-windows --workspace @seatpop/worker
+```

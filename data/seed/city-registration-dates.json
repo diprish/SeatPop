@@ -1,5 +1,30 @@
 {
   "schemaVersion": 1,
-  "_note": "Owner-entered City of Ottawa program-registration windows. Do NOT derive events from this file and do NOT crawl ottawa.ca for it: the owner transcribes each window by hand from the City's registration page, with a verbatim quote and the page URL. Phase 7 loads windows[] into registration_windows(scope, kind, opens_at, quote, source_url) and shows every window with its quote and link. Per-window fields: scope (which audience or area the window covers), kind (which program group), opens_at (ISO date or datetime with timezone offset), quote (verbatim City wording), source_url (https City page where it appears).",
-  "windows": []
+  "_note": "Owner-entered City of Ottawa program-registration windows. Do NOT derive events from this file and do NOT crawl ottawa.ca for it: the owner transcribes each window by hand from the City's registration page, with a verbatim quote and the page URL. Phase 7 loads windows[] into registration_windows(scope, kind, opens_at, quote, source_url, label) and shows every window with its quote and link. Per-window fields: scope (the listing-source NAME the window covers, e.g. City of Ottawa Recreation), kind (listings_visible or registration_opens), opens_at (ISO date or datetime with timezone offset), quote (verbatim City wording), source_url (https City page where it appears), label (the program-group text, e.g. All winter swimming activities; swim-labeled windows match swim events only).",
+  "windows": [
+    {
+      "scope": "City of Ottawa Recreation",
+      "kind": "listings_visible",
+      "opens_at": "2026-11-03",
+      "quote": "View online November 3.",
+      "source_url": "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      "label": "Winter activities"
+    },
+    {
+      "scope": "City of Ottawa Recreation",
+      "kind": "registration_opens",
+      "opens_at": "2026-11-17T21:00:00-05:00",
+      "quote": "All winter swimming activities November 17 at 9 pm.",
+      "source_url": "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      "label": "All winter swimming activities"
+    },
+    {
+      "scope": "City of Ottawa Recreation",
+      "kind": "registration_opens",
+      "opens_at": "2026-11-19T21:00:00-05:00",
+      "quote": "All winter activities November 19 at 9 pm.",
+      "source_url": "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/registration-terms-and-cancellations/registration-dates",
+      "label": "All winter activities"
+    }
+  ]
 }

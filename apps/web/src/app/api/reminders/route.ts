@@ -40,6 +40,8 @@ const DeleteBodySchema = z.object({
 
 const EventRowSchema = z.object({
   starts_at: z.string(),
+  title: z.string(),
+  category: z.string().nullable(),
 });
 
 const CreatedSchema = z.object({
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           base,
           supabase.anonKey,
           jwt,
-          `public_events?id=eq.${encodeURIComponent(parsed.data.event_id)}&select=starts_at&limit=1`,
+          `public_events?id=eq.${encodeURIComponent(parsed.data.event_id)}&select=starts_at,title,category&limit=1`,
         )
       ).json,
     )[0];
@@ -130,7 +132,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       loadEventSourceNames(base, supabase.anonKey, [parsed.data.event_id]),
     ]);
     const schedule = computeRemindAt(
-      matchWindow(windows, sources.get(parsed.data.event_id) ?? []),
+      matchWindow(windows, sources.get(parsed.data.event_id) ?? [], Date.now(), {
+        title: event.title,
+        category: event.category,
+      }),
       event.starts_at,
     );
     const delete_token = `${randomUUID()}${randomUUID()}`.replace(/-/g, "");
