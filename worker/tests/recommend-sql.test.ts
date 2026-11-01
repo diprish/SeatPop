@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static guarantees on migrations 0008-0014: RLS + owner-only user data,
+// Static guarantees on migrations 0008-0015: RLS + owner-only user data,
 // no PII columns, public home areas, and a recommend_candidates() carrying
 // every hard constraint. Tables/seeds live in 0008; the function was fixed
 // in 0009 (explicit SRF column aliases) and 0010 (facet regex), so function
@@ -43,6 +43,10 @@ const SQL14 = readFileSync(
     "../../supabase/migrations/0014_registration_windows.sql",
     import.meta.url,
   ),
+  "utf8",
+);
+const SQL15 = readFileSync(
+  new URL("../../supabase/migrations/0015_reminders.sql", import.meta.url),
   "utf8",
 );
 
@@ -293,5 +297,48 @@ describe("migration 0014 registration windows", () => {
       "grant select on public.public_event_sources to anon, authenticated",
     );
     expect(SQL14).not.toMatch(/grant .* on public\.event_sources /);
+  });
+});
+
+describe("migration 0015 reminders", () => {
+  it("stores one reminder per event and email with a delete token", () => {
+    expect(SQL15).toContain("create table public.reminders");
+    for (const column of [
+      "event_id uuid not null",
+      "email text not null",
+      "remind_at timestamptz not null",
+      "basis text not null",
+      "delete_token text not null",
+      "sent_at timestamptz",
+    ]) {
+      expect(SQL15).toContain(column);
+    }
+    expect(SQL15).toContain("unique (event_id, email)");
+    expect(SQL15).toContain("basis in ('registration_window', 'event_start')");
+    expect(SQL15).toContain("alter column user_id set default auth.uid()");
+  });
+
+  it("is insert-only for app roles: reads stay service-role-only", () => {
+    expect(SQL15).toContain(
+      "alter table public.reminders enable row level security",
+    );
+    expect(SQL15).toContain(
+      "create policy reminders_insert on public.reminders",
+    );
+    expect(SQL15).toContain("for insert to anon, authenticated");
+    expect(SQL15).not.toMatch(/for (select|update|delete) to /);
+    expect(SQL15).not.toMatch(/grant select on public\.reminders/);
+  });
+
+  it("deletes only through the token-checked definer function", () => {
+    expect(SQL15).toContain(
+      "create or replace function public.delete_reminder(p_id uuid, p_token text)",
+    );
+    expect(SQL15).toContain("security definer");
+    expect(SQL15).toContain("set search_path = public");
+    expect(SQL15).toContain("where id = p_id and delete_token = p_token");
+    expect(SQL15).toContain(
+      "grant execute on function public.delete_reminder(uuid, text)",
+    );
   });
 });

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Preferences } from "@seatpop/shared";
 import EventCard from "@/components/event-card";
+import RemindMe from "@/components/remind-me";
 import type { RecommendItemView } from "@/lib/api";
 import {
   deleteFeedback,
@@ -114,15 +115,17 @@ export default function SavedPage() {
       {saved.length > 0 && (
         <div className="mt-4 space-y-3">
           {saved.map((entry) => (
-            <EventCard
-              key={entry.item.event_id}
-              item={entry.item}
-              prefs={prefs}
-              saved
-              syncNote={syncNotes[entry.item.event_id] ?? null}
-              onToggleSave={(item) => void toggleSave(item)}
-              onNotForUs={(item, reason) => void hide(item, reason)}
-            />
+            <div key={entry.item.event_id}>
+              <EventCard
+                item={entry.item}
+                prefs={prefs}
+                saved
+                syncNote={syncNotes[entry.item.event_id] ?? null}
+                onToggleSave={(item) => void toggleSave(item)}
+                onNotForUs={(item, reason) => void hide(item, reason)}
+              />
+              <RemindMe item={entry.item} />
+            </div>
           ))}
         </div>
       )}

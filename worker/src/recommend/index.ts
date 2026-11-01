@@ -7,6 +7,7 @@ export * from "./cache";
 export * from "./chips";
 export * from "./collapse";
 export * from "./config";
+export * from "./reminders";
 export * from "./series";
 export * from "./windows";
 export * from "./constraints";
