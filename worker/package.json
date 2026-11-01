@@ -18,6 +18,7 @@
     "clean:descriptions": "tsx src/clean-descriptions/run.ts",
     "repair:months": "tsx src/repair-months/run.ts",
     "seed:registration-windows": "tsx src/seed-registration/run.ts",
+    "seed:owner-events": "tsx src/seed-owner-events/run.ts",
     "send:reminders": "tsx src/send-reminders/run.ts",
     "enrich": "tsx src/enrich/run.ts",
     "eval": "tsx src/eval/run-eval.ts",

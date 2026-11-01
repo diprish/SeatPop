@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  effectiveLimit,
   maskEmail,
+  MAX_SENDS_PER_RUN,
   renderReminderEmail,
   type ReminderEmailFacts,
 } from "../src/send-reminders/send";
@@ -21,6 +23,7 @@ function facts(overrides: Partial<ReminderEmailFacts> = {}): ReminderEmailFacts 
       quote: "Registration opens March 4 at 7 pm.",
       source_url: "https://example.test/registration",
     },
+    deleteUrl: "https://app.example.test/api/reminders/unsubscribe?id=r1&token=t1",
     ...overrides,
   };
 }
@@ -56,6 +59,25 @@ describe("renderReminderEmail", () => {
     expect(email.text).toContain("Official event page: https://example.test/e1");
   });
 
+  it("ends both templates with the one-click delete footer", () => {
+    const windowed = renderReminderEmail(facts());
+    expect(windowed.text).toContain(
+      "Not you? Use the link below to delete this reminder:",
+    );
+    expect(windowed.text).toContain(
+      "https://app.example.test/api/reminders/unsubscribe?id=r1&token=t1",
+    );
+    const fallback = renderReminderEmail({
+      ...facts(),
+      basis: "event_start",
+      window: null,
+    });
+    expect(fallback.text).toContain(
+      "Not you? Use the link below to delete this reminder:",
+    );
+    expect(fallback.text).toContain("unsubscribe?id=r1&token=t1");
+  });
+
   it("renders date-only windows without a time", () => {
     const email = renderReminderEmail(
       facts({
@@ -68,6 +90,34 @@ describe("renderReminderEmail", () => {
       }),
     );
     expect(email.text).toContain("Registration opens Tue Mar 4 for:");
+  });
+});
+
+describe("effectiveLimit", () => {
+  it("defaults to the 200/run cap and never exceeds it", () => {
+    expect(MAX_SENDS_PER_RUN).toBe(200);
+    expect(effectiveLimit(undefined)).toBe(200);
+    expect(effectiveLimit(50)).toBe(50);
+    expect(effectiveLimit(200)).toBe(200);
+    expect(effectiveLimit(500)).toBe(200);
+  });
+});
+
+describe("sender wiring", () => {
+  const run = readFileSync(
+    new URL("../src/send-reminders/run.ts", import.meta.url),
+    "utf8",
+  );
+
+  it("requires APP_BASE_URL and selects delete tokens", () => {
+    expect(run).toContain("APP_BASE_URL");
+    expect(run).toContain("select=id,email,remind_at,basis,event_id,delete_token");
+    expect(run).toContain("/api/reminders/unsubscribe?id=");
+  });
+
+  it("clamps --limit through effectiveLimit", () => {
+    expect(run).toContain("effectiveLimit(requested)");
+    expect(run).toContain("clamped to");
   });
 });
 
@@ -96,6 +146,7 @@ describe("reminders workflow", () => {
       "SUPABASE_SERVICE_ROLE_KEY",
       "RESEND_API_KEY",
       "RESEND_FROM",
+      "APP_BASE_URL",
     ]) {
       expect(workflow).toContain(`secrets.${name}`);
     }

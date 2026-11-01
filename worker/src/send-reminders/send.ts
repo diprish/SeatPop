@@ -19,6 +19,16 @@ export interface ReminderEmailFacts {
     quote: string;
     source_url: string;
   } | null;
+  /** One-click token delete URL (built from APP_BASE_URL in run.ts). */
+  deleteUrl: string;
+}
+
+/** Upper bound on Resend calls per sender run (abuse brake). */
+export const MAX_SENDS_PER_RUN = 200;
+
+export function effectiveLimit(requested: number | undefined): number {
+  if (requested === undefined) return MAX_SENDS_PER_RUN;
+  return Math.min(requested, MAX_SENDS_PER_RUN);
 }
 
 export interface ReminderEmail {
@@ -82,7 +92,9 @@ export function renderReminderEmail(facts: ReminderEmailFacts): ReminderEmail {
         `City registration page: ${facts.window.source_url}`,
         `Official event page: ${facts.source_url}`,
         ``,
-        `You asked for one email about this event. To delete this reminder, open your Saved page in SeatPop.`,
+        `You asked for one email about this event.`,
+        `Not you? Use the link below to delete this reminder:`,
+        facts.deleteUrl,
       ].join("\n"),
     };
   }
@@ -97,7 +109,9 @@ export function renderReminderEmail(facts: ReminderEmailFacts): ReminderEmail {
       `No registration window was listed for this event, so this reminder fired 1 day before the start.`,
       `Official event page: ${facts.source_url}`,
       ``,
-      `You asked for one email about this event. To delete this reminder, open your Saved page in SeatPop.`,
+      `You asked for one email about this event.`,
+      `Not you? Use the link below to delete this reminder:`,
+      facts.deleteUrl,
     ].join("\n"),
   };
 }

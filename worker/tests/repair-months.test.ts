@@ -4,6 +4,7 @@ import {
   planMonthsRepair,
   type MonthsRepairRow,
 } from "../src/repair-months/plan";
+import { OWNER_MODEL } from "../src/seed-owner-events/seed";
 
 function candidate(overrides: Partial<EnrichCandidate> = {}): EnrichCandidate {
   return {
@@ -14,6 +15,7 @@ function candidate(overrides: Partial<EnrichCandidate> = {}): EnrichCandidate {
     timezone: "America/Toronto",
     category: "library",
     venueName: "Main Branch",
+    model: null,
     sourceHash: "old",
     policy: null,
     ...overrides,
@@ -46,6 +48,16 @@ describe("planMonthsRepair", () => {
     const planned = planMonthsRepair([
       row({
         candidate: candidate({ sourceHash: "new" }),
+        ageMinQuote: "0-18 months",
+      }),
+    ]);
+    expect(planned).toEqual([]);
+  });
+
+  it("never touches owner-transcribed rows, even when stale", () => {
+    const planned = planMonthsRepair([
+      row({
+        candidate: candidate({ model: OWNER_MODEL }),
         ageMinQuote: "0-18 months",
       }),
     ]);

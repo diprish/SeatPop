@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+import { bookingCreateError } from "@/lib/create-errors";
 import {
   bearerJwt,
   clientIp,
@@ -39,7 +40,11 @@ const DeleteBodySchema = z.object({
 });
 
 const EventRowSchema = z.object({ id: z.string() });
-const InsertedSchema = z.object({ id: z.string() });
+const CreatedSchema = z.object({
+  ok: z.boolean(),
+  id: z.string().optional(),
+  error: z.string().optional(),
+});
 
 async function restJson(
   base: string,
@@ -121,33 +126,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "unknown event" }, { status: 404 });
     }
     const delete_token = `${randomUUID()}${randomUUID()}`.replace(/-/g, "");
-    const inserted = await restJson(base, supabase.anonKey, jwt, "bookings", {
+    // Direct INSERT is revoked: the definer function validates, caps
+    // the feed, and stamps auth.uid() server-side.
+    const created = await restJson(base, supabase.anonKey, jwt, "rpc/create_booking", {
       method: "POST",
       body: {
-        event_id: parsed.data.event_id,
-        confirmation_id: parsed.data.confirmation_id,
-        starts_at: parsed.data.starts_at,
-        evidence: parsed.data.evidence,
-        feed_token: parsed.data.feed_token,
-        delete_token,
+        p_event_id: parsed.data.event_id,
+        p_confirmation_id: parsed.data.confirmation_id,
+        p_starts_at: parsed.data.starts_at,
+        p_evidence: parsed.data.evidence,
+        p_feed_token: parsed.data.feed_token,
+        p_delete_token: delete_token,
       },
-      prefer: "return=representation",
     });
-    if (inserted.status === 409) {
-      return NextResponse.json(
-        { error: "this event is already booked on this calendar" },
-        { status: 409 },
-      );
-    }
-    if (inserted.status === 401 || inserted.status === 403) {
+    if (created.status === 401 || created.status === 403) {
       return NextResponse.json({ error: "sign-in required" }, { status: 401 });
     }
-    if (inserted.status < 200 || inserted.status >= 300) {
-      throw new Error(`supabase bookings failed: HTTP ${inserted.status}`);
+    if (created.status < 200 || created.status >= 300) {
+      throw new Error(`create_booking failed: HTTP ${created.status}`);
     }
-    const row = InsertedSchema.array().parse(inserted.json)[0];
-    if (!row) throw new Error("supabase bookings insert returned no row");
-    return NextResponse.json({ id: row.id, delete_token });
+    const envelope = CreatedSchema.parse(created.json);
+    if (!envelope.ok || !envelope.id) {
+      const mapped = bookingCreateError(envelope.error ?? "");
+      return NextResponse.json(
+        { error: mapped.message },
+        { status: mapped.status },
+      );
+    }
+    return NextResponse.json({ id: envelope.id, delete_token });
   } catch (error) {
     console.error(
       `booking create failed: ${error instanceof Error ? error.message : String(error)}`,

@@ -37,7 +37,7 @@ npm start --workspace @seatpop/web
 `prebuild` copies `worker/recommend/eval-report*.json` into `public/`
 for the Trust page; missing files are skipped and the page shows
 "pending". Apply migrations first with `npx supabase db push` (through
-`0013_user_id_defaults.sql`).
+`0018_hardened_creates.sql`).
 
 ## Reminder emails
 
@@ -53,8 +53,14 @@ Repo secrets required (names only):
 
 - `RESEND_API_KEY`: Resend sending key.
 - `RESEND_FROM`: sender identity, e.g. `SeatPop <reminders@…>`.
+- `APP_BASE_URL`: public app origin, e.g. `https://seatpop.example.com`
+  (no trailing slash) — builds the token delete link in each footer.
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: reminder reads are
   service-role-only by RLS (no SELECT policy).
+
+Abuse rails: the sender never exceeds 200 sends per run
+(`--limit` can only ask for fewer); creates are capped in SQL
+(3 unsent per email, 20 per hour globally).
 
 ## Notes
 

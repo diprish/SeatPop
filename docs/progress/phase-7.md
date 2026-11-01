@@ -65,3 +65,19 @@ npx supabase db push                                            # 0014 + 0015
 npm run seed:registration-windows --workspace @seatpop/worker  # after transcribing windows
 npm run send:reminders --workspace @seatpop/worker -- --dry-run
 ```
+
+## Update: hardened reminder creates (migration `0018`)
+
+- Direct app-role INSERT on `reminders` is revoked; `POST
+  /api/reminders` calls `create_reminder(...)`, a SECURITY DEFINER
+  function enforcing valid email, known event, future `remind_at`,
+  ≤3 unsent per email, and ≤20 created per hour globally. Every
+  rejection is a typed envelope the route maps to HTTP (429s on
+  the caps, 409 on duplicates). The token delete RPC is unchanged.
+- Reminder mail now ends with "Not you? Use the link below to
+  delete this reminder" plus a one-click token delete URL (new
+  `APP_BASE_URL` secret; the sender refuses to run without it).
+  The link opens a plain `GET` page that reports Deleted /
+  Already gone honestly.
+- The sender never exceeds 200 sends per run (`MAX_SENDS_PER_RUN`;
+  `--limit` can only ask for fewer and says when it is clamped).

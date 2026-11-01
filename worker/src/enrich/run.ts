@@ -9,6 +9,7 @@ import {
 import { optionsForSource } from "../ingest/source-config";
 import type { StoreConfig } from "../ingest/store";
 import { isDirectExecution } from "../script-entry";
+import { isOwnerRow } from "../seed-owner-events/seed";
 import { resolveEnrichConfig, resolveProvider } from "./config";
 import {
   hashContext,
@@ -178,9 +179,11 @@ async function main(): Promise<number> {
     candidates.map((c) => c.id),
   );
   const { facetLabelsFor, hashFor } = hashContext(listingSources);
+  // Owner-transcribed facts are never model-overwritten, even under
+  // --force (refresh them by editing the seed and rerunning its loader).
   const pending = force
-    ? [...candidates]
-    : candidates.filter((c) => hashFor(c) !== c.sourceHash);
+    ? candidates.filter((c) => !isOwnerRow(c))
+    : candidates.filter((c) => !isOwnerRow(c) && hashFor(c) !== c.sourceHash);
   const now = new Date();
   if (dryRun) {
     const missing = await listMissingEmbeddings(store);

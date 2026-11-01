@@ -2,7 +2,9 @@ import { loadDotenv } from "@seatpop/llm";
 import { matchWindow, type RegistrationWindow } from "../recommend/windows";
 import { isDirectExecution } from "../script-entry";
 import {
+  effectiveLimit,
   maskEmail,
+  MAX_SENDS_PER_RUN,
   renderReminderEmail,
   type ReminderEmailFacts,
 } from "./send";
@@ -18,8 +20,10 @@ import {
  *
  * --dry-run prints masked recipients + subjects and sends nothing.
  *
- * Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (reminders reads are
- * service-role-only) plus RESEND_API_KEY and RESEND_FROM.
+ * Sends are capped at MAX_SENDS_PER_RUN per run (--limit can only ask
+ * for fewer). Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+ * (reminders reads are service-role-only) plus RESEND_API_KEY,
+ * RESEND_FROM, and APP_BASE_URL (the token delete link in the footer).
  */
 
 interface Deps {
@@ -35,6 +39,7 @@ interface DueReminder {
   remind_at: string;
   basis: string;
   event_id: string;
+  delete_token: string;
 }
 
 interface EventFacts {
@@ -109,26 +114,31 @@ async function main(): Promise<number> {
     console.log(
       "seatpop send:reminders: send due email reminders.\n" +
         "usage: npm run send:reminders --workspace @seatpop/worker [-- --dry-run] [--limit N]\n" +
-        "  --dry-run    print masked recipients + subjects; send nothing.\n" +
-        "  --limit N    send at most N reminders, oldest first (default 100).",
+        `  --dry-run    print masked recipients + subjects; send nothing.\n` +
+        `  --limit N    send at most N reminders, oldest first (default ${MAX_SENDS_PER_RUN}; never more per run).`,
     );
     return 0;
   }
   const dryRun = args.includes("--dry-run");
   const limitRaw = valueOf(args, "--limit");
-  const limit = limitRaw === undefined ? 100 : Number(limitRaw);
-  if (!Number.isInteger(limit) || limit <= 0) {
+  const requested = limitRaw === undefined ? undefined : Number(limitRaw);
+  if (requested !== undefined && (!Number.isInteger(requested) || requested <= 0)) {
     console.error("--limit needs a positive integer");
     return 2;
+  }
+  const limit = effectiveLimit(requested);
+  if (requested !== undefined && requested > limit) {
+    console.log(`send:reminders: --limit ${requested} clamped to ${limit}/run cap`);
   }
   loadDotenv();
   const supabaseUrl = process.env["SUPABASE_URL"]?.trim();
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
   const resendKey = process.env["RESEND_API_KEY"]?.trim();
   const resendFrom = process.env["RESEND_FROM"]?.trim();
-  if (!supabaseUrl || !serviceKey || !resendKey || !resendFrom) {
+  const appBase = process.env["APP_BASE_URL"]?.trim().replace(/\/$/, "");
+  if (!supabaseUrl || !serviceKey || !resendKey || !resendFrom || !appBase) {
     console.error(
-      "send:reminders needs SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY and RESEND_FROM",
+      "send:reminders needs SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, RESEND_FROM and APP_BASE_URL",
     );
     return 2;
   }
@@ -143,7 +153,7 @@ async function main(): Promise<number> {
   const due = await rest<DueReminder[]>(
     deps,
     "reminders",
-    `?select=id,email,remind_at,basis,event_id&sent_at=is.null&remind_at=lte.${encodeURIComponent(now)}&order=remind_at.asc&limit=${limit}`,
+    `?select=id,email,remind_at,basis,event_id,delete_token&sent_at=is.null&remind_at=lte.${encodeURIComponent(now)}&order=remind_at.asc&limit=${limit}`,
   );
   console.log(
     `send:reminders: due=${due.length}${dryRun ? " (dry run — nothing sent)" : ""}`,
@@ -212,6 +222,7 @@ async function main(): Promise<number> {
         basis:
           row.basis === "registration_window" ? "registration_window" : "event_start",
         window,
+        deleteUrl: `${appBase}/api/reminders/unsubscribe?id=${row.id}&token=${row.delete_token}`,
       };
       const email = renderReminderEmail(facts);
       if (dryRun) {

@@ -52,6 +52,8 @@ export interface EnrichCandidate {
   timezone: string;
   category: string | null;
   venueName: string | null;
+  /** Existing enrichment model (owner-transcribed rows are never re-enriched). */
+  model: string | null;
   /** Existing enrichment source_hash, or null when never enriched. */
   sourceHash: string | null;
   /** Primary source's pricing policy, when one is stored. */
@@ -66,7 +68,7 @@ interface CandidateRow {
   timezone: string;
   category: string | null;
   venue: { name: string } | null;
-  event_enrichment: { source_hash: string | null } | null;
+  event_enrichment: { source_hash: string | null; model: string | null } | null;
   src: {
     pricing_policy_kind: string | null;
     pricing_policy_quote: string | null;
@@ -84,7 +86,7 @@ export async function listCandidates(
   const rows = await rest<CandidateRow[]>(config, "events", {
     query:
       "?select=id,title,description,starts_at,timezone,category," +
-      "venue:venues(name),event_enrichment(source_hash)," +
+      "venue:venues(name),event_enrichment(source_hash,model)," +
       "src:sources!events_source_id_fkey(pricing_policy_kind," +
       "pricing_policy_quote,pricing_policy_url,pricing_policy_scope)" +
       "&order=starts_at.asc&limit=10000",
@@ -97,6 +99,7 @@ export async function listCandidates(
     timezone: r.timezone,
     category: r.category,
     venueName: r.venue?.name ?? null,
+    model: r.event_enrichment?.model ?? null,
     sourceHash: r.event_enrichment?.source_hash ?? null,
     policy:
       r.src?.pricing_policy_kind && r.src.pricing_policy_quote

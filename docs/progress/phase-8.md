@@ -59,3 +59,12 @@ npm run build --workspace @seatpop/web
 Manual pass: save an event → Book for us → complete on the official
 site → Add confirmation → check the review → Confirm booking →
 Booked tab shows it → .ics downloads → feed URL subscribes.
+
+## Update: hardened booking creates (migration `0018`)
+
+- `bookings` gains `CHECK (char_length(feed_token) >= 32)`, and
+  direct app-role INSERT is revoked; `POST /api/bookings` calls
+  `create_booking(...)`, a SECURITY DEFINER function enforcing
+  long tokens, a known event, and ≤50 bookings per feed token
+  (typed envelope → HTTP, 409 on duplicates). Delete and the
+  feed RPCs are unchanged.

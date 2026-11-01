@@ -6,6 +6,7 @@ import {
   matchWindow,
   normalizeEmail,
 } from "@seatpop/worker/recommend";
+import { reminderCreateError } from "@/lib/create-errors";
 import {
   bearerJwt,
   clientIp,
@@ -41,7 +42,11 @@ const EventRowSchema = z.object({
   starts_at: z.string(),
 });
 
-const InsertedSchema = z.object({ id: z.string() });
+const CreatedSchema = z.object({
+  ok: z.boolean(),
+  id: z.string().optional(),
+  error: z.string().optional(),
+});
 
 async function restJson(
   base: string,
@@ -129,33 +134,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       event.starts_at,
     );
     const delete_token = `${randomUUID()}${randomUUID()}`.replace(/-/g, "");
-    const inserted = await restJson(base, supabase.anonKey, jwt, "reminders", {
+    // Direct INSERT is revoked: the definer function validates, caps,
+    // and stamps auth.uid() server-side, returning a typed envelope.
+    const created = await restJson(base, supabase.anonKey, jwt, "rpc/create_reminder", {
       method: "POST",
       body: {
-        event_id: parsed.data.event_id,
-        email,
-        remind_at: schedule.remind_at,
-        basis: schedule.basis,
-        delete_token,
+        p_event_id: parsed.data.event_id,
+        p_email: email,
+        p_remind_at: schedule.remind_at,
+        p_basis: schedule.basis,
+        p_delete_token: delete_token,
       },
-      prefer: "return=representation",
     });
-    if (inserted.status === 409) {
-      return NextResponse.json(
-        { error: "a reminder is already set for this event and email" },
-        { status: 409 },
-      );
-    }
-    if (inserted.status === 401 || inserted.status === 403) {
+    if (created.status === 401 || created.status === 403) {
       return NextResponse.json({ error: "sign-in required" }, { status: 401 });
     }
-    if (inserted.status < 200 || inserted.status >= 300) {
-      throw new Error(`supabase reminders failed: HTTP ${inserted.status}`);
+    if (created.status < 200 || created.status >= 300) {
+      throw new Error(`create_reminder failed: HTTP ${created.status}`);
     }
-    const row = InsertedSchema.array().parse(inserted.json)[0];
-    if (!row) throw new Error("supabase reminders insert returned no row");
+    const envelope = CreatedSchema.parse(created.json);
+    if (!envelope.ok || !envelope.id) {
+      const mapped = reminderCreateError(envelope.error ?? "");
+      return NextResponse.json(
+        { error: mapped.message },
+        { status: mapped.status },
+      );
+    }
     return NextResponse.json({
-      id: row.id,
+      id: envelope.id,
       remind_at: schedule.remind_at,
       basis: schedule.basis,
       delete_token,
