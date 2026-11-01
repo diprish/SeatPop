@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Preferences } from "@seatpop/shared";
+import BookingChecklist from "@/components/booking-checklist";
 import EventCard from "@/components/event-card";
 import RemindMe from "@/components/remind-me";
 import type { RecommendItemView } from "@/lib/api";
@@ -125,6 +126,7 @@ export default function SavedPage() {
                 onNotForUs={(item, reason) => void hide(item, reason)}
               />
               <RemindMe item={entry.item} />
+              <BookingChecklist item={entry.item} />
             </div>
           ))}
         </div>
