@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { bookingCreateError, reminderCreateError } from "../src/lib/create-errors";
+import {
+  bookingCreateError,
+  reminderCreateError,
+  voteCreateError,
+} from "../src/lib/create-errors";
 
 describe("reminderCreateError", () => {
   const cases: Array<[string, number]> = [
@@ -44,6 +48,30 @@ describe("bookingCreateError", () => {
     expect(bookingCreateError("something_new")).toEqual({
       status: 500,
       message: "booking failed",
+    });
+  });
+});
+
+describe("voteCreateError", () => {
+  const cases: Array<[string, number]> = [
+    ["invalid_series", 400],
+    ["invalid_voter", 400],
+    ["invalid_vote", 400],
+    ["invalid_tags", 400],
+    ["unknown_event", 404],
+    ["voter_cap", 429],
+    ["global_cap", 429],
+  ];
+  it.each(cases)("maps %s to HTTP %i with a message", (code, status) => {
+    const mapped = voteCreateError(code);
+    expect(mapped.status).toBe(status);
+    expect(mapped.message.length).toBeGreaterThan(0);
+  });
+
+  it("fails closed on unknown codes", () => {
+    expect(voteCreateError("something_new")).toEqual({
+      status: 500,
+      message: "vote failed",
     });
   });
 });

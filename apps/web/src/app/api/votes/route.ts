@@ -1,10 +1,14 @@
-import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { voteSeriesKey } from "@seatpop/worker/recommend";
 import { voteCreateError } from "@/lib/create-errors";
-import { publicSupabase } from "@/lib/recommend-server";
+import {
+  clientIp,
+  publicSupabase,
+  routeLimiter,
+} from "@/lib/recommend-server";
 import { VOTE_TAGS, type VoteTag } from "@/lib/votes";
+import { voterHashFor } from "@/lib/voter-hash";
 
 /**
  * Worth-it votes, keyed by event series (one vote per device per
@@ -16,6 +20,8 @@ import { VOTE_TAGS, type VoteTag } from "@/lib/votes";
  * {enough: false} below 3 votes (no counts leak for tiny samples).
  * POST /api/votes: {event_id, vote: 1 | -1, tags, device_id}.
  */
+
+const limiter = routeLimiter();
 
 const TagSchema = z
   .string()
@@ -53,11 +59,6 @@ const CreatedSchema = z.object({
   id: z.string().optional(),
   error: z.string().optional(),
 });
-
-/** Salted device hash: the only voter identity ever stored. */
-export function voterHashFor(deviceId: string, salt: string): string {
-  return createHash("sha256").update(`${deviceId}:${salt}`, "utf8").digest("hex");
-}
 
 async function restJson(
   base: string,
@@ -157,6 +158,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Writes only: every card reads its summary on view, so GET stays
+  // unlimited (cheap aggregates) while votes share the daily IP cap.
+  const limit = limiter.check(`votes:${clientIp(request)}`);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "daily request cap reached for this address" },
+      { status: 429 },
+    );
+  }
   let body: unknown;
   try {
     body = await request.json();
