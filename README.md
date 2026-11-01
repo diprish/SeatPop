@@ -1,65 +1,67 @@
 # SeatPop (hackathon edition)
 
-Helps households find the right activity (free or paid, any kind) for each person in them, book it in time, and get confirmed bookings onto a family calendar. Pilot city: Ottawa, Canada. Built with Meta models for the Meta Global AI Developer Hackathon.
+SeatPop helps households find the right activity — free or paid, any
+kind — for each person in them, register in time, and get confirmed
+bookings onto a family calendar. Guest-first: results in seconds with
+no sign-up; signed-in users may save a household. Pilot city: Ottawa,
+Canada. Built with Meta models for the Meta Global AI Developer
+Hackathon.
 
-## Provenance
+Live: https://seat-pop.vercel.app (Trust page:
+https://seat-pop.vercel.app/trust)
 
-SeatPop (hackathon edition) is a new codebase written between Oct 27 and Nov 4, 2026.
+## How it works
 
-## Status
+1. The LLM proposes, the verifier disposes: every model-extracted value must ground in a verbatim quote from the event's own text, or it is dropped.
+2. Hard constraints run in SQL: age fit, budget, distance, time windows, language, and accessibility filter candidates before any ranking.
+3. Privacy by design: age bands only — never names, birth dates, full postal codes, or addresses; typed household text is redacted and discarded.
+4. Graceful fallback: rerank failures return the stage-2 order with templated reasons, and the app shows honest empty and error states instead of blank pages or invented numbers.
+5. Polite crawling: robots.txt honored, rate limits, an honest user agent, loud failures — and owner-transcribed facts are never crawled at all.
 
-Phase 0 skeleton: monorepo, model client with cost ledger, worker placeholder,
-Next.js app with `/health`, Supabase migration 0001, CI. Not deployed yet.
+## Run locally
 
-## Development
-
-Requires Node 20+. Copy `.env.example` to `.env` and fill it in (never commit
-`.env`).
+Requires Node 20+. Secrets live in the repo-root `.env` (never
+committed; the client bundle reads none).
 
 ```sh
 npm install
-npm run typecheck
-npm run lint
-npm test
-npm run smoke        # one tiny request per chat model; needs MODEL_API_KEY
+cp .env.example .env   # fill in: SUPABASE_URL, SUPABASE_ANON_KEY, ...
+npx supabase db push   # linked project; applies supabase/migrations
+npm run dev --workspace @seatpop/web   # http://localhost:3000
 ```
 
-## Supabase
+Without Supabase credentials the app still runs but shows
+not-configured states instead of data. Gates:
+`npm run typecheck && npm run lint && npm test`. Deploy notes are in
+`docs/deploy.md`; per-phase build notes in `docs/progress/`.
 
-Migrations live in `supabase/migrations`. The app does not need Supabase to
-run in phase 0; when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set,
-the model client also mirrors each cost-ledger row to the `llm_calls` table
-(service role only; RLS blocks anon and authenticated callers).
+## Eval results
 
-Local:
+Recommend eval, 20 synthetic households, relevance graded by Muse
+Wonder (labeled model-graded): **0 constraint violations** in every
+top 10, mean NDCG@10 **0.990 reranked** vs 0.766 date-order and 0.895
+stage-2-only baselines (14/20 households graded), policy probe ok, and
+the no-key fallback proven by a key-removed run. Details:
+[docs/eval-report.md](docs/eval-report.md). The [Trust
+page](https://seat-pop.vercel.app/trust) renders the same reports; the
+enrichment eval shows pending there until its run completes.
 
-```sh
-npx supabase init     # once, if supabase/config.toml does not exist yet
-npx supabase start    # applies supabase/migrations automatically
-npx supabase stop     # when done
-```
+## Meta models and tools
 
-Hosted (https://supabase.com/dashboard):
-
-```sh
-npx supabase link --project-ref <project-ref>
-npx supabase db push  # applies pending migrations
-```
-
-Table overview: `llm_calls` (ledger mirror, service role only), `profiles`
-(one row per auth user, readable/writable by its owner only). Every table has
-Row Level Security enabled.
-
-## Recommendations (phases 4-5)
-
-Guest-first: `POST /api/recommend` takes `{prefs}` (age bands, budget,
-distance, area, availability, interests) and stores nothing, or
-`{householdId}` for a signed-in user's saved household. `POST
-/api/profile/parse` turns typed household text into editable chips (PII
-redacted, raw text discarded). `GET/POST /api/households` manage saved
-households behind a user JWT (`Authorization: Bearer`). Try it at
-`/recommend`. Saving from the page reads a JWT from the
-`seatpop_jwt` localStorage key; a sign-in UI is still open.
+- **Muse Spark 1.3** (Meta, standard): reranks the top 30 with
+  stated-vs-inferred reasons; `profile_parse` turns typed household
+  text into editable chips; `booking_parse` reads redacted booking
+  confirmations. Household and email tasks are gated to standard Meta
+  models — never contributor, never Baseten.
+- **Muse Spark 1.3 contributor** (Meta): listing extraction and
+  enrichment voting over public listing text.
+- **Muse Spark Open on Baseten**: serves the no-training route
+  exclusively (never falls back to contributor) and shares
+  public-text extraction otherwise, under spend caps.
+- **Muse Wonder 1.0** (Meta): eval judge producing NDCG relevance
+  grades, always labeled model-graded.
+- Interest embeddings are local bge-small vectors, not a hosted model
+  call.
 
 ## Attribution
 
@@ -76,3 +78,11 @@ households behind a user JWT (`Authorization: Bearer`). Try it at
   Museum, theatre, and market coordinates cite the venues' Wikipedia
   pages per entry (`source`); three entries are marked `"verified":
   false` pending a map check.
+
+## Provenance
+
+SeatPop (hackathon edition) was built between Oct 27 and Nov 4, 2026,
+from scratch in this repository. It follows an earlier private concept
+by the same author (working name RegWatch); no code from it was
+carried over. Golden labels were drafted by AI and reviewed by the
+author.
