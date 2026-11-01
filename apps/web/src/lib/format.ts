@@ -81,6 +81,31 @@ export function formatWindowOpens(
   return `${day} · ${timeLabel(date, "America/Toronto")}`;
 }
 
+/**
+ * Card badge for a registration opening in America/Toronto:
+ * "Registration opens Nov 17, 9:00 PM", or "Registration opens Nov 3"
+ * for date-only windows (no invented time). Null when the stored
+ * instant is invalid — callers hide the badge instead of showing a
+ * made-up date.
+ */
+export function formatRegistrationBadge(
+  opensAt: string,
+  dateOnly: boolean,
+): string | null {
+  const date = new Date(opensAt);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "America/Toronto",
+  }).formatToParts(date);
+  const get = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  const day = `${get("month")} ${get("day")}`;
+  if (dateOnly) return `Registration opens ${day}`;
+  return `Registration opens ${day}, ${timeLabel(date, "America/Toronto")}`;
+}
+
 /** One-line quote preview (the detail page shows the full verbatim text). */
 export function truncateQuote(quote: string, max = 120): string {
   const flat = quote.replace(/\s+/g, " ").trim();

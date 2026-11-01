@@ -9,13 +9,12 @@ import {
   ageLine,
   formatDistance,
   formatReasonDates,
+  formatRegistrationBadge,
   formatWhenRange,
-  formatWindowOpens,
   priceBadgeClass,
   priceBadgeLabel,
   priceTone,
   splitReasonMarks,
-  truncateQuote,
 } from "@/lib/format";
 import WhySheet from "@/components/why-sheet";
 
@@ -41,8 +40,8 @@ export default function EventCard({
   const [datesOpen, setDatesOpen] = useState(false);
   const ages = ageLine(item);
   const distance = formatDistance(item.distance_km);
-  const windowOpens = item.registration_window
-    ? formatWindowOpens(
+  const badge = item.registration_window
+    ? formatRegistrationBadge(
         item.registration_window.opens_at,
         item.registration_window.opens_date_only,
       )
@@ -60,10 +59,14 @@ export default function EventCard({
         {item.venue_name ? ` · ${item.venue_name}` : ""}
         {distance ? ` · ${distance}` : ""}
       </p>
-      {item.registration_window && windowOpens && (
+      {item.registration_window && badge && (
         <div className="mt-1 text-sm">
           <p>
-            Registration opens {windowOpens}{" "}
+            <span className="inline-block rounded-full border border-neutral-300 px-2 py-0.5 text-xs font-semibold dark:border-neutral-700">
+              {badge}
+            </span>
+          </p>
+          <p className="mt-1 text-xs italic text-neutral-600 dark:text-neutral-300">
             <a
               className="underline"
               href={item.registration_window.source_url}
@@ -71,11 +74,8 @@ export default function EventCard({
               rel="noreferrer"
               aria-label={`Registration source for ${item.title}`}
             >
-              City page ↗
+              “{item.registration_window.quote}”
             </a>
-          </p>
-          <p className="text-xs italic text-neutral-600 dark:text-neutral-300">
-            “{truncateQuote(item.registration_window.quote)}”
           </p>
         </div>
       )}

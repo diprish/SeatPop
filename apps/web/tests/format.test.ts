@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDistance,
   formatReasonDates,
+  formatRegistrationBadge,
   formatWhenRange,
   formatWindowOpens,
   isPolicyPrice,
@@ -81,6 +82,32 @@ describe("formatWindowOpens", () => {
   it("returns null for invalid instants instead of inventing a date", () => {
     expect(formatWindowOpens("not a date", false)).toBeNull();
     expect(formatWindowOpens("not a date", true)).toBeNull();
+  });
+});
+
+describe("formatRegistrationBadge", () => {
+  it("renders the badge in Toronto time", () => {
+    expect(
+      formatRegistrationBadge("2026-11-17T21:00:00-05:00", false),
+    ).toBe("Registration opens Nov 17, 9:00 PM");
+  });
+
+  it("renders date-only badges without inventing a time", () => {
+    expect(formatRegistrationBadge("2026-11-03T00:00:00-05:00", true)).toBe(
+      "Registration opens Nov 3",
+    );
+  });
+
+  it("uses the Toronto date across midnight UTC", () => {
+    // Nov 18 02:00Z is still Nov 17 in Toronto.
+    expect(formatRegistrationBadge("2026-11-18T02:00:00.000Z", false)).toBe(
+      "Registration opens Nov 17, 9:00 PM",
+    );
+  });
+
+  it("returns null for invalid instants instead of inventing a date", () => {
+    expect(formatRegistrationBadge("not a date", false)).toBeNull();
+    expect(formatRegistrationBadge("not a date", true)).toBeNull();
   });
 });
 

@@ -82,3 +82,13 @@ npx supabase db push   # 0020 first (the loader writes label)
 npm run seed:registration-windows --workspace @seatpop/worker -- --dry-run
 npm run seed:registration-windows --workspace @seatpop/worker
 ```
+
+## Step 3: registration badge on cards
+
+Event cards (For you and Explore share the component) show the
+attached window as a pill badge — "Registration opens Nov 17, 9:00 PM",
+Toronto-local, date-only windows without a time — followed by the
+verbatim City quote as the link to the source page. No window (or an
+unparseable instant) hides the block instead of showing a made-up
+date. The booking checklist and detail page keep their existing
+`formatWindowOpens` text; the badge has its own formatter.
