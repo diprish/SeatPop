@@ -20,6 +20,9 @@ secret manager; `.env` is git-ignored and never committed):
 - `LLM_CACHE_DIR`, `LLM_LEDGER_PATH` (optional): model cache and cost
   ledger locations. On ephemeral filesystems leave the defaults; the
   cache just starts cold.
+- `VOTE_SALT` (required for voting): random server salt for worth-it
+  voter hashes (e.g. `openssl rand -hex 32`). Without it, casting votes
+  500s while counts still read.
 
 Explicitly NOT needed by the web app: `SUPABASE_SERVICE_ROLE_KEY`
 (worker scripts only — it never appears in `apps/web`, audited),

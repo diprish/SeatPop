@@ -43,6 +43,30 @@ export function reminderCreateError(code: string): MappedError {
   }
 }
 
+export function voteCreateError(code: string): MappedError {
+  switch (code) {
+    case "invalid_series":
+    case "invalid_voter":
+    case "invalid_vote":
+    case "invalid_tags":
+      return { status: 400, message: "invalid vote" };
+    case "unknown_event":
+      return { status: 404, message: "unknown event" };
+    case "voter_cap":
+      return {
+        status: 429,
+        message: "this device has cast a lot of votes — try again later",
+      };
+    case "global_cap":
+      return {
+        status: 429,
+        message: "voting is busy, try again later",
+      };
+    default:
+      return { status: 500, message: "vote failed" };
+  }
+}
+
 export function bookingCreateError(code: string): MappedError {
   switch (code) {
     case "invalid_token":

@@ -1,3 +1,4 @@
+import { branchOf } from "@seatpop/shared";
 import { normalizeTitle } from "../ingest/dedupe";
 
 /**
@@ -34,6 +35,21 @@ export function seriesKey(row: SeriesRow): string {
     normalizeTitle(row.title),
     normalizeTitle(row.venue_name ?? ""),
   ].join("|");
+}
+
+/**
+ * Vote identity: normalized title + normalized venue BRANCH (rooms of
+ * one branch vote as one series). Venue-less events key on the title
+ * alone. Pure (tested); the votes API derives it server-side from the
+ * event row so clients never construct keys.
+ */
+export function voteSeriesKey(
+  title: string,
+  venueName: string | null,
+): string {
+  return [normalizeTitle(title), normalizeTitle(branchOf(venueName))].join(
+    "|",
+  );
 }
 
 const DAY_MS = 86_400_000;
