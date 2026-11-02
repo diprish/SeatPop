@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Preferences } from "@seatpop/shared";
 import EmptyState from "@/components/empty-state";
@@ -185,6 +186,12 @@ export default function Home() {
           ))}
         </ol>
       </Card>
+      <p className="mt-2 text-sm text-muted">
+        New here?{" "}
+        <Link className="font-bold underline underline-offset-4" href="/about">
+          See how it works
+        </Link>
+      </p>
 
       <div className="mt-4 lg:hidden">
         <div className="flex flex-wrap gap-2" aria-label="Household summary">

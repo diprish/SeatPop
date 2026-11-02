@@ -27,6 +27,7 @@ function page(path: string): string {
 
 const PAGES = [
   "../src/app/page.tsx",
+  "../src/app/about/page.tsx",
   "../src/app/explore/page.tsx",
   "../src/app/saved/page.tsx",
   "../src/app/booked/page.tsx",

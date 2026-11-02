@@ -23,6 +23,10 @@ export function SiteFooter() {
             Trust
           </Link>{" "}
           ·{" "}
+          <Link className="underline" href="/about">
+            How it works
+          </Link>{" "}
+          ·{" "}
           <a
             className="underline"
             href="https://github.com/diprish/SeatPop"
