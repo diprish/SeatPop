@@ -57,3 +57,17 @@ describe("saved and booked markup", () => {
     }
   });
 });
+
+describe("remind-me consent markup", () => {
+  it("states the one-email consent line next to the form", () => {
+    expect(REMIND).toContain("One email about this event, nothing else.");
+    expect(REMIND).toContain("stored\n        only for this reminder");
+  });
+
+  it("labels the email input and offers one-click delete", () => {
+    expect(REMIND).toContain('htmlFor={`remind-email-${item.event_id}`}');
+    expect(REMIND).toContain('type="email"');
+    expect(REMIND).toContain("Delete reminder");
+    expect(REMIND).toContain("deleteReminderApi(reminder.id, reminder.token)");
+  });
+});
