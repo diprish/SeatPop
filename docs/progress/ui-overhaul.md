@@ -70,6 +70,5 @@ caution semantics; flagged here so the keep is explicit.
 - Visual pass (light + dark, all pages incl. Why sheet, Saved
   controls, and an empty state): zero contrast failures, no
   horizontal scroll, card shadows resolve.
-- Lighthouse accessibility score: to be recorded.
-- Refreshed screenshots (`docs/screenshots/01–05` + `06-dark-for-you.png`):
-  to be recorded.
+- Lighthouse accessibility: 100 on the For-you page (21 passed audits).
+- Refreshed screenshots: `docs/screenshots/01–05` + `06-dark-for-you.png`.
