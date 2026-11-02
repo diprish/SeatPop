@@ -10,7 +10,7 @@ import HouseholdSentence, {
   focusFilterTarget,
 } from "@/components/household-sentence";
 import HouseholdSheet from "@/components/household-sheet";
-import ResultsList from "@/components/results-list";
+import PerPersonResults from "@/components/per-person-results";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -358,7 +358,7 @@ export default function Home() {
           )}
 
           {visible.length > 0 && meta && (
-            <ResultsList
+            <PerPersonResults
               items={visible}
               reranked={meta.reranked}
               prefs={prefs}
@@ -366,6 +366,10 @@ export default function Home() {
               syncNotes={syncNotes}
               onToggleSave={(item) => void toggleSave(item)}
               onNotForUs={(item, reason) => void hide(item, reason)}
+              onApply={(next) => {
+                setPrefs(next);
+                void search(next);
+              }}
             />
           )}
 

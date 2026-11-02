@@ -18,6 +18,10 @@ const SENTENCE = readFileSync(
   new URL("../src/components/household-sentence.tsx", import.meta.url),
   "utf8",
 );
+const GROUPED = readFileSync(
+  new URL("../src/components/per-person-results.tsx", import.meta.url),
+  "utf8",
+);
 
 describe("home page markup", () => {
   it("heralds the gradient headline with the 3-step strip", () => {
@@ -92,6 +96,20 @@ describe("home page markup", () => {
     expect(LIST).toContain("match order");
   });
 
+  it("groups For-you picks per person with a together row", () => {
+    expect(HOME).toContain("<PerPersonResults");
+    expect(GROUPED).toContain("Everyone together");
+    expect(GROUPED).toContain("AI-ranked");
+    expect(GROUPED).toContain("match order");
+    expect(GROUPED).toContain("groupPerPerson");
+    expect(GROUPED).toContain("No single pick fits everyone");
+    expect(GROUPED).toContain("Nothing for ");
+    expect(GROUPED).toContain("in this window.");
+    expect(GROUPED).toContain("relaxationsFor");
+    expect(GROUPED).toContain("Show less");
+    expect(GROUPED).toContain("auto-fit,minmax(260px,1fr)");
+  });
+
   it("shows pastel skeletons behind the searching status", () => {
     expect(HOME).toContain('role="status"');
     expect(HOME).toContain("Searching…");
@@ -103,5 +121,6 @@ describe("home page markup", () => {
   it("keeps no raw neutral ramp on home or the list", () => {
     expect(HOME).not.toContain("neutral-");
     expect(LIST).not.toContain("neutral-");
+    expect(GROUPED).not.toContain("neutral-");
   });
 });
