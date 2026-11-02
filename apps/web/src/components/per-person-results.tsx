@@ -196,16 +196,37 @@ function MobileTabs({
   reranked: boolean;
   onApply: (next: Preferences) => void;
 }) {
-  const tabs = [
-    { id: "everyone", label: "Everyone", hue: "lavender" as Hue },
-    ...columns.map((column) => ({
-      id: column.band,
-      label: BAND_TAB_LABEL[column.band],
-      hue: hueForBand(column.band),
-    })),
-  ];
+  const columnTabs = columns.map((column) => ({
+    id: column.band,
+    label: BAND_TAB_LABEL[column.band],
+    hue: hueForBand(column.band),
+  }));
+  // One band has no together row, so no Everyone tab either — except
+  // with no members at all, where Everyone carries the empty message.
+  const tabs =
+    columns.length === 1
+      ? columnTabs
+      : [
+          { id: "everyone", label: "Everyone", hue: "lavender" as Hue },
+          ...columnTabs,
+        ];
+  const picksOn = (id: string): boolean =>
+    id === "everyone"
+      ? together.length > 0
+      : (columns.find((column) => column.band === id)?.picks.length ?? 0) >
+        0;
   const [active, setActive] = useState("everyone");
-  const current = tabs.some((tab) => tab.id === active) ? active : "everyone";
+  const [manual, setManual] = useState(false);
+  const select = (id: string): void => {
+    setActive(id);
+    setManual(true);
+  };
+  // Open on the first tab with picks (never an empty Everyone);
+  // once the user picks a tab, stay there even if it is empty.
+  const current =
+    manual && tabs.some((tab) => tab.id === active)
+      ? active
+      : (tabs.find((tab) => picksOn(tab.id))?.id ?? tabs[0]?.id ?? "everyone");
 
   function onTabKeyDown(event: React.KeyboardEvent): void {
     const ids = tabs.map((tab) => tab.id);
@@ -219,7 +240,7 @@ function MobileTabs({
     if (next === null) return;
     event.preventDefault();
     const id = ids[next] as string;
-    setActive(id);
+    select(id);
     document.getElementById(`per-person-tab-${id}`)?.focus();
   }
 
@@ -250,7 +271,7 @@ function MobileTabs({
               aria-selected={selected}
               aria-controls={`per-person-panel-${tab.id}`}
               tabIndex={selected ? 0 : -1}
-              onClick={() => setActive(tab.id)}
+              onClick={() => select(tab.id)}
               className="min-h-[44px] shrink-0"
             >
               {tab.label}
@@ -323,14 +344,16 @@ export default function PerPersonResults({
       <div className="flex justify-end">
         <RankBadge reranked={reranked} />
       </div>
-      <TogetherSection
-        together={together}
-        prefs={prefs}
-        savedIds={savedIds}
-        syncNotes={syncNotes}
-        onToggleSave={onToggleSave}
-        onNotForUs={onNotForUs}
-      />
+      {columns.length !== 1 && (
+        <TogetherSection
+          together={together}
+          prefs={prefs}
+          savedIds={savedIds}
+          syncNotes={syncNotes}
+          onToggleSave={onToggleSave}
+          onNotForUs={onNotForUs}
+        />
+      )}
       <div className="mt-6 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
         {columns.map((column) => (
           <MemberColumn

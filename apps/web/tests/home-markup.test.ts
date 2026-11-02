@@ -147,6 +147,28 @@ describe("home page markup", () => {
     expect(GROUPED).toContain("(min-width: 1024px)");
   });
 
+  it("opens mobile on the first tab with picks, then stays put", () => {
+    expect(GROUPED).toContain("picksOn(tab.id)");
+    expect(GROUPED).toContain("tabs.find");
+    expect(GROUPED).toContain("setManual(true)");
+    expect(GROUPED).toContain("manual && tabs.some");
+  });
+
+  it("skips the together row when a single band owns every pick", () => {
+    expect(GROUPED).toContain("columns.length === 1");
+    expect(GROUPED).toContain("columns.length !== 1");
+  });
+
+  it("spaces sentence pills from separators, not side margins", () => {
+    expect(SENTENCE).not.toContain("mx-");
+    expect(SENTENCE).toContain("align-middle");
+  });
+
+  it("hides All filters below desktop without fighting the button", () => {
+    expect(HOME).toContain("hidden lg:inline");
+    expect(HOME).not.toContain('className="hidden lg:inline-flex"');
+  });
+
   it("shows pastel skeletons behind the searching status", () => {
     expect(HOME).toContain('role="status"');
     expect(HOME).toContain("Searching…");

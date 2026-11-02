@@ -230,17 +230,18 @@ export default function Home() {
             >
               Find activities
             </Button>
-            <Button
-              variant="secondary"
-              hue="lavender"
-              className="hidden lg:inline-flex"
-              aria-expanded={showFilters}
-              aria-controls="all-filters-panel"
-              onClick={() => setShowFilters((show) => !show)}
-            >
-              <Icon name="filter" className="h-4 w-4" />
-              All filters
-            </Button>
+            <span className="hidden lg:inline">
+              <Button
+                variant="secondary"
+                hue="lavender"
+                aria-expanded={showFilters}
+                aria-controls="all-filters-panel"
+                onClick={() => setShowFilters((show) => !show)}
+              >
+                <Icon name="filter" className="h-4 w-4" />
+                All filters
+              </Button>
+            </span>
             <Button
               variant="ghost"
               onClick={() => {

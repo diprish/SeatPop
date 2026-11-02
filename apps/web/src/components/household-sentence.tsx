@@ -77,7 +77,7 @@ export default function HouseholdSentence({
             disclosure
             aria-label={`${segment.text}, edit ${segment.target}`}
             onClick={() => onPill(segment.target, segment.band)}
-            className="mx-0.5 align-middle"
+            className="align-middle"
           >
             {segment.text}
           </Chip>

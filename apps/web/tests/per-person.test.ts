@@ -56,7 +56,6 @@ describe("groupPerPerson", () => {
   it("orders exact before adjacent and keeps served order otherwise", () => {
     const { columns } = groupPerPerson(
       [
-        row("adj1", 0, 5), // preschool-exact, kids-adjacent
         row("ex1", 6, 12), // kids-exact
         row("adj2", 13, 17), // kids-adjacent (teens range touches)
         row("ex2", 5, 12), // kids-exact
@@ -64,18 +63,72 @@ describe("groupPerPerson", () => {
       MEMBERS,
     );
     const kids = columns.find((column) => column.band === "kids");
-    expect(ids(kids?.picks ?? [])).toEqual(["ex1", "ex2", "adj1", "adj2"]);
+    expect(ids(kids?.picks ?? [])).toEqual(["ex1", "ex2", "adj2"]);
   });
 
-  it("shows ageless picks in every column, never in together", () => {
+  it("keeps an adjacent pick out of a column when exact for another member", () => {
+    // Reported: Storytime 0-5 (reason "Good for your 3-5
+    // preschooler") led the Kids 6-12 column. A pick exact for one
+    // member belongs to that member's column only.
+    const { columns } = groupPerPerson([row("story", 0, 5)], MEMBERS);
+    expect(
+      ids(columns.find((column) => column.band === "kids")?.picks ?? []),
+    ).toEqual([]);
+    expect(
+      ids(
+        columns.find((column) => column.band === "preschool")?.picks ?? [],
+      ),
+    ).toEqual(["story"]);
+    expect(
+      ids(columns.find((column) => column.band === "adults")?.picks ?? []),
+    ).toEqual([]);
+  });
+
+  it("keeps adjacent picks exact nowhere in every fitting column", () => {
+    // 5-6 touches preschool and kids without an exact fit
+    // anywhere, so both columns may show it.
+    const { together, columns } = groupPerPerson([row("bridge", 5, 6)], MEMBERS);
+    expect(together).toEqual([]);
+    expect(
+      ids(columns.find((column) => column.band === "kids")?.picks ?? []),
+    ).toEqual(["bridge"]);
+    expect(
+      ids(
+        columns.find((column) => column.band === "preschool")?.picks ?? [],
+      ),
+    ).toEqual(["bridge"]);
+  });
+
+  it("shows ageless picks in together, never in a member column", () => {
+    // Reported: Family Storytime sat in all three member columns
+    // while together claimed no fit. Null ages fit no band
+    // verifiably and every band possibly, so together (flagged
+    // "check the age group") is their only home.
     const { together, columns } = groupPerPerson(
       [row("mystery", null, null)],
       MEMBERS,
     );
-    expect(together).toEqual([]);
+    expect(ids(together)).toEqual(["mystery"]);
     for (const column of columns) {
-      expect(ids(column.picks)).toEqual(["mystery"]);
+      expect(ids(column.picks)).toEqual([]);
     }
+  });
+
+  it("skips together with a single band and shelves all in the column", () => {
+    const solo: Preferences["members"] = [
+      { age_band: "kids", include_adjacent: true },
+    ];
+    const { together, columns } = groupPerPerson(
+      [
+        row("mystery", null, null),
+        row("adj", 0, 5),
+        row("ex", 6, 12),
+      ],
+      solo,
+    );
+    expect(together).toEqual([]);
+    expect(columns.map((column) => column.band)).toEqual(["kids"]);
+    expect(ids(columns[0]?.picks ?? [])).toEqual(["ex", "adj", "mystery"]);
   });
 
   it("leaves one column per band with empty picks allowed", () => {

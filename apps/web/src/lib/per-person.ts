@@ -7,11 +7,16 @@ import {
 /**
  * Per-person grouping (For-you 2c): a lossless, stable partition of
  * the served picks. "Everyone together" holds picks with an exact or
- * adjacent fit for every member; each band column holds that band's
- * exact fits, then adjacent, then ageless picks (which may fit
- * anyone), each in served order. Together picks never repeat in a
- * column. Served order itself is untouched — ranking, SQL, and evals
- * never see this function.
+ * adjacent fit for every member, plus ageless picks (null ages fit
+ * no band verifiably and every band possibly; their "check the age
+ * group" flag travels with them). Each band column holds that band's
+ * exact fits, then adjacent fits that are exact for no other member
+ * — an adjacent pick exact elsewhere reads as a wrong-member pick,
+ * since its reason names the exact band. Together picks never repeat
+ * in a column. With a single band there is no together row: the one
+ * column shelves exact, then adjacent, then ageless. Served order
+ * itself is untouched — ranking, SQL, and evals never see this
+ * function.
  */
 
 export interface PerPersonItem {
@@ -55,15 +60,31 @@ export function groupPerPerson<T extends PerPersonItem>(
   }
   const levelOf = (id: string, index: number): string | undefined =>
     levelsById.get(id)?.[index];
+  const exactForOther = (id: string, band: AgeBand): boolean =>
+    bands.some(
+      (other) =>
+        other !== band &&
+        levelOf(id, memberIndex.get(other) as number) === "exact",
+    );
   const togetherIds = new Set<string>();
-  const together = items.filter((item) => {
-    const servesAll = bands.every((band) => {
-      const level = levelOf(item.event_id, memberIndex.get(band) as number);
-      return level === "exact" || level === "adjacent";
-    });
-    if (servesAll) togetherIds.add(item.event_id);
-    return servesAll;
-  });
+  const together =
+    bands.length <= 1
+      ? []
+      : items.filter((item) => {
+          if (item.age_min === null && item.age_max === null) {
+            togetherIds.add(item.event_id);
+            return true;
+          }
+          const servesAll = bands.every((band) => {
+            const level = levelOf(
+              item.event_id,
+              memberIndex.get(band) as number,
+            );
+            return level === "exact" || level === "adjacent";
+          });
+          if (servesAll) togetherIds.add(item.event_id);
+          return servesAll;
+        });
   const rest = items.filter((item) => !togetherIds.has(item.event_id));
   const columns = bands.map((band): MemberColumn<T> => {
     const index = memberIndex.get(band) as number;
@@ -73,8 +94,11 @@ export function groupPerPerson<T extends PerPersonItem>(
     for (const item of rest) {
       const level = levelOf(item.event_id, index);
       if (level === "exact") exact.push(item);
-      else if (level === "adjacent") adjacent.push(item);
-      else if (level === "unknown") unknown.push(item);
+      else if (level === "adjacent") {
+        if (!exactForOther(item.event_id, band)) adjacent.push(item);
+      } else if (level === "unknown" && bands.length <= 1) {
+        unknown.push(item);
+      }
     }
     return { band, picks: [...exact, ...adjacent, ...unknown] };
   });
