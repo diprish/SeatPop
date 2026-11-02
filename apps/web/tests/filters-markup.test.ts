@@ -33,7 +33,12 @@ describe("household panel and sheet markup", () => {
     expect(PANEL).toContain("hueForBand(band)");
     expect(PANEL).toContain("aria-label={`Add ${BAND_LABELS[band]}`}");
     expect(PANEL).toContain("aria-label={`Remove ${BAND_LABELS[band]}`}");
-    expect(PANEL).toContain("showCheck={false}");
+  });
+
+  it("keeps each selected member one pill with a 44px remove half", () => {
+    expect(PANEL).toContain("rounded-l-full px-4");
+    expect(PANEL).toContain("rounded-r-full");
+    expect(PANEL).toContain("min-h-[44px] min-w-[44px]");
   });
 
   it("keeps every field id and help string", () => {

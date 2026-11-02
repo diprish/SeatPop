@@ -29,6 +29,7 @@ import { Icon, type IconName } from "./ui/Icon";
 import { Toggle } from "./ui/Toggle";
 import {
   HUE_INK,
+  HUE_SOLID_BG,
   HUE_SOLID_BORDER,
   hueForBand,
   hueForDayPart,
@@ -136,28 +137,29 @@ export default function HouseholdPanel({
                 </Chip>
               );
             }
+            // One pill: label and remove travel together so a wrap
+            // never strands the x on its own line.
             return (
               <span
                 key={band}
                 role="group"
                 aria-label={BAND_LABELS[band]}
-                className="inline-flex items-center gap-1"
+                className={`inline-flex items-center rounded-full border-2 ${HUE_SOLID_BG[hue]} ${HUE_SOLID_BORDER[hue]} text-navy`}
               >
-                <Chip
-                  hue={hue}
-                  selected
-                  showCheck={false}
+                <button
+                  type="button"
                   aria-label={`Add ${BAND_LABELS[band]}`}
                   onClick={() => onChange(addMember(prefs, band))}
+                  className="inline-flex min-h-[44px] items-center rounded-l-full px-4 text-sm font-semibold"
                 >
                   {BAND_LABELS[band]}
                   {count > 1 ? ` ×${count}` : ""}
-                </Chip>
+                </button>
                 <button
                   type="button"
                   aria-label={`Remove ${BAND_LABELS[band]}`}
                   onClick={() => removeOne(band)}
-                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 text-lg font-bold ${HUE_SOLID_BORDER[hue]} ${HUE_INK[hue]}`}
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-r-full border-l-2 border-navy/20 text-lg font-bold"
                 >
                   ×
                 </button>
