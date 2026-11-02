@@ -122,7 +122,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
           type="button"
           onClick={() => void remove()}
           disabled={busy !== null}
-          className="mt-1 rounded border border-neutral-300 px-3 py-1 disabled:opacity-40 dark:border-neutral-700"
+          className="mt-1 rounded border border-line px-3 py-1 disabled:opacity-40"
         >
           {busy === "save" ? "Deleting…" : "Delete booking"}
         </button>
@@ -145,7 +145,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
             setError("");
             setParsed(null);
           }}
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
         >
           Add confirmation
         </button>
@@ -168,9 +168,9 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
         onChange={(event) => setText(event.target.value)}
         disabled={busy !== null}
         placeholder="Confirmation #ABC123 for Saturday Storytime on March 8…"
-        className="mt-1 w-full rounded border border-neutral-300 p-2 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-900"
+        className="mt-1 w-full rounded border border-line bg-surface p-2 disabled:opacity-40"
       />
-      <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-xs text-muted">
         Paste only the confirmation — names, payment details, and contact
         info are discarded after reading and never stored.
       </p>
@@ -184,7 +184,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
           type="button"
           onClick={() => void parse()}
           disabled={busy !== null || text.trim() === ""}
-          className="rounded bg-black px-4 py-1 font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-black"
+          className="rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
         >
           {busy === "parse" ? "Reading…" : "Read confirmation"}
         </button>
@@ -196,19 +196,19 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
             setParsed(null);
           }}
           disabled={busy !== null}
-          className="rounded border border-neutral-300 px-3 py-1 disabled:opacity-40 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1 disabled:opacity-40"
         >
           Cancel
         </button>
       </div>
       {parsed && (
-        <div className="mt-3 rounded border border-neutral-300 p-3 dark:border-neutral-700">
+        <div className="mt-3 rounded border border-line bg-surface p-3">
           <p className="font-semibold">Check before saving</p>
           <p className="mt-1">
             Confirmation id: {parsed.booking.confirmation_id ?? "not found"}
           </p>
           {parsed.booking.confirmation_quote && (
-            <p className="text-xs italic text-neutral-600 dark:text-neutral-300">
+            <p className="text-xs italic text-muted">
               “{parsed.booking.confirmation_quote}”
             </p>
           )}
@@ -223,7 +223,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
               : "not found"}
           </p>
           {parsed.booking.datetime_quote && (
-            <p className="text-xs italic text-neutral-600 dark:text-neutral-300">
+            <p className="text-xs italic text-muted">
               “{parsed.booking.datetime_quote}”
             </p>
           )}
@@ -244,7 +244,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
             type="button"
             onClick={() => void save()}
             disabled={busy !== null}
-            className="mt-2 rounded bg-black px-4 py-1 font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-black"
+            className="mt-2 rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
           >
             {busy === "save" ? "Saving…" : "Confirm booking"}
           </button>

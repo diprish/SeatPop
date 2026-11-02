@@ -80,7 +80,7 @@ export default function RemindMe({ item }: RemindMeProps) {
           type="button"
           onClick={() => void remove()}
           disabled={busy}
-          className="mt-1 rounded border border-neutral-300 px-3 py-1 disabled:opacity-40 dark:border-neutral-700"
+          className="mt-1 rounded border border-line px-3 py-1 disabled:opacity-40"
         >
           {busy ? "Deleting…" : "Delete reminder"}
         </button>
@@ -102,7 +102,7 @@ export default function RemindMe({ item }: RemindMeProps) {
             setFormOpen(true);
             setError("");
           }}
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
         >
           Remind me
         </button>
@@ -130,9 +130,9 @@ export default function RemindMe({ item }: RemindMeProps) {
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         disabled={busy}
-        className="mt-1 w-full max-w-xs rounded border border-neutral-300 p-2 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-900"
+        className="mt-1 w-full max-w-xs rounded border border-line bg-surface p-2 disabled:opacity-40"
       />
-      <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-xs text-muted">
         One email about this event, nothing else. Your address is stored
         only for this reminder and you can delete it anytime.
       </p>
@@ -145,7 +145,7 @@ export default function RemindMe({ item }: RemindMeProps) {
         <button
           type="submit"
           disabled={busy || email.trim() === ""}
-          className="rounded bg-black px-4 py-1 font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-black"
+          className="rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
         >
           {busy ? "Setting…" : "Set reminder"}
         </button>
@@ -156,7 +156,7 @@ export default function RemindMe({ item }: RemindMeProps) {
             setError("");
           }}
           disabled={busy}
-          className="rounded border border-neutral-300 px-3 py-1 disabled:opacity-40 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1 disabled:opacity-40"
         >
           Cancel
         </button>

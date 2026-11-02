@@ -106,7 +106,7 @@ export default function SavedPage() {
         </p>
       )}
       {saved.length === 0 && apiOnly.length === 0 && (
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-2 text-sm text-muted">
           Nothing saved yet. Tap Save on any pick in{" "}
           <Link className="underline" href="/">
             For you
@@ -115,7 +115,7 @@ export default function SavedPage() {
         </p>
       )}
       {saved.length > 0 && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4">
           {saved.map((entry) => (
             <div key={entry.item.event_id}>
               <EventCard
@@ -140,7 +140,7 @@ export default function SavedPage() {
             {apiOnly.map((id) => (
               <li
                 key={id}
-                className="rounded border border-neutral-200 p-2 text-sm dark:border-neutral-800"
+                className="rounded border border-line bg-surface p-2 text-sm"
               >
                 <Link className="underline" href={`/events/${id}`}>
                   Open saved event

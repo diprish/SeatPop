@@ -119,7 +119,7 @@ export default function BookedPage() {
           </p>
         </div>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4">
           {entries.map((entry) => {
             const times = resolveIcsTimes(
               entry.starts_at,
@@ -129,7 +129,7 @@ export default function BookedPage() {
             return (
               <article
                 key={entry.booking_id}
-                className="rounded border border-neutral-200 p-3 dark:border-neutral-800"
+                className="rounded-card border border-line bg-surface p-4 shadow-card"
               >
                 <h2 className="font-semibold">
                   <Link
@@ -139,7 +139,7 @@ export default function BookedPage() {
                     {entry.item.title}
                   </Link>
                 </h2>
-                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                <p className="mt-1 text-sm text-muted">
                   {formatWhenRange(times.start, times.end, entry.item.timezone)}
                   {entry.item.venue_name ? ` · ${entry.item.venue_name}` : ""}
                 </p>
@@ -152,14 +152,14 @@ export default function BookedPage() {
                   <button
                     type="button"
                     onClick={() => download(entry)}
-                    className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+                    className="rounded border border-line px-3 py-1"
                   >
                     Download .ics
                   </button>
                   <button
                     type="button"
                     onClick={() => void remove(entry.item.event_id, entry)}
-                    className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+                    className="rounded border border-line px-3 py-1"
                   >
                     Delete booking
                   </button>
@@ -172,7 +172,7 @@ export default function BookedPage() {
       {feedToken && entries.length > 0 && (
         <section aria-label="Family calendar feed" className="mt-6 text-sm">
           <h2 className="font-semibold">Family calendar feed</h2>
-          <p className="mt-1 text-neutral-600 dark:text-neutral-300">
+          <p className="mt-1 text-muted">
             Subscribe in any calendar app. Keep this URL private — anyone
             with it can read your bookings.
           </p>
@@ -183,12 +183,12 @@ export default function BookedPage() {
               value={feedUrl}
               aria-label="Family calendar feed URL"
               onFocus={(event) => event.target.select()}
-              className="w-full rounded border border-neutral-300 p-2 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+              className="w-full rounded border border-line bg-surface p-2 text-xs"
             />
             <button
               type="button"
               onClick={() => void copyFeed()}
-              className="shrink-0 rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+              className="shrink-0 rounded border border-line px-3 py-1"
             >
               {copied ? "Copied" : "Copy"}
             </button>

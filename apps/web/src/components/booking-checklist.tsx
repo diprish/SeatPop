@@ -24,7 +24,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
   );
   if (!item.source_url) {
     return (
-      <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-2 text-sm text-muted">
         No official link listed for this event.
       </p>
     );
@@ -36,7 +36,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
           type="button"
           onClick={() => setOpen(true)}
           aria-expanded={false}
-          className="rounded bg-black px-4 py-1 font-semibold text-white dark:bg-white dark:text-black"
+          className="rounded bg-primary px-4 py-1 font-semibold text-white dark:text-background"
         >
           Book for us
         </button>
@@ -82,7 +82,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
                   {step.title}
                 </label>
                 {step.detail && (
-                  <p className="text-neutral-600 dark:text-neutral-300">
+                  <p className="text-muted">
                     {step.detail}
                   </p>
                 )}
