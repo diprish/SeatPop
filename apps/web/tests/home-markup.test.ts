@@ -154,6 +154,10 @@ describe("home page markup", () => {
     expect(GROUPED).toContain("manual && tabs.some");
   });
 
+  it("states partial age ranges in column reasons", () => {
+    expect(GROUPED).toContain("columnReason(item.reason, item, band)");
+  });
+
   it("skips the together row when a single band owns every pick", () => {
     expect(GROUPED).toContain("columns.length === 1");
     expect(GROUPED).toContain("columns.length !== 1");

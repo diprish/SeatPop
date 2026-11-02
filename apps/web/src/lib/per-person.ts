@@ -1,4 +1,7 @@
 import {
+  AGE_BAND_RANGES,
+  coverBandLabel,
+  fitLevelForMember,
   fitLevelsForHousehold,
   type AgeBand,
   type Preferences,
@@ -12,11 +15,12 @@ import {
  * group" flag travels with them). Each band column holds that band's
  * exact fits, then adjacent fits that are exact for no other member
  * — an adjacent pick exact elsewhere reads as a wrong-member pick,
- * since its reason names the exact band. Together picks never repeat
- * in a column. With a single band there is no together row: the one
- * column shelves exact, then adjacent, then ageless. Served order
- * itself is untouched — ranking, SQL, and evals never see this
- * function.
+ * since its reason names the exact band. Within a tier, broader age
+ * coverage of the band ranks first (18+ ahead of 50+), served order
+ * breaking ties. Together picks never repeat in a column. With a
+ * single band there is no together row: the one column shelves
+ * exact, then adjacent, then ageless. Served order itself is
+ * untouched — ranking, SQL, and evals never see this function.
  */
 
 export interface PerPersonItem {
@@ -33,6 +37,110 @@ export interface MemberColumn<T> {
 export interface PerPersonGroups<T> {
   together: T[];
   columns: Array<MemberColumn<T>>;
+}
+
+/**
+ * Share (0..1) of the member's band covered by the event's stated
+ * age range, one-sided ranges included ("50+" covers 50-64 of the
+ * 18-64 band). An unstated range counts as full coverage for
+ * ranking; its "check the age group" flag is untouched.
+ */
+export function bandCoverage(
+  ages: { age_min: number | null; age_max: number | null },
+  band: AgeBand,
+): number {
+  if (ages.age_min === null && ages.age_max === null) return 1;
+  const range = AGE_BAND_RANGES[band] as { min: number; max: number };
+  const width = range.max - range.min + 1;
+  const overlap = Math.max(
+    0,
+    Math.min(ages.age_max ?? 130, range.max) -
+      Math.max(ages.age_min ?? 0, range.min) +
+      1,
+  );
+  return overlap / width;
+}
+
+/** Order within a fit tier: full band, then share, then served order. */
+function sortByCoverage<T extends PerPersonItem>(
+  tier: T[],
+  orderOf: (id: string) => number,
+  band: AgeBand,
+): T[] {
+  const keyOf = (item: T): [number, number, number] => {
+    const share = bandCoverage(item, band);
+    return [share >= 1 ? 0 : 1, -share, orderOf(item.event_id)];
+  };
+  return tier
+    .slice()
+    .sort(
+      (a, b) =>
+        keyOf(a)[0] - keyOf(b)[0] ||
+        keyOf(a)[1] - keyOf(b)[1] ||
+        keyOf(a)[2] - keyOf(b)[2],
+    );
+}
+
+const PARTIAL_NOUN: Record<AgeBand, string> = {
+  baby: "babies",
+  preschool: "preschoolers",
+  kids: "kids",
+  teens: "teens",
+  adults: "adults",
+  seniors: "seniors",
+};
+
+/** "50+", "10–12", "up to 12" — the ageLine range conventions. */
+function statedRange(ages: {
+  age_min: number | null;
+  age_max: number | null;
+}): string | null {
+  if (ages.age_min !== null && ages.age_max !== null) {
+    return ages.age_min === ages.age_max
+      ? `${ages.age_min}`
+      : `${ages.age_min}–${ages.age_max}`;
+  }
+  if (ages.age_min !== null) return `${ages.age_min}+`;
+  if (ages.age_max !== null) return `up to ${ages.age_max}`;
+  return null;
+}
+
+/**
+ * Column-context reason: when a pick is exact for the column band but
+ * covers only part of it, name the stated range ("Open to adults
+ * 50+") instead of the whole band ("Good for your 18-64 adult").
+ * Only the good-for clause is swapped, so (stated)/(inferred) marks
+ * stay where they are. Anything unrecognized — full coverage,
+ * multi-band clauses, non-conforming phrasing — passes through
+ * untouched rather than risk a wrong rewrite.
+ */
+export function columnReason(
+  reason: string,
+  ages: { age_min: number | null; age_max: number | null },
+  band: AgeBand,
+): string {
+  if (
+    fitLevelForMember(ages, { age_band: band }) !== "exact" ||
+    bandCoverage(ages, band) >= 1
+  ) {
+    return reason;
+  }
+  const range = statedRange(ages);
+  if (!range) return reason;
+  const label = coverBandLabel(band)
+    .replace(/[+()]/g, (c) => `\\${c}`)
+    .replace(/-/g, "[-–]");
+  const match = reason.match(
+    new RegExp(`\\b([Gg]ood for your ${label}\\b)(?!\\s*(?:,|and)\\s+\\d)`),
+  );
+  const clause = match?.[1];
+  if (!match || match.index === undefined || !clause) return reason;
+  const open = clause.startsWith("G") ? "Open to" : "open to";
+  return (
+    reason.slice(0, match.index) +
+    `${open} ${PARTIAL_NOUN[band]} ${range}` +
+    reason.slice(match.index + clause.length)
+  );
 }
 
 export function groupPerPerson<T extends PerPersonItem>(
@@ -86,6 +194,8 @@ export function groupPerPerson<T extends PerPersonItem>(
           return servesAll;
         });
   const rest = items.filter((item) => !togetherIds.has(item.event_id));
+  const servedOrder = new Map(rest.map((item, index) => [item.event_id, index]));
+  const orderOf = (id: string): number => servedOrder.get(id) ?? 0;
   const columns = bands.map((band): MemberColumn<T> => {
     const index = memberIndex.get(band) as number;
     const exact: T[] = [];
@@ -100,7 +210,14 @@ export function groupPerPerson<T extends PerPersonItem>(
         unknown.push(item);
       }
     }
-    return { band, picks: [...exact, ...adjacent, ...unknown] };
+    return {
+      band,
+      picks: [
+        ...sortByCoverage(exact, orderOf, band),
+        ...sortByCoverage(adjacent, orderOf, band),
+        ...unknown,
+      ],
+    };
   });
   return { together, columns };
 }

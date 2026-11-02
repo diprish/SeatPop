@@ -6,7 +6,7 @@ import type { AgeBand, Preferences } from "@seatpop/shared";
 import EventCard from "@/components/event-card";
 import type { RecommendItemView } from "@/lib/api";
 import { BAND_LABELS } from "@/lib/household";
-import { groupPerPerson } from "@/lib/per-person";
+import { columnReason, groupPerPerson } from "@/lib/per-person";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { Badge } from "@/components/ui/Badge";
 import { Chip } from "@/components/ui/Chip";
@@ -53,7 +53,10 @@ function MemberColumn({
   const [expanded, setExpanded] = useState(false);
   const hue: Hue = hueForBand(band);
   const label = columnLabel(band);
-  const shown = expanded ? picks : picks.slice(0, 3);
+  const shown = (expanded ? picks : picks.slice(0, 3)).map((item) => ({
+    ...item,
+    reason: columnReason(item.reason, item, band),
+  }));
   return (
     <section
       aria-labelledby={`per-person-${band}`}

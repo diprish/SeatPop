@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Preferences } from "@seatpop/shared";
-import { groupPerPerson } from "../src/lib/per-person";
+import { columnReason, groupPerPerson } from "../src/lib/per-person";
 import { SAMPLE_HOUSEHOLD } from "../src/lib/household";
 
 interface Row {
@@ -155,5 +155,77 @@ describe("groupPerPerson", () => {
       together: [],
       columns: [],
     });
+  });
+
+  it("ranks broader age coverage first within the exact tier", () => {
+    // Served oldest-first; the Adults column must still lead with
+    // the 18+ event ahead of the 50+ one.
+    const { columns } = groupPerPerson(
+      [row("fifty", 50, null), row("eighteen", 18, null)],
+      MEMBERS,
+    );
+    expect(
+      ids(columns.find((column) => column.band === "adults")?.picks ?? []),
+    ).toEqual(["eighteen", "fifty"]);
+  });
+
+  it("ranks broader coverage first for other bands too", () => {
+    const { columns } = groupPerPerson(
+      [row("narrow", 10, 12), row("mid", 8, 12), row("full", 6, 12)],
+      MEMBERS,
+    );
+    expect(
+      ids(columns.find((column) => column.band === "kids")?.picks ?? []),
+    ).toEqual(["full", "mid", "narrow"]);
+  });
+
+  it("still shows a partial-coverage pick when it is the only option", () => {
+    const { columns } = groupPerPerson([row("fifty", 50, null)], MEMBERS);
+    expect(
+      ids(columns.find((column) => column.band === "adults")?.picks ?? []),
+    ).toEqual(["fifty"]);
+  });
+
+  it("keeps exact before adjacent regardless of coverage", () => {
+    const { columns } = groupPerPerson(
+      [row("adj", 13, 17), row("exact", 10, 12)],
+      MEMBERS,
+    );
+    expect(
+      ids(columns.find((column) => column.band === "kids")?.picks ?? []),
+    ).toEqual(["exact", "adj"]);
+  });
+});
+
+describe("columnReason", () => {
+  it("names the stated range for a partial-coverage exact pick", () => {
+    expect(
+      columnReason("Good for your 18-64 adult (inferred)", row("e", 50, null), "adults"),
+    ).toBe("Open to adults 50+ (inferred)");
+    expect(
+      columnReason(
+        "good for your 18-64 adult (inferred), free entry (stated)",
+        row("e", 50, null),
+        "adults",
+      ),
+    ).toBe("open to adults 50+ (inferred), free entry (stated)");
+  });
+
+  it("tolerates an en-dash band label and states kids ranges", () => {
+    expect(
+      columnReason("Good for your 18–64 adult", row("e", 50, null), "adults"),
+    ).toBe("Open to adults 50+");
+    expect(
+      columnReason("Good for your 6-12 kid (inferred)", row("e", 10, 12), "kids"),
+    ).toBe("Open to kids 10–12 (inferred)");
+  });
+
+  it("leaves full-coverage and multi-band clauses alone", () => {
+    const full = "Good for your 18-64 adult (inferred)";
+    expect(columnReason(full, row("e", 18, null), "adults")).toBe(full);
+    const multi = "good for your 18-64 adult and 6-12 kid (inferred)";
+    expect(columnReason(multi, row("e", 6, 30), "adults")).toBe(multi);
+    const plain = "Free drop-in, close to home (stated)";
+    expect(columnReason(plain, row("e", 50, null), "adults")).toBe(plain);
   });
 });
