@@ -243,12 +243,15 @@ describe("listing extraction", () => {
   it("honours a verified source time-zone override", async () => {
     const drafts = await extractEventsFromPage(
       page(),
-      source({ overrideTimezone: "America/Vancouver" }),
+      source({ overrideTimezone: "America/Phoenix" }),
       { config: testConfig(), chatFn: okChat(eventsReply([GOOD_EVENT])), now: NOW },
     );
     expect(drafts).toHaveLength(1);
-    // Nov 21 is PST (UTC-8): 19:30 local -> 03:30Z next day.
-    expect(drafts[0].startsAtUtc).toBe("2026-11-22T03:30:00.000Z");
+    // America/Phoenix never observes DST (fixed UTC-7): 19:30 local ->
+    // 02:30Z next day. (America/Vancouver used to serve here, but BC's
+    // permanent UTC-7 from Nov 2026, tzdata 2026b, makes its November
+    // offset depend on the runner's tzdata version.)
+    expect(drafts[0].startsAtUtc).toBe("2026-11-22T02:30:00.000Z");
   });
 
   it("falls back to the listing page when the event link is unknown", async () => {

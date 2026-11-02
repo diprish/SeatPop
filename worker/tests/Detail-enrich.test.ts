@@ -206,7 +206,7 @@ describe("Detail-enrich wiring", () => {
 
   it("stores Detail-page provenance on write", () => {
     const run = readFileSync(
-      new URL("../src/Detail-enrich/run.ts", import.meta.url),
+      new URL("../src/detail-enrich/run.ts", import.meta.url),
       "utf8",
     );
     expect(run).toContain("description_source: \"detail_page\"");
