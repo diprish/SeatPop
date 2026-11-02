@@ -39,13 +39,34 @@ function overlaps(
 }
 
 /**
+ * Exact-band overlap: the ranges share more than a single boundary
+ * year, or the event range sits wholly inside the band (so point
+ * events like "age 3", or months-born "0-0", still fit). A range that
+ * merely touches the band at one edge year (Toddlertime 1-3 vs
+ * preschool 3-5, sharing only age 3) is not exact.
+ */
+function overlapsExactly(
+  effMin: number,
+  effMax: number,
+  bandMin: number,
+  bandMax: number,
+): boolean {
+  const lo = Math.max(effMin, bandMin);
+  const hi = Math.min(effMax, bandMax);
+  if (lo > hi) return false;
+  if (hi - lo >= 1) return true;
+  return effMin >= bandMin && effMax <= bandMax;
+}
+
+/**
  * One member's fit for one candidate. Both ages missing is "unknown"
  * (category-default fallback); otherwise the effective range is the
  * stated sides with the same per-side category fallback the SQL uses,
- * overlapped against the member's band as stated ("exact") or as
- * include_adjacent expands it ("adjacent"). "none" is no overlap even
- * expanded — reachable per member whenever another member carries the
- * SQL age constraint (the event fits the household, not this member).
+ * overlapped against the member's band as stated ("exact", boundary
+ * touch excepted — see overlapsExactly) or as include_adjacent
+ * expands it ("adjacent"). "none" is no overlap even expanded —
+ * reachable per member whenever another member carries the SQL age
+ * constraint (the event fits the household, not this member).
  */
 export function fitLevelForMember(
   event: AgeFitEvent,
@@ -59,7 +80,9 @@ export function fitLevelForMember(
     min: number;
     max: number;
   };
-  if (overlaps(effMin, effMax, stated.min, stated.max)) return "exact";
+  if (overlapsExactly(effMin, effMax, stated.min, stated.max)) {
+    return "exact";
+  }
   if (member.include_adjacent ?? true) {
     const expanded = effectiveBandRange(member.age_band, true);
     if (overlaps(effMin, effMax, expanded.min, expanded.max)) {

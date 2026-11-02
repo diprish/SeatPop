@@ -39,6 +39,41 @@ describe("fitLevelForMember", () => {
     ).toBe("none");
   });
 
+  it("treats single-year edge contact as adjacent, not exact", () => {
+    // Toddlertime 1-3 touches preschool 3-5 only at age 3: adjacent.
+    expect(fitLevelForMember({ age_min: 1, age_max: 3 }, PRESCHOOLER)).toBe(
+      "adjacent",
+    );
+    // Same at the top edge: 5-8 shares only age 5 with preschool.
+    expect(fitLevelForMember({ age_min: 5, age_max: 8 }, PRESCHOOLER)).toBe(
+      "adjacent",
+    );
+    // 2-3 straddles the baby/preschool boundary: adjacent for both.
+    expect(fitLevelForMember({ age_min: 2, age_max: 3 }, PRESCHOOLER)).toBe(
+      "adjacent",
+    );
+    expect(
+      fitLevelForMember(
+        { age_min: 2, age_max: 3 },
+        { age_band: "baby", include_adjacent: true },
+      ),
+    ).toBe("adjacent");
+    // Point events inside the band still fit exactly, even at its edges.
+    expect(fitLevelForMember({ age_min: 3, age_max: 3 }, PRESCHOOLER)).toBe(
+      "exact",
+    );
+    expect(fitLevelForMember({ age_min: 5, age_max: 5 }, PRESCHOOLER)).toBe(
+      "exact",
+    );
+    // A months-born point range (0-6 months -> 0-0) fits the baby band.
+    expect(
+      fitLevelForMember(
+        { age_min: 0, age_max: 0 },
+        { age_band: "baby", include_adjacent: true },
+      ),
+    ).toBe("exact");
+  });
+
   it("is unknown when both ages are missing", () => {
     expect(
       fitLevelForMember({ age_min: null, age_max: null }, PRESCHOOLER),

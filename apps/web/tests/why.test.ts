@@ -200,4 +200,27 @@ describe("computeWhy", () => {
       "Close to the kids, baby age bands",
     );
   });
+
+  it("calls edge-touching ages close, and keeps the months quote verbatim", () => {
+    // Toddlertime 1-3 only touches preschool 3-5 at age 3: close, not fit.
+    const prefs = PreferencesSchema.parse({
+      members: [{ age_band: "preschool" }],
+    });
+    const rows = computeWhy(
+      testItem({ age_min: 1, age_max: 3 }),
+      prefs,
+      testDetail({
+        age_min: 1,
+        age_max: 3,
+        evidence: {
+          age_min: { value: 1, quote: "19–36 months" },
+          age_max: { value: 3, quote: "19–36 months" },
+        },
+      }),
+    );
+    expect(rows.find((row) => row.field === "Age")).toMatchObject({
+      detail: "Close to the preschool age band",
+      quote: "19–36 months",
+    });
+  });
 });
