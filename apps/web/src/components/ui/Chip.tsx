@@ -16,12 +16,16 @@ import {
 interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   hue: Hue;
   selected?: boolean;
+  size?: "md" | "sm";
+  showCheck?: boolean;
   children: ReactNode;
 }
 
 export function Chip({
   hue,
   selected = false,
+  size = "md",
+  showCheck = true,
   className = "",
   type = "button",
   children,
@@ -30,15 +34,19 @@ export function Chip({
   const tone = selected
     ? `${HUE_SOLID_BG[hue]} ${HUE_SOLID_BORDER[hue]} text-navy`
     : `${HUE_TINT_BG[hue]} ${HUE_SOLID_BORDER[hue]} ${HUE_INK[hue]}`;
+  const sizing =
+    size === "sm"
+      ? "min-h-[44px] px-2.5 text-xs"
+      : "min-h-[44px] px-4 text-sm";
   return (
     <button
       type={type}
       aria-pressed={selected}
-      className={`inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none ${tone} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-full border-2 font-semibold transition-colors duration-200 motion-reduce:transition-none ${sizing} ${tone} ${className}`}
       {...rest}
     >
       {children}
-      {selected && <Icon name="check" className="h-4 w-4" />}
+      {selected && showCheck && <Icon name="check" className="h-4 w-4" />}
     </button>
   );
 }

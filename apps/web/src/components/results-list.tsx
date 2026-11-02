@@ -1,6 +1,7 @@
 import type { Preferences } from "@seatpop/shared";
 import type { RecommendItemView } from "@/lib/api";
 import EventCard from "@/components/event-card";
+import { Badge } from "@/components/ui/Badge";
 
 interface ResultsListProps {
   items: RecommendItemView[];
@@ -23,10 +24,18 @@ export default function ResultsList({
 }: ResultsListProps) {
   return (
     <div className="mt-4">
-      <h2 className="text-sm font-semibold">
-        Top picks {!reranked && "(match order)"}
-      </h2>
-      <div className="mt-2 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-extrabold">
+          {items.length === 1
+            ? "1 pick for your household"
+            : `${items.length} picks for your household`}
+        </h2>
+        <Badge tone={reranked ? "lavender" : "neutral"} solid={reranked}>
+          {reranked ? "AI-ranked" : "match order"}
+        </Badge>
+      </div>
+      <div aria-hidden="true" className="mt-1 h-1 w-28 rounded-full bg-rainbow" />
+      <div className="mt-3 space-y-4">
         {items.map((item) => (
           <EventCard
             key={item.event_id}

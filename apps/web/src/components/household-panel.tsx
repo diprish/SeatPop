@@ -1,9 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   AGE_BANDS,
   DAY_PARTS,
   WEEKDAYS,
+  type AgeBand,
   type DayPart,
   type Preferences,
   type Weekday,
@@ -20,18 +22,52 @@ import {
   setFsa,
   toggleAvailability,
 } from "@/lib/household";
+import { Button } from "./ui/Button";
+import { Chip } from "./ui/Chip";
+import { Field } from "./ui/Field";
+import { Icon, type IconName } from "./ui/Icon";
+import { Toggle } from "./ui/Toggle";
+import {
+  HUE_INK,
+  HUE_SOLID_BORDER,
+  hueForBand,
+  hueForDayPart,
+  type Hue,
+} from "./ui/hue";
 
 interface HouseholdPanelProps {
   prefs: Preferences;
   onChange: (next: Preferences) => void;
-  onSearch: () => void;
+  /** Required unless hideActions (the sheet applies from its own bar). */
+  onSearch?: () => void;
   onReset: () => void;
   busy: boolean;
+  hideActions?: boolean;
 }
 
 function capitalize(word: string): string {
   return word.slice(0, 1).toUpperCase() + word.slice(1);
 }
+
+function SectionHeading({
+  icon,
+  hue,
+  children,
+}: {
+  icon: IconName;
+  hue: Hue;
+  children: ReactNode;
+}) {
+  return (
+    <h3 className="flex items-center gap-2 text-sm font-bold">
+      <Icon name={icon} className={`h-4 w-4 ${HUE_INK[hue]}`} />
+      {children}
+    </h3>
+  );
+}
+
+const DISTANCE_QUICK = [2, 5, 10, 25];
+const BUDGET_QUICK = [10, 25, 50];
 
 export default function HouseholdPanel({
   prefs,
@@ -39,12 +75,14 @@ export default function HouseholdPanel({
   onSearch,
   onReset,
   busy,
+  hideActions = false,
 }: HouseholdPanelProps) {
   const fsaInvalid = prefs.fsa !== undefined && !isFsaValid(prefs.fsa);
   const distanceNeedsArea =
     prefs.max_distance_km !== undefined && prefs.fsa === undefined;
   const canSearch =
     !busy && prefs.members.length > 0 && !fsaInvalid && !distanceNeedsArea;
+  const budget = budgetDollars(prefs);
 
   function onBudgetInput(value: string): void {
     if (value.trim() === "") {
@@ -64,52 +102,80 @@ export default function HouseholdPanel({
     onChange(setDistanceKm(prefs, Number.isFinite(km) ? km : undefined));
   }
 
+  function removeOne(band: AgeBand): void {
+    const index = prefs.members.findIndex(
+      (member) => member.age_band === band,
+    );
+    if (index >= 0) onChange(removeMember(prefs, index));
+  }
+
   return (
-    <section aria-label="Edit my household" className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
+    <section
+      aria-label="Edit my household"
+      className="rounded-card border border-line bg-surface p-4 shadow-card"
+    >
       <div>
-        <h2 className="text-sm font-semibold">Members (age bands only, never names)</h2>
+        <SectionHeading icon="users" hue="lavender">
+          Who&apos;s coming
+        </SectionHeading>
         <div className="mt-2 flex flex-wrap gap-2">
-          {AGE_BANDS.map((band) => (
-            <button
-              key={band}
-              type="button"
-              onClick={() => onChange(addMember(prefs, band))}
-              aria-label={`Add ${BAND_LABELS[band]}`}
-              className="rounded-full border border-line px-3 py-1 text-sm"
-            >
-              + {BAND_LABELS[band]}
-            </button>
-          ))}
-        </div>
-        {prefs.members.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-2" aria-label="Household members">
-            {prefs.members.map((member, index) => (
-              <li
-                key={`${member.age_band}:${index}`}
-                className="inline-flex items-center gap-1 rounded-full bg-background px-3 py-1 text-sm"
+          {AGE_BANDS.map((band) => {
+            const hue = hueForBand(band);
+            const count = prefs.members.filter(
+              (member) => member.age_band === band,
+            ).length;
+            if (count === 0) {
+              return (
+                <Chip
+                  key={band}
+                  hue={hue}
+                  aria-label={`Add ${BAND_LABELS[band]}`}
+                  onClick={() => onChange(addMember(prefs, band))}
+                >
+                  + {BAND_LABELS[band]}
+                </Chip>
+              );
+            }
+            return (
+              <span
+                key={band}
+                role="group"
+                aria-label={BAND_LABELS[band]}
+                className="inline-flex items-center gap-1"
               >
-                {BAND_LABELS[member.age_band]}
+                <Chip
+                  hue={hue}
+                  selected
+                  showCheck={false}
+                  aria-label={`Add ${BAND_LABELS[band]}`}
+                  onClick={() => onChange(addMember(prefs, band))}
+                >
+                  {BAND_LABELS[band]}
+                  {count > 1 ? ` ×${count}` : ""}
+                </Chip>
                 <button
                   type="button"
-                  aria-label={`Remove ${BAND_LABELS[member.age_band]}`}
-                  onClick={() => onChange(removeMember(prefs, index))}
-                  className="text-muted"
+                  aria-label={`Remove ${BAND_LABELS[band]}`}
+                  onClick={() => removeOne(band)}
+                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border-2 text-lg font-bold ${HUE_SOLID_BORDER[hue]} ${HUE_INK[hue]}`}
                 >
                   ×
                 </button>
-              </li>
-            ))}
-          </ul>
-        )}
+              </span>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="hh-fsa" className="text-sm font-semibold">
-            Area (FSA)
-          </label>
-          <input
+      <div className="mt-5">
+        <SectionHeading icon="pin" hue="sky">
+          Where
+        </SectionHeading>
+        <div className="mt-2">
+          <Field
             id="hh-fsa"
+            label="Area (FSA)"
+            icon="pin"
             type="text"
             inputMode="text"
             autoComplete="off"
@@ -117,89 +183,152 @@ export default function HouseholdPanel({
             placeholder="K2S"
             value={prefs.fsa ?? ""}
             onChange={(e) => onChange(setFsa(prefs, e.target.value))}
-            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm uppercase"
+            error={fsaInvalid ? "3 characters like K2S." : undefined}
+            className="uppercase"
           />
-          {fsaInvalid && (
-            <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-              3 characters like K2S.
-            </p>
-          )}
         </div>
-        <div>
-          <label htmlFor="hh-distance" className="text-sm font-semibold">
-            Distance (km)
-          </label>
-          <input
+        <div
+          className="mt-3 flex flex-wrap gap-2"
+          role="group"
+          aria-label="Distance quick picks"
+        >
+          {DISTANCE_QUICK.map((km) => (
+            <Chip
+              key={km}
+              hue="sky"
+              size="sm"
+              selected={prefs.max_distance_km === km}
+              onClick={() => onChange(setDistanceKm(prefs, km))}
+            >
+              {km} km
+            </Chip>
+          ))}
+          <Chip
+            hue="sky"
+            size="sm"
+            selected={prefs.max_distance_km === undefined}
+            onClick={() => onChange(setDistanceKm(prefs, undefined))}
+          >
+            Any
+          </Chip>
+        </div>
+        <div className="mt-3 w-36">
+          <Field
             id="hh-distance"
+            label="Custom distance (km)"
+            icon="route"
             type="number"
             inputMode="decimal"
             min={1}
             placeholder="Any"
             value={prefs.max_distance_km ?? ""}
             onChange={(e) => onDistanceInput(e.target.value)}
-            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm"
+            error={
+              distanceNeedsArea ? "Distance needs an area (FSA)." : undefined
+            }
           />
-          {distanceNeedsArea && (
-            <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-              Distance needs an area (FSA).
-            </p>
-          )}
-        </div>
-        <div>
-          <label htmlFor="hh-budget" className="text-sm font-semibold">
-            Budget per event ($)
-          </label>
-          <input
-            id="hh-budget"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            placeholder="Any"
-            value={budgetDollars(prefs) ?? ""}
-            onChange={(e) => onBudgetInput(e.target.value)}
-            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm"
-          />
-        </div>
-        <div className="flex items-end pb-2">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={prefs.free_only}
-              onChange={(e) => onChange(setFreeOnly(prefs, e.target.checked))}
-              className="h-4 w-4"
-            />
-            Free only
-          </label>
         </div>
       </div>
 
-      <fieldset className="mt-4">
-        <legend className="text-sm font-semibold">
+      <div className="mt-5">
+        <SectionHeading icon="wallet" hue="mint">
+          Budget
+        </SectionHeading>
+        <div
+          className="mt-2 flex flex-wrap gap-2"
+          role="group"
+          aria-label="Budget quick picks"
+        >
+          <Chip
+            hue="mint"
+            size="sm"
+            selected={prefs.free_only}
+            onClick={() =>
+              onChange(setFreeOnly(setBudgetDollars(prefs, undefined), true))
+            }
+          >
+            Free
+          </Chip>
+          {BUDGET_QUICK.map((dollars) => (
+            <Chip
+              key={dollars}
+              hue="mint"
+              size="sm"
+              selected={!prefs.free_only && budget === dollars}
+              onClick={() =>
+                onChange(
+                  setFreeOnly(setBudgetDollars(prefs, dollars), false),
+                )
+              }
+            >
+              ${dollars}
+            </Chip>
+          ))}
+          <Chip
+            hue="mint"
+            size="sm"
+            selected={!prefs.free_only && budget === undefined}
+            onClick={() =>
+              onChange(
+                setFreeOnly(setBudgetDollars(prefs, undefined), false),
+              )
+            }
+          >
+            Any
+          </Chip>
+        </div>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <div className="w-36">
+            <Field
+              id="hh-budget"
+              label="Custom budget ($)"
+              icon="wallet"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              placeholder="Any"
+              value={budget ?? ""}
+              onChange={(e) => onBudgetInput(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 pb-2.5">
+            <Toggle
+              checked={prefs.free_only}
+              onChange={(next) => onChange(setFreeOnly(prefs, next))}
+              label="Free only"
+            />
+            <span className="text-sm font-semibold">Free only</span>
+          </div>
+        </div>
+      </div>
+
+      <fieldset className="mt-5">
+        <legend className="flex items-center gap-2 text-sm font-bold">
+          <Icon name="clock" className={`h-4 w-4 ${HUE_INK["lemon"]}`} />
           Availability (leave empty for any time)
         </legend>
         <div className="mt-2 space-y-2">
           {WEEKDAYS.map((day: Weekday) => (
             <div key={day} className="flex items-center gap-2">
-              <span className="w-10 text-xs text-muted">
+              <span className="w-8 text-xs font-semibold text-muted">
                 {capitalize(day)}
               </span>
-              <div className="flex flex-wrap gap-1">
+              <div className="grid flex-1 grid-cols-4 gap-1">
                 {DAY_PARTS.map((part: DayPart) => {
-                  const selected = prefs.availability?.[day]?.includes(part) ?? false;
+                  const selected =
+                    prefs.availability?.[day]?.includes(part) ?? false;
                   return (
-                    <button
+                    <Chip
                       key={part}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => onChange(toggleAvailability(prefs, day, part))}
-                      className={
-                        selected
-                          ? "rounded-full border border-primary bg-primary/10 px-2 py-1 text-xs font-semibold"
-                          : "rounded-full border border-line px-2 py-1 text-xs"
+                      hue={hueForDayPart(part)}
+                      size="sm"
+                      selected={selected}
+                      onClick={() =>
+                        onChange(toggleAvailability(prefs, day, part))
                       }
                     >
                       {capitalize(part)}
-                    </button>
+                    </Chip>
                   );
                 })}
               </div>
@@ -208,29 +337,27 @@ export default function HouseholdPanel({
         </div>
       </fieldset>
 
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          onClick={onSearch}
-          disabled={!canSearch}
-          className="flex-1 rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
-        >
-          {busy ? "Searching…" : "Find activities"}
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          disabled={busy}
-          className="rounded border border-line px-4 py-2 text-sm disabled:opacity-40"
-        >
-          Reset to sample
-        </button>
-        {prefs.members.length === 0 && (
-          <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
-            Add at least one member to search.
-          </p>
-        )}
-      </div>
+      {!hideActions && (
+        <div className="mt-5">
+          <Button
+            className="w-full"
+            onClick={onSearch}
+            disabled={!canSearch}
+          >
+            {busy ? "Searching…" : "Find activities"}
+          </Button>
+          <div className="mt-1 text-center">
+            <Button variant="ghost" onClick={onReset} disabled={busy}>
+              Reset to sample
+            </Button>
+          </div>
+          {prefs.members.length === 0 && (
+            <p className="mt-1 text-center text-sm font-semibold text-blush-ink">
+              Add at least one member to search.
+            </p>
+          )}
+        </div>
+      )}
     </section>
   );
 }
