@@ -49,6 +49,16 @@ describe("home page markup", () => {
     expect(HOME).toContain("<HouseholdSheet");
   });
 
+  it("badges the untouched sample next to the summary and the filters", () => {
+    expect(HOME).toContain("isSampleHousehold(prefs)");
+    expect(HOME).toContain("Sample household");
+    expect(HOME).toContain(
+      "This is an example family. Edit it to see picks for yours.",
+    );
+    expect(HOME).toContain('tone="lavender" icon="sparkle"');
+    expect(HOME.match(/<SampleHouseholdNote \/>/g)).toHaveLength(2);
+  });
+
   it("keeps the shortcut card labels and copy", () => {
     expect(HOME).toContain('aria-label="Describe your family"');
     expect(HOME).toContain('htmlFor="hh-text"');

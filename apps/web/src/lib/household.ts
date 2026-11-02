@@ -139,6 +139,47 @@ export function toggleAvailability(
   return { ...prefs, availability };
 }
 
+function canonicalAvailability(
+  availability: Preferences["availability"],
+): Record<string, string[]> | null {
+  if (!availability) return null;
+  const out: Record<string, string[]> = {};
+  for (const day of Object.keys(availability).sort()) {
+    const parts = availability[day as Weekday];
+    if (parts) out[day] = [...parts].sort();
+  }
+  return out;
+}
+
+function canonicalPrefs(prefs: Preferences): string {
+  const sorted = (values: string[] | undefined): string[] =>
+    [...(values ?? [])].sort();
+  return JSON.stringify({
+    members: prefs.members.map((member) => [
+      member.age_band,
+      member.include_adjacent ?? true,
+    ]),
+    fsa: prefs.fsa ?? null,
+    max_price_cents: prefs.max_price_cents ?? null,
+    free_only: prefs.free_only ?? false,
+    max_distance_km: prefs.max_distance_km ?? null,
+    availability: canonicalAvailability(prefs.availability),
+    language: sorted(prefs.language),
+    accessibility: sorted(prefs.accessibility),
+    interests: sorted(prefs.interests),
+    avoid: sorted(prefs.avoid),
+  });
+}
+
+/**
+ * True while the household in use is the built-in sample, unchanged.
+ * Value comparison (key and array order ignored), derived from the
+ * current prefs on every render — never stored anywhere.
+ */
+export function isSampleHousehold(prefs: Preferences): boolean {
+  return canonicalPrefs(prefs) === canonicalPrefs(SAMPLE_HOUSEHOLD);
+}
+
 /** One-line summary for the collapsed panel. */
 export function householdSummary(prefs: Preferences): string {
   const members =

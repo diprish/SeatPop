@@ -7,6 +7,7 @@ import {
   budgetDollars,
   householdSummary,
   isFsaValid,
+  isSampleHousehold,
   removeMember,
   setBudgetDollars,
   setDistanceKm,
@@ -89,5 +90,27 @@ describe("availability edits", () => {
     expect(back.availability).toEqual({ sat: ["afternoon"] });
     const cleared = toggleAvailability(back, "sat", "afternoon");
     expect(cleared.availability).toBeUndefined();
+  });
+});
+
+describe("isSampleHousehold", () => {
+  it("holds for the sample, by value rather than reference", () => {
+    expect(isSampleHousehold(SAMPLE_HOUSEHOLD)).toBe(true);
+    const clone = PreferencesSchema.parse(
+      JSON.parse(JSON.stringify(SAMPLE_HOUSEHOLD)) as unknown,
+    );
+    expect(isSampleHousehold(clone)).toBe(true);
+  });
+
+  it("drops after any member, area, budget, distance, or availability change", () => {
+    expect(isSampleHousehold(addMember(SAMPLE_HOUSEHOLD, "baby"))).toBe(false);
+    expect(isSampleHousehold(removeMember(SAMPLE_HOUSEHOLD, 0))).toBe(false);
+    expect(isSampleHousehold(setFsa(SAMPLE_HOUSEHOLD, "K1S"))).toBe(false);
+    expect(isSampleHousehold(setBudgetDollars(SAMPLE_HOUSEHOLD, 25))).toBe(false);
+    expect(isSampleHousehold(setDistanceKm(SAMPLE_HOUSEHOLD, 10))).toBe(false);
+    expect(isSampleHousehold(setFreeOnly(SAMPLE_HOUSEHOLD, true))).toBe(false);
+    expect(
+      isSampleHousehold(toggleAvailability(SAMPLE_HOUSEHOLD, "sat", "morning")),
+    ).toBe(false);
   });
 });

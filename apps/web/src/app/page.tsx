@@ -34,6 +34,7 @@ import {
   BAND_LABELS,
   SAMPLE_HOUSEHOLD,
   budgetDollars,
+  isSampleHousehold,
   loadHousehold,
   saveHousehold,
 } from "@/lib/household";
@@ -43,6 +44,20 @@ const HERO_STEPS = [
   { circle: "bg-lemon-solid", label: "We match every age" },
   { circle: "bg-mint-solid", label: "Book and get reminded" },
 ];
+
+/** Shown only while the prefs in use are the built-in sample. */
+function SampleHouseholdNote() {
+  return (
+    <div className="mb-2">
+      <Badge tone="lavender" icon="sparkle">
+        Sample household
+      </Badge>
+      <p className="mt-1 text-sm text-muted">
+        This is an example family. Edit it to see picks for yours.
+      </p>
+    </div>
+  );
+}
 
 /**
  * For you: opens straight into the sample household (guest mode, no
@@ -153,6 +168,7 @@ export default function Home() {
     }
   }
 
+  const isSample = isSampleHousehold(prefs);
   const visible = items.filter((item) => !hidden[item.event_id]);
   const hiddenVisible = items.filter((item) => hidden[item.event_id]);
   const budget = budgetDollars(prefs);
@@ -194,6 +210,7 @@ export default function Home() {
       </p>
 
       <div className="mt-4 lg:hidden">
+        {isSample && <SampleHouseholdNote />}
         <div className="flex flex-wrap gap-2" aria-label="Household summary">
           {prefs.members.map((member, index) => (
             <Badge
@@ -245,6 +262,7 @@ export default function Home() {
       <div className="mt-6 lg:grid lg:grid-cols-[350px_minmax(0,1fr)] lg:items-start lg:gap-6">
         <div className="hidden lg:block">
           <div className="lg:sticky lg:top-24">
+            {isSample && <SampleHouseholdNote />}
             <HouseholdPanel
               prefs={prefs}
               onChange={setPrefs}
