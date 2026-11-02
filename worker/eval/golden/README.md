@@ -21,6 +21,14 @@ re-label and re-import instead.
 Labeling rule: label only what the text says; blank means the text does
 not say. A blank price_kind imports as `unknown`.
 
+Data note: excerpts of public listing text kept for evaluation, source
+URLs retained; labels are ours. Descriptions are trimmed to their first
+300 characters (short texts kept whole) and staff contact details are
+removed. Source names and event ids link each row back to the full
+listing in our database. Trimming can cut labeled evidence that sits
+late in a listing (e.g. prices near the end), so eval numbers from
+before the trim are not directly comparable with later runs.
+
 ## ranking.jsonl (EMPTY — ranking scaffold)
 
 One row per request. Fill when the ranker exists.
