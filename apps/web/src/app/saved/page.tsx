@@ -107,7 +107,7 @@ export default function SavedPage() {
         <Badge tone="navy">{saved.length + apiOnly.length}</Badge>
       </div>
       {syncFailed && (
-        <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+        <p className="mt-2 text-sm font-semibold text-amber-800 dark:text-amber-400">
           Couldn&apos;t load synced saves — showing this device.
         </p>
       )}

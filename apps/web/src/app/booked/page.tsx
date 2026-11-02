@@ -206,7 +206,7 @@ export default function BookedPage() {
               value={feedUrl}
               aria-label="Family calendar feed URL"
               onFocus={(event) => event.target.select()}
-              className="w-full rounded-xl border border-line bg-surface p-2 text-xs"
+              className="min-h-[44px] w-full rounded-xl border border-line bg-surface p-2 text-xs"
             />
             <Button
               onClick={() => void copyFeed()}

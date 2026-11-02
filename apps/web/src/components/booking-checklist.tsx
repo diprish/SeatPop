@@ -90,7 +90,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
               <div>
                 <label
                   htmlFor={`book-${item.event_id}-${step.id}`}
-                  className={done ? "line-through" : "font-bold"}
+                  className={`flex min-h-[44px] items-center ${done ? "line-through" : "font-bold"}`}
                 >
                   {step.title}
                 </label>

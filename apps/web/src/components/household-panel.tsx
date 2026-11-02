@@ -59,10 +59,10 @@ function SectionHeading({
   children: ReactNode;
 }) {
   return (
-    <h3 className="flex items-center gap-2 text-sm font-bold">
+    <h2 className="flex items-center gap-2 text-sm font-bold">
       <Icon name={icon} className={`h-4 w-4 ${HUE_INK[hue]}`} />
       {children}
-    </h3>
+    </h2>
   );
 }
 

@@ -86,7 +86,7 @@ describe("nav and remaining shell markup", () => {
 
   it("sits home chrome and hidden rows on the surface tokens", () => {
     expect(HOME).toContain("border border-line bg-surface p-2 text-sm");
-    expect(HOME).toContain("rounded border border-line px-2 py-0.5 text-xs");
+    expect(HOME).toContain("min-h-[44px] items-center rounded-full border-2 border-line px-4");
   });
 
   it("fills the legacy commit buttons primary with dark-theme text", () => {

@@ -231,7 +231,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
           </p>
           {parsed.mismatch && (
             <p
-              className="mt-1 font-semibold text-amber-700 dark:text-amber-400"
+              className="mt-1 font-semibold text-amber-800 dark:text-amber-400"
               role="alert"
             >
               The pasted date does not match this event — save only if you

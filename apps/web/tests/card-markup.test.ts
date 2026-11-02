@@ -62,7 +62,7 @@ describe("event card markup", () => {
     expect(CARD).toContain("bg-lavender-tint");
     expect(CARD).toContain("bg-mist");
     expect(CARD).toContain('name="sparkle"');
-    expect(CARD).toContain("text-green-700 dark:text-green-300");
+    expect(CARD).toContain("text-green-800 dark:text-green-300");
     expect(CARD).toContain("text-amber-800 dark:text-amber-300");
     expect(CARD).toContain('"(AI reason)"');
     expect(CARD).toContain('"(match)"');

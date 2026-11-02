@@ -211,7 +211,7 @@ export default function EventCard({
                     key={index}
                     className={
                       part.mark === "stated"
-                        ? "text-xs font-semibold text-green-700 dark:text-green-300"
+                        ? "text-xs font-semibold text-green-800 dark:text-green-300"
                         : "text-xs font-semibold text-amber-800 dark:text-amber-300"
                     }
                   >

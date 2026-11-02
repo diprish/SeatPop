@@ -80,7 +80,7 @@ export default function RemindMe({ item }: RemindMeProps) {
           type="button"
           onClick={() => void remove()}
           disabled={busy}
-          className="mt-1 rounded border border-line px-3 py-1 disabled:opacity-40"
+          className="mt-1 inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none disabled:opacity-40"
         >
           {busy ? "Deleting…" : "Delete reminder"}
         </button>
@@ -102,7 +102,7 @@ export default function RemindMe({ item }: RemindMeProps) {
             setFormOpen(true);
             setError("");
           }}
-          className="rounded border border-line px-3 py-1"
+          className="inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
         >
           Remind me
         </button>
@@ -145,7 +145,7 @@ export default function RemindMe({ item }: RemindMeProps) {
         <button
           type="submit"
           disabled={busy || email.trim() === ""}
-          className="rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
+          className="inline-flex min-h-[44px] items-center rounded-full bg-primary px-4 text-sm font-semibold text-white transition-colors duration-200 motion-reduce:transition-none disabled:opacity-40 dark:text-background"
         >
           {busy ? "Setting…" : "Set reminder"}
         </button>
@@ -156,7 +156,7 @@ export default function RemindMe({ item }: RemindMeProps) {
             setError("");
           }}
           disabled={busy}
-          className="rounded border border-line px-3 py-1 disabled:opacity-40"
+          className="inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none disabled:opacity-40"
         >
           Cancel
         </button>

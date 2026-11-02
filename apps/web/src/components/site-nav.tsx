@@ -20,7 +20,7 @@ function isActiveLink(href: string, pathname: string): boolean {
 
 function Wordmark() {
   return (
-    <Link href="/" className="flex items-center gap-2">
+    <Link href="/" className="flex min-h-[44px] items-center gap-2">
       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-white dark:bg-lavender-solid dark:text-navy">
         <Icon name="ticket" className="h-5 w-5" />
       </span>

@@ -99,7 +99,9 @@ describe("design tokens", () => {
 
   it("keeps a visible keyboard focus ring", () => {
     expect(css).toContain(":focus-visible");
-    expect(css).toContain("outline: 2px solid currentColor");
+    expect(css).toContain("outline: 2px solid #2b2f4a");
+    expect(css).toContain(".dark :focus-visible");
+    expect(css).toContain("outline-color: #c6b8ea");
   });
 
   it("wires the shell to the tokens with the brand font", () => {

@@ -157,7 +157,7 @@ export default function RecommendPage() {
       />
       <div className="mt-2 flex gap-2">
         <button
-          className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
+          className="rounded-full bg-primary px-4 text-sm font-semibold min-h-[44px] inline-flex items-center text-white disabled:opacity-40 dark:text-background"
           onClick={() => void parse()}
           disabled={busy !== null || text.trim() === ""}
         >
@@ -187,14 +187,14 @@ export default function RecommendPage() {
           </div>
           <div className="mt-3 flex gap-2">
             <button
-              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
+              className="rounded-full bg-primary px-4 text-sm font-semibold min-h-[44px] inline-flex items-center text-white disabled:opacity-40 dark:text-background"
               onClick={() => void recommend()}
               disabled={!canRecommend}
             >
               {busy === "recommend" ? "Searching…" : "Find activities"}
             </button>
             <button
-              className="rounded border border-line px-4 py-2 text-sm disabled:opacity-40"
+              className="rounded-full border-2 border-line px-4 text-sm font-semibold min-h-[44px] inline-flex items-center disabled:opacity-40"
               onClick={() => void save()}
               disabled={!canRecommend}
             >
@@ -202,14 +202,14 @@ export default function RecommendPage() {
             </button>
           </div>
           {prefs && prefs.members.length === 0 && (
-            <p className="mt-2 text-sm text-amber-700">
+            <p className="mt-2 text-sm text-amber-800">
               Add at least one member to search.
             </p>
           )}
         </div>
       )}
 
-      {notice !== "" && <p className="mt-4 text-sm text-amber-700">{notice}</p>}
+      {notice !== "" && <p className="mt-4 text-sm text-amber-800">{notice}</p>}
 
       {meta && meta.warnings.length > 0 && (
         <ul className="mt-4 list-disc pl-5 text-sm text-muted">
@@ -244,7 +244,7 @@ export default function RecommendPage() {
                   {` · ${item.price_label}`}
                 </p>
                 {item.age_flag && (
-                  <p className="mt-1 text-sm text-amber-700">{item.age_flag}</p>
+                  <p className="mt-1 text-sm text-amber-800">{item.age_flag}</p>
                 )}
                 <p className="mt-1 text-sm">
                   {item.reason}{" "}

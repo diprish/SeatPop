@@ -337,7 +337,7 @@ export default function Home() {
                 type="button"
                 aria-expanded={showHidden}
                 onClick={() => setShowHidden((show) => !show)}
-                className="text-sm underline"
+                className="inline-flex min-h-[44px] items-center text-sm underline"
               >
                 {showHidden
                   ? "Hide hidden picks"
@@ -359,7 +359,7 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => void unhide(item.event_id)}
-                        className="rounded border border-line px-2 py-0.5 text-xs"
+                        className="inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold"
                       >
                         Unhide
                       </button>
