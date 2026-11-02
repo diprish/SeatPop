@@ -22,6 +22,26 @@ const GROUPED = readFileSync(
   new URL("../src/components/per-person-results.tsx", import.meta.url),
   "utf8",
 );
+const CARD = readFileSync(
+  new URL("../src/components/event-card.tsx", import.meta.url),
+  "utf8",
+);
+const RECOMMEND = readFileSync(
+  new URL("../src/app/recommend/page.tsx", import.meta.url),
+  "utf8",
+);
+const CSS = readFileSync(
+  new URL("../src/app/globals.css", import.meta.url),
+  "utf8",
+);
+const SAVED = readFileSync(
+  new URL("../src/app/saved/page.tsx", import.meta.url),
+  "utf8",
+);
+const BOOKING = readFileSync(
+  new URL("../src/components/booking-capture.tsx", import.meta.url),
+  "utf8",
+);
 
 describe("home page markup", () => {
   it("heralds the gradient headline with the 3-step strip", () => {
@@ -139,5 +159,45 @@ describe("home page markup", () => {
     expect(HOME).not.toContain("neutral-");
     expect(LIST).not.toContain("neutral-");
     expect(GROUPED).not.toContain("neutral-");
+  });
+
+  it("pairs every amber-800 text with a dark variant", () => {
+    for (const [name, source] of [
+      ["home", HOME],
+      ["list", LIST],
+      ["grouped", GROUPED],
+      ["card", CARD],
+      ["recommend", RECOMMEND],
+      ["saved", SAVED],
+      ["booking", BOOKING],
+    ] as const) {
+      const light = source.match(/text-amber-800(?!.*dark:)/g) ?? [];
+      expect(`${name}: ${light.join()}`).toBe(`${name}: `);
+    }
+  });
+
+  it("orders headings h1, h2 sections, h3 cards", () => {
+    expect(HOME).toContain("<h1");
+    expect(GROUPED).toContain("<h2");
+    expect(GROUPED).not.toContain("<h1");
+    expect(CARD).toContain("<h3");
+    expect(CARD).not.toContain("<h1");
+    expect(CARD).not.toContain("<h2");
+  });
+
+  it("hard-codes no light colours in the 2c sources", () => {
+    for (const source of [HOME, GROUPED, SENTENCE]) {
+      expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      expect(source).not.toMatch(/text-(white|black)\b/);
+      expect(source).not.toMatch(/bg-(white|black)\b/);
+      expect(source).not.toContain("outline-none");
+    }
+  });
+
+  it("rings keyboard focus at 2px in both themes", () => {
+    expect(CSS).toContain(":focus-visible");
+    expect(CSS).toContain("outline: 2px solid #2b2f4a");
+    expect(CSS).toContain(".dark :focus-visible");
+    expect(CSS).toContain(".filter-anchor:focus");
   });
 });

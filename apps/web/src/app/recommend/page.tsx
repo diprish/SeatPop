@@ -202,14 +202,14 @@ export default function RecommendPage() {
             </button>
           </div>
           {prefs && prefs.members.length === 0 && (
-            <p className="mt-2 text-sm text-amber-800">
+            <p className="mt-2 text-sm text-amber-800 dark:text-amber-300">
               Add at least one member to search.
             </p>
           )}
         </div>
       )}
 
-      {notice !== "" && <p className="mt-4 text-sm text-amber-800">{notice}</p>}
+      {notice !== "" && <p className="mt-4 text-sm text-amber-800 dark:text-amber-300">{notice}</p>}
 
       {meta && meta.warnings.length > 0 && (
         <ul className="mt-4 list-disc pl-5 text-sm text-muted">
@@ -244,7 +244,7 @@ export default function RecommendPage() {
                   {` · ${item.price_label}`}
                 </p>
                 {item.age_flag && (
-                  <p className="mt-1 text-sm text-amber-800">{item.age_flag}</p>
+                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">{item.age_flag}</p>
                 )}
                 <p className="mt-1 text-sm">
                   {item.reason}{" "}
