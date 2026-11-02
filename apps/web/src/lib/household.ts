@@ -42,7 +42,9 @@ export function loadHousehold(): Preferences | null {
     const raw = window.localStorage.getItem(HOUSEHOLD_STORAGE_KEY);
     if (!raw) return null;
     const parsed = PreferencesSchema.safeParse(JSON.parse(raw) as unknown);
-    return parsed.success ? parsed.data : null;
+    if (!parsed.success) return null;
+    // Legacy stores may repeat a band; read them as one band present.
+    return dedupeMembers(parsed.data);
   } catch {
     return null;
   }
@@ -58,10 +60,28 @@ export function saveHousehold(prefs: Preferences): void {
 }
 
 export function addMember(prefs: Preferences, band: AgeBand): Preferences {
+  // One chip per band: selecting a present band is a no-op, never a count.
+  if (prefs.members.some((member) => member.age_band === band)) return prefs;
   return {
     ...prefs,
     members: [...prefs.members, { age_band: band, include_adjacent: true }],
   };
+}
+
+/**
+ * Collapse repeated bands to one member each (first occurrence wins,
+ * order preserved). Stored/API shapes stay arrays, so legacy dup
+ * members load without error and simply read as one band present.
+ */
+export function dedupeMembers(prefs: Preferences): Preferences {
+  const seen = new Set<AgeBand>();
+  const members = prefs.members.filter((member) => {
+    if (seen.has(member.age_band)) return false;
+    seen.add(member.age_band);
+    return true;
+  });
+  if (members.length === prefs.members.length) return prefs;
+  return { ...prefs, members };
 }
 
 export function removeMember(prefs: Preferences, index: number): Preferences {

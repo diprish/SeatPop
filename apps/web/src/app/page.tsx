@@ -34,6 +34,7 @@ import {
   BAND_LABELS,
   SAMPLE_HOUSEHOLD,
   budgetDollars,
+  dedupeMembers,
   isSampleHousehold,
   loadHousehold,
   saveHousehold,
@@ -133,9 +134,12 @@ export default function Home() {
     setBanner("");
     try {
       const data = await parseProfile(text);
-      setPrefs(data.prefs);
-      saveHousehold(data.prefs);
-      await search(data.prefs);
+      // The parser returns one member per person mentioned; the
+      // household keeps one chip per band ("two kids" -> one Kids).
+      const parsed = dedupeMembers(data.prefs);
+      setPrefs(parsed);
+      saveHousehold(parsed);
+      await search(parsed);
     } catch (error) {
       setBanner(error instanceof Error ? error.message : "parse failed");
     } finally {

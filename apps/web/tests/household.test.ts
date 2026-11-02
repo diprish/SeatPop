@@ -5,6 +5,7 @@ import {
   SAMPLE_HOUSEHOLD,
   addMember,
   budgetDollars,
+  dedupeMembers,
   householdSummary,
   isFsaValid,
   isSampleHousehold,
@@ -48,6 +49,35 @@ describe("member edits", () => {
       "preschool",
       "teens",
     ]);
+  });
+
+  it("selecting the same band twice leaves it selected once", () => {
+    const once = addMember(SAMPLE_HOUSEHOLD, "baby");
+    expect(once.members.map((m) => m.age_band)).toEqual([
+      "adults",
+      "kids",
+      "preschool",
+      "baby",
+    ]);
+    expect(addMember(once, "baby").members).toHaveLength(4);
+    expect(addMember(SAMPLE_HOUSEHOLD, "kids")).toBe(SAMPLE_HOUSEHOLD);
+  });
+
+  it("dedupes repeated bands, first occurrence wins", () => {
+    const duped = {
+      ...SAMPLE_HOUSEHOLD,
+      members: [
+        { age_band: "kids" as const, include_adjacent: false },
+        { age_band: "kids" as const, include_adjacent: true },
+        { age_band: "baby" as const, include_adjacent: true },
+      ],
+    };
+    const deduped = dedupeMembers(duped);
+    expect(deduped.members).toEqual([
+      { age_band: "kids", include_adjacent: false },
+      { age_band: "baby", include_adjacent: true },
+    ]);
+    expect(dedupeMembers(SAMPLE_HOUSEHOLD)).toBe(SAMPLE_HOUSEHOLD);
   });
 });
 

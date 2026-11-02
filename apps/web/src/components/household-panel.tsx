@@ -122,10 +122,10 @@ export default function HouseholdPanel({
         <div className="mt-2 flex flex-wrap gap-2">
           {AGE_BANDS.map((band) => {
             const hue = hueForBand(band);
-            const count = prefs.members.filter(
+            const selected = prefs.members.some(
               (member) => member.age_band === band,
-            ).length;
-            if (count === 0) {
+            );
+            if (!selected) {
               return (
                 <Chip
                   key={band}
@@ -137,8 +137,9 @@ export default function HouseholdPanel({
                 </Chip>
               );
             }
-            // One pill: label and remove travel together so a wrap
-            // never strands the x on its own line.
+            // One pill per band, on or off: the label is display text
+            // and the x clears the band. Label and remove travel
+            // together so a wrap never strands the x on its own line.
             return (
               <span
                 key={band}
@@ -146,15 +147,9 @@ export default function HouseholdPanel({
                 aria-label={BAND_LABELS[band]}
                 className={`inline-flex items-center rounded-full border-2 ${HUE_SOLID_BG[hue]} ${HUE_SOLID_BORDER[hue]} text-navy`}
               >
-                <button
-                  type="button"
-                  aria-label={`Add ${BAND_LABELS[band]}`}
-                  onClick={() => onChange(addMember(prefs, band))}
-                  className="inline-flex min-h-[44px] items-center rounded-l-full px-4 text-sm font-semibold"
-                >
+                <span className="inline-flex min-h-[44px] items-center rounded-l-full px-4 text-sm font-semibold">
                   {BAND_LABELS[band]}
-                  {count > 1 ? ` ×${count}` : ""}
-                </button>
+                </span>
                 <button
                   type="button"
                   aria-label={`Remove ${BAND_LABELS[band]}`}

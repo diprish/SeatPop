@@ -41,6 +41,12 @@ describe("household panel and sheet markup", () => {
     expect(PANEL).toContain("min-h-[44px] min-w-[44px]");
   });
 
+  it("shows one chip per band with no per-band count", () => {
+    expect(PANEL).not.toContain("×${");
+    expect(PANEL).not.toContain("count > 1");
+    expect(PANEL).toContain("const selected = prefs.members.some(");
+  });
+
   it("keeps every field id and help string", () => {
     for (const id of ["hh-fsa", "hh-distance", "hh-budget"]) {
       expect(PANEL).toContain(`id="${id}"`);
