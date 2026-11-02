@@ -43,9 +43,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       config: serverLlmConfig(),
     });
     if (!result.ok) {
+      // Raw detail stays server-side; the UI shows the friendly line
+      // only (and keeps the current picks and chips untouched).
+      console.error(
+        `profile parse failed (${result.error.kind}): ${result.error.message}`,
+      );
       return NextResponse.json(
         {
-          error: `profile parse failed (${result.error.kind}): ${result.error.message}`,
+          error:
+            "Couldn't read that description. Pick who's coming with the chips instead.",
           fallbackPrefs: fallbackPrefs(),
         },
         { status: 502 },
