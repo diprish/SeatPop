@@ -143,7 +143,7 @@ export default function Home() {
   const hiddenVisible = items.filter((item) => hidden[item.event_id]);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6">
+    <main className="mx-auto max-w-6xl px-4 py-6">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">For you</h1>
         <button

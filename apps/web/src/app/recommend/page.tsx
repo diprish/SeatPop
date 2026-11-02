@@ -139,7 +139,7 @@ export default function RecommendPage() {
   const canRecommend = prefs !== null && prefs.members.length > 0 && busy === null;
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
+    <main className="mx-auto max-w-6xl px-6 py-10">
       <a className="text-sm underline" href="/">
         ← SeatPop
       </a>

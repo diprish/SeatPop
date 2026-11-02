@@ -76,7 +76,7 @@ export default function EventDetailPage() {
 
   if (status === "loading") {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6">
         <p className="text-sm" role="status">
           Loading event…
         </p>
@@ -86,7 +86,7 @@ export default function EventDetailPage() {
 
   if (status === "missing" || !detail) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6">
         <h1 className="text-2xl font-bold">Event not found</h1>
         <p className="mt-2 text-sm text-muted">
           This event isn&apos;t in the catalogue.{" "}
@@ -130,7 +130,7 @@ export default function EventDetailPage() {
     : null;
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6">
+    <main className="mx-auto max-w-6xl px-4 py-6">
       <p className="text-sm">
         <Link className="underline" href="/">
           ← For you

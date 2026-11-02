@@ -102,7 +102,7 @@ export default function ExplorePage() {
   const visible = items.filter((item) => !hidden[item.event_id]);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-6">
+    <main className="mx-auto max-w-6xl px-4 py-6">
       <h1 className="text-2xl font-bold">Explore</h1>
       <section aria-label="Filters" className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
         <h2 className="text-sm font-semibold">Age band</h2>

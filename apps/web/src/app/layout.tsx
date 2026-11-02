@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import { SiteFooter } from "@/components/site-footer";
 import SiteNav from "@/components/site-nav";
 import "./globals.css";
 
@@ -56,6 +57,7 @@ export default function RootLayout({
         </div>
         <SiteNav />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
