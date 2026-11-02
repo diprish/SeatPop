@@ -17,14 +17,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Ingest, then enrich, both --strict: any source error or failed
-      # event fails the run loudly (exit 1) instead of going green.
+      # Ingest, then detail pages, then enrich, all --strict: any
+      # source error or failed event fails the run loudly (exit 1)
+      # instead of going green.
       # Politeness lives in code, not config: robots.txt + crawl delays
       # honored, at most one request per 3 seconds per host, identifiable
       # User-Agent with the contact URL below, 403/login walls never
       # bypassed (see worker/src/ingest/fetcher.ts).
       - name: Ingest
         run: npm run ingest --workspace @seatpop/worker -- --strict
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+          LLM_MAX_USD_TOTAL: ${{ secrets.LLM_MAX_USD_TOTAL }}
+          LLM_MAX_USD_DAILY_LIVE: ${{ secrets.LLM_MAX_USD_DAILY_LIVE }}
+          BASETEN_MAX_USD_TOTAL: ${{ secrets.BASETEN_MAX_USD_TOTAL }}
+          INGEST_CONTACT_URL: https://github.com/${{ github.repository }}
+      - name: Detail pages
+        run: npm run detail-enrich --workspace @seatpop/worker -- --strict
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

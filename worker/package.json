@@ -21,6 +21,7 @@
     "seed:owner-events": "tsx src/seed-owner-events/run.ts",
     "send:reminders": "tsx src/send-reminders/run.ts",
     "enrich": "tsx src/enrich/run.ts",
+    "detail-enrich": "tsx src/detail-enrich/run.ts",
     "eval": "tsx src/eval/run-eval.ts",
     "eval:export": "tsx src/eval/export-csv.ts",
     "eval:import": "tsx src/eval/import-csv.ts",
