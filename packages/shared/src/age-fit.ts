@@ -128,6 +128,21 @@ export function candidateAgeTier(
   return "adjacent";
 }
 
+/** "6-12 kid" style label for coverage reasons (range first, singular noun). */
+export function coverBandLabel(band: AgeBand): string {
+  const nouns: Record<AgeBand, string> = {
+    baby: "baby",
+    preschool: "preschooler",
+    kids: "kid",
+    teens: "teen",
+    adults: "adult",
+    seniors: "senior",
+  };
+  const range = AGE_BAND_RANGES[band] as { min: number; max: number };
+  const span = range.max >= 130 ? `${range.min}+` : `${range.min}-${range.max}`;
+  return `${span} ${nouns[band]}`;
+}
+
 /** Possessive for the "close to your X age" reason phrase. */
 export function possessiveBandLabel(band: AgeBand): string {
   switch (band) {

@@ -11,7 +11,14 @@ import {
   type Preferences,
 } from "@seatpop/shared";
 import { collapseRows } from "./collapse";
-import { FINAL_TOP_N, RERANK_TOP_N, STAGE1_LIMIT } from "./config";
+import {
+  COVERAGE_ENABLED,
+  COVERAGE_TOP_N,
+  FINAL_TOP_N,
+  RERANK_TOP_N,
+  STAGE1_LIMIT,
+} from "./config";
+import { applyCoverageOrder } from "./coverage";
 import {
   groupSeries,
   limitConsecutiveRuns,
@@ -271,6 +278,17 @@ function toScoreEvent(row: CandidateRow): ScoreEvent {
   };
 }
 
+function agesById(
+  rows: CandidateRow[],
+): Map<string, { age_min: number | null; age_max: number | null }> {
+  return new Map(
+    rows.map((row) => [
+      row.event_id,
+      { age_min: row.age_min, age_max: row.age_max },
+    ]),
+  );
+}
+
 function toRerankCandidate(row: CandidateRow): RerankCandidate {
   return {
     event_id: row.event_id,
@@ -350,11 +368,28 @@ export async function recommendStages(
   // lists the other rooms (findSiblings). Series (same title + venue on
   // a weekly/regular cadence) group into one slot showing the next
   // occurrence. Similar-title variants then spread so no family runs
-  // longer than two. Stage-1 counts stay raw.
-  const stage2 = limitConsecutiveRuns(
+  // longer than two. The coverage pass last guarantees every coverable
+  // member an exact fit in the top N (pure reorder — counts stay raw).
+  const diversified = limitConsecutiveRuns(
     groupSeries(collapseRows(scored)),
     (slot) => titleFamily(slot.row.title),
   );
+  if (!COVERAGE_ENABLED) {
+    return { prefs, candidates: rows.data, stage2: diversified, scores };
+  }
+  const slotById = new Map(
+    diversified.map((slot) => [slot.row.event_id, slot] as const),
+  );
+  const stage2 = applyCoverageOrder(
+    diversified.map((slot) => slot.row.event_id),
+    agesById(diversified.map((slot) => slot.row)),
+    prefs.members,
+    scores,
+    COVERAGE_TOP_N,
+  ).flatMap((id) => {
+    const slot = slotById.get(id);
+    return slot ? [slot] : [];
+  });
   return { prefs, candidates: rows.data, stage2, scores };
 }
 
@@ -416,8 +451,28 @@ export async function runRecommend(
     }),
     ({ row }) => titleFamily(row.title),
   );
+  // The model can also restack coverage away, so enforce it on the
+  // served top N as well (a no-op when already covered, which includes
+  // every fallback order — the fallback proof still compares equal).
+  const entryById = new Map(
+    ordered.map((entry) => [entry.row.event_id, entry] as const),
+  );
+  const covered = (
+    COVERAGE_ENABLED
+      ? applyCoverageOrder(
+          ordered.map(({ row }) => row.event_id),
+          agesById(ordered.map(({ row }) => row)),
+          prefs.members,
+          scores,
+          COVERAGE_TOP_N,
+        )
+      : ordered.map(({ row }) => row.event_id)
+  ).flatMap((id) => {
+    const entry = entryById.get(id);
+    return entry ? [entry] : [];
+  });
   const finalItems: RecommendItem[] = [];
-  for (const { row, item } of ordered.slice(0, FINAL_TOP_N)) {
+  for (const { row, item } of covered.slice(0, FINAL_TOP_N)) {
     const more =
       slotById.get(item.event_id)?.more.map((occurrence) => ({
         event_id: occurrence.event_id,

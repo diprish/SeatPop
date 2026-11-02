@@ -46,3 +46,10 @@ export const STAGE1_LIMIT = 200;
 export const RERANK_TOP_N = 30;
 /** Final list length served + evaluated. */
 export const FINAL_TOP_N = 10;
+/**
+ * Coverage pass on/off (SEATPOP_COVERAGE=off disables, e.g. for
+ * before/after comparisons; unset means on).
+ */
+export const COVERAGE_ENABLED = process.env.SEATPOP_COVERAGE !== "off";
+/** Top-N window the coverage pass protects (keep <= FINAL_TOP_N). */
+export const COVERAGE_TOP_N = 10;

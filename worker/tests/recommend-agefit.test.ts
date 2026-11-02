@@ -118,17 +118,19 @@ describe("adjacent reason wording", () => {
     expect(reason).toContain("close to your kids' and baby's ages");
   });
 
-  it("leaves exact fits and unknown ages unadorned", () => {
+  it("names the covered member for exact fits, leaves unknown ages unadorned", () => {
     const exact = templatedReason(
       candidate,
       bandFits({ age_min: 6, age_max: 12 }, { members: SAMPLE_MEMBERS }),
     );
+    expect(exact).toContain("good for your 6-12 kid (inferred)");
     expect(exact).not.toContain("close to");
     const unknown = templatedReason(
       candidate,
       bandFits({ age_min: null, age_max: null }, { members: SAMPLE_MEMBERS }),
     );
     expect(unknown).not.toContain("close to");
+    expect(unknown).not.toContain("good for your");
     expect(templatedReason(candidate)).not.toContain("close to");
   });
 });

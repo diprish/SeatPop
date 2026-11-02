@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T23:04:50.740Z",
+  "generatedAt": "2026-11-02T04:54:50.028Z",
   "mode": "full (model-graded)",
   "grading": "model-graded (muse-wonder)",
   "households": [
@@ -135,9 +135,9 @@
       "candidates": 200,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.8352821950087925,
+      "ndcgReranked": 0.8679897215133439,
       "ndcgDate": 0.13487466829862643,
-      "ndcgStage2": 0.6000429729655028,
+      "ndcgStage2": 0.6855459555476018,
       "graded": true,
       "fallback": false,
       "orderKept": null,
@@ -219,7 +219,7 @@
       "candidates": 62,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.9174702828017932,
+      "ndcgReranked": 0.8298107423817964,
       "ndcgDate": 0.5435598009071464,
       "ndcgStage2": 0.9017106871380401,
       "graded": true,
@@ -233,9 +233,9 @@
       "candidates": 50,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.5481351590340573,
-      "ndcgDate": 0.7453016244178956,
-      "ndcgStage2": 0.9363792118010483,
+      "ndcgReranked": 0.7799082337019199,
+      "ndcgDate": 0.8553475075669357,
+      "ndcgStage2": 1,
       "graded": true,
       "fallback": false,
       "orderKept": null,
@@ -292,9 +292,9 @@
   "totals": {
     "violations": 0,
     "distanceMismatches": 0,
-    "meanNdcgReranked": 0.8432258585892517,
-    "meanNdcgDate": 0.7091480930133098,
-    "meanNdcgStage2": 0.7562504650069454
+    "meanNdcgReranked": 0.8593005004758351,
+    "meanNdcgDate": 0.7191522642086771,
+    "meanNdcgStage2": 0.7698071714415864
   },
   "fallbackProof": null
 }

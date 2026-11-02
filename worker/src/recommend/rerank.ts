@@ -6,6 +6,7 @@ import {
   type LlmConfig,
 } from "@seatpop/llm";
 import {
+  coverBandLabel,
   fitLevelForMember,
   possessiveBandLabel,
   type AgeBand,
@@ -57,7 +58,7 @@ const RerankItemSchema = z.object({
 
 const RerankReplySchema = z.array(RerankItemSchema).min(1);
 
-export const RERANK_VERSION = "rerank.v2";
+export const RERANK_VERSION = "rerank.v3";
 
 /** A reason counts as marked when it says what is stated vs inferred. */
 export function reasonMarked(reason: string): boolean {
@@ -99,7 +100,11 @@ const BAND_WORDS: Array<{ band: AgeBand; word: RegExp }> = [
 /**
  * Bands a reason claims the event fits: a band word with fit/fits/fitting
  * in the 20 characters before it ("fits preschool", "a good fit for
- * kids"). "Fits well" claims no band; "suits kids" claims no fit.
+ * kids"), or a "good for <member>" claim ("Good for your 6-12 kid").
+ * The good-for form anchors at the band word and allows only words,
+ * commas, and ranges after "for", so an earlier sentence ("Good for
+ * your kid. Teens arrive late.") claims no second band. "Fits well"
+ * claims no band; "suits kids" and "close to your X age" claim no fit.
  */
 export function claimedFitBands(reason: string): AgeBand[] {
   const claimed: AgeBand[] = [];
@@ -107,16 +112,23 @@ export function claimedFitBands(reason: string): AgeBand[] {
     const match = word.exec(reason);
     if (!match || match.index === undefined) continue;
     const before = reason.slice(Math.max(0, match.index - 20), match.index);
-    if (/\bfits?\b|\bfitting\b/i.test(before)) claimed.push(band);
+    if (/\bfits?\b|\bfitting\b/i.test(before)) {
+      claimed.push(band);
+      continue;
+    }
+    const head = reason.slice(0, match.index);
+    if (/good\s+for\s+(your\s+)?[\w\s,–-]*$/i.test(head)) {
+      claimed.push(band);
+    }
   }
   return claimed;
 }
 
 /**
  * A model reason stands only when every band it claims as a fit is an
- * exact fit for the household. Anything else ("fits preschool" for an
- * adjacent-only match, a fit claimed for a non-member band) falls back
- * to the templated reason per item.
+ * exact fit for the household. Anything else ("fits preschool" or "Good
+ * for your 3-5 preschooler" for an adjacent-only match, a fit claimed
+ * for a non-member band) falls back to the templated reason per item.
  */
 export function reasonFitOk(
   reason: string,
@@ -127,8 +139,9 @@ export function reasonFitOk(
 
 /**
  * Deterministic reason from stored fields only (always marked stated).
- * Adjacent-only matches name the near miss as "close to your X age"
- * (inferred) — never "fits X".
+ * Exact fits name the covered member ("good for your 6-12 kid",
+ * inferred); adjacent-only matches name the near miss as "close to
+ * your X age" (inferred) — never "fits X".
  */
 export function templatedReason(
   candidate: Pick<
@@ -142,17 +155,23 @@ export function templatedReason(
   const flag = candidate.age_flag ? ` (${candidate.age_flag})` : "";
   const base = `${candidate.title} on ${date}${venue}, ${candidate.price_label}${flag} (stated)`;
   if (!fits) return base;
-  const levels = [...fits.values()];
-  if (levels.includes("exact") || !levels.includes("adjacent")) return base;
-  const bands = [...fits.entries()]
-    .filter(([, level]) => level === "adjacent")
-    .map(([band]) => possessiveBandLabel(band));
-  const joined =
+  const joinBands = (bands: string[]): string =>
     bands.length > 1
       ? `${bands.slice(0, -1).join(", ")} and ${bands[bands.length - 1] as string}`
       : (bands[0] as string);
+  const exact = [...fits.entries()]
+    .filter(([, level]) => level === "exact")
+    .map(([band]) => coverBandLabel(band));
+  if (exact.length > 0) {
+    return `${base}, good for your ${joinBands(exact)} (inferred)`;
+  }
+  const levels = [...fits.values()];
+  if (!levels.includes("adjacent")) return base;
+  const bands = [...fits.entries()]
+    .filter(([, level]) => level === "adjacent")
+    .map(([band]) => possessiveBandLabel(band));
   const ages = bands.length > 1 ? "ages" : "age";
-  return `${base}, close to your ${joined} ${ages} (inferred)`;
+  return `${base}, close to your ${joinBands(bands)} ${ages} (inferred)`;
 }
 
 function prefsSummary(prefs: Preferences): string {
@@ -181,9 +200,13 @@ function buildMessages(
   prefs: Preferences,
 ): Array<{ role: "system" | "user"; content: string }> {
   const lines = candidates.map((c, i) => {
-    const agefit = [...bandFits(c, prefs).entries()]
+    const fits = bandFits(c, prefs);
+    const agefit = [...fits.entries()]
       .map(([band, level]) => `${band}:${level}`)
       .join(",");
+    const covered = [...fits.entries()]
+      .filter(([, level]) => level === "exact")
+      .map(([band]) => coverBandLabel(band));
     const bits = [
       `${i + 1}. id=${c.event_id}`,
       `title=${JSON.stringify(c.title)}`,
@@ -193,6 +216,7 @@ function buildMessages(
       `price=${c.price_label}`,
       `ages=${c.age_min ?? "?"}-${c.age_max ?? "?"}`,
       `agefit=${agefit}`,
+      `covers=${covered.length > 0 ? JSON.stringify(covered.join(", ")) : "none"}`,
       `tags=${c.tags.join("|") || "none"}`,
     ];
     if (c.summary_short) bits.push(`summary=${JSON.stringify(c.summary_short)}`);
@@ -208,6 +232,7 @@ function buildMessages(
         "Reasons may cite ONLY the listed fields for that event; mark every claim (stated) when it repeats a listed field or (inferred) when it goes beyond. " +
         "Each candidate lists agefit=<band>:<exact|adjacent|unknown|none> per household band (precomputed — trust it over the raw ages). " +
         "Never write that an event 'fits <band>' unless that band's fit is exact; for adjacent bands write 'close to' instead (e.g. \"close to your preschooler's age (inferred)\"); for unknown ages never claim any age fit. " +
+        "Each candidate also lists covers=<bands it fits exactly as \"<range> <member>\" labels, or none> (precomputed). Call an event 'Good for your <member>' (e.g. \"Good for your 6-12 kid\") only for a band in covers; never for any other band. " +
         "Use only ids from the list.",
     },
     {

@@ -7,6 +7,7 @@ import {
 } from "@seatpop/llm";
 import type { Preferences } from "@seatpop/shared";
 import {
+  bandFits,
   claimedFitBands,
   reasonMarked,
   rerankCandidates,
@@ -145,7 +146,9 @@ describe("rerank", () => {
     });
     expect(badJson.fallback).toBe(true);
     expect(badJson.model).toBe("muse-spark-1.3");
-    expect(badJson.items[0]?.reason).toBe(templatedReason(candidate("e1")));
+    expect(badJson.items[0]?.reason).toBe(
+      templatedReason(candidate("e1"), bandFits(candidate("e1"), PREFS)),
+    );
 
     const throwing = async (): Promise<ChatResult> => {
       throw new BudgetExceeded("per_run", 5, 5);
@@ -223,5 +226,103 @@ describe("rerank", () => {
     );
     expect(claimedFitBands("Fits preschool (inferred)")).toEqual(["preschool"]);
     expect(claimedFitBands("A good fit for kids (stated)")).toEqual(["kids"]);
+  });
+
+  it("detects 'good for <member>' claims without crossing sentences", () => {
+    expect(claimedFitBands("Good for your 6-12 kid (inferred)")).toEqual([
+      "kids",
+    ]);
+    expect(claimedFitBands("Good for your teen (stated)")).toEqual(["teens"]);
+    expect(
+      claimedFitBands("Good for your 6-12 kid and 3-5 preschooler (stated)"),
+    ).toEqual(["preschool", "kids"]);
+    expect(
+      claimedFitBands("Close to your preschooler's age (inferred)"),
+    ).toEqual([]);
+    expect(claimedFitBands("Good for your kid. Teens arrive late.")).toEqual([
+      "kids",
+    ]);
+  });
+
+  it("sends covered-member labels and the good-for rule", async () => {
+    const seen: ChatRequest[] = [];
+    await rerankCandidates(
+      [
+        candidate("e1"),
+        { ...candidate("e2"), age_min: 3, age_max: 5 },
+      ],
+      PREFS,
+      {
+        config: config(),
+        chatFn: scriptedChat(
+          JSON.stringify([{ event_id: "e1", reason: "Free entry (stated)" }]),
+          seen,
+        ),
+      },
+    );
+    const messages = seen[0]?.messages ?? [];
+    const system = messages.find((m) => m.role === "system")?.content ?? "";
+    const user = messages.find((m) => m.role === "user")?.content ?? "";
+    expect(user).toContain('covers="6-12 kid"');
+    expect(user).toContain("covers=none");
+    expect(system).toContain("Call an event 'Good for your <member>'");
+    expect(system).toContain("only for a band in covers");
+  });
+
+  it("rejects 'good for <member>' for non-exact matches, keeps exact ones", async () => {
+    const adjacent: RerankCandidate = {
+      ...candidate("e1"),
+      age_min: 3,
+      age_max: 5,
+    };
+    const rejected = await rerankCandidates([adjacent], PREFS, {
+      config: config(),
+      chatFn: scriptedChat(
+        JSON.stringify([
+          { event_id: "e1", reason: "Good for your 6-12 kid (stated)" },
+        ]),
+        [],
+      ),
+    });
+    expect(rejected.items[0]?.fromModel).toBe(false);
+    expect(rejected.items[0]?.reason).toContain("close to your kids' age");
+    expect(rejected.items[0]?.reason).not.toMatch(/good for your/i);
+
+    const exact = await rerankCandidates([candidate("e2")], PREFS, {
+      config: config(),
+      chatFn: scriptedChat(
+        JSON.stringify([
+          { event_id: "e2", reason: "Good for your 6-12 kid (stated)" },
+        ]),
+        [],
+      ),
+    });
+    expect(exact.items[0]).toMatchObject({
+      reason: "Good for your 6-12 kid (stated)",
+      fromModel: true,
+    });
+  });
+
+  it("templates exact fits with the covered member", () => {
+    const exact = templatedReason(
+      candidate("e1"),
+      bandFits({ age_min: 6, age_max: 12 }, PREFS),
+    );
+    expect(exact).toContain("good for your 6-12 kid (inferred)");
+    const multi = templatedReason(
+      candidate("e1"),
+      bandFits(
+        { age_min: 3, age_max: 12 },
+        {
+          members: [
+            { age_band: "kids", include_adjacent: true },
+            { age_band: "preschool", include_adjacent: true },
+          ],
+        },
+      ),
+    );
+    expect(multi).toContain(
+      "good for your 6-12 kid and 3-5 preschooler (inferred)",
+    );
   });
 });

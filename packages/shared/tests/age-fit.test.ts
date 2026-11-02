@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   candidateAgeTier,
   countExactFits,
+  coverBandLabel,
   fitLevelForMember,
   fitLevelsForHousehold,
   possessiveBandLabel,
@@ -133,5 +134,14 @@ describe("household fit", () => {
     expect(possessiveBandLabel("preschool")).toBe("preschooler's");
     expect(possessiveBandLabel("baby")).toBe("baby's");
     expect(possessiveBandLabel("kids")).toBe("kids'");
+  });
+
+  it("labels ranges for the coverage reason phrase", () => {
+    expect(coverBandLabel("kids")).toBe("6-12 kid");
+    expect(coverBandLabel("preschool")).toBe("3-5 preschooler");
+    expect(coverBandLabel("baby")).toBe("0-2 baby");
+    expect(coverBandLabel("teens")).toBe("13-17 teen");
+    expect(coverBandLabel("adults")).toBe("18-64 adult");
+    expect(coverBandLabel("seniors")).toBe("65+ senior");
   });
 });

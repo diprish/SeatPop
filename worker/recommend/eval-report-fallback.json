@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T03:28:23.095Z",
+  "generatedAt": "2026-11-02T04:54:54.907Z",
   "mode": "fallback-proof (MODEL_API_KEY removed)",
   "grading": "none (key removed)",
   "households": [
@@ -34,16 +34,16 @@
     {
       "id": "h03",
       "description": "Two kids in Orleans, free only, Saturday mornings",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": null,
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": true,
-      "orderKept": true,
-      "allTemplated": true
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     },
     {
       "id": "h04",
@@ -62,20 +62,20 @@
     {
       "id": "h05",
       "description": "Teen in Barrhaven, sports, avoids crowds, $30",
-      "candidates": 1,
+      "candidates": 0,
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": null,
       "ndcgDate": null,
       "ndcgStage2": null,
       "graded": false,
-      "fallback": true,
-      "orderKept": true,
-      "allTemplated": true
+      "fallback": false,
+      "orderKept": null,
+      "allTemplated": null
     }
   ],
   "policyProbe": {
-    "candidates": 303,
+    "candidates": 246,
     "freePerOpl": 6,
     "ok": true
   },
@@ -87,7 +87,7 @@
     "meanNdcgStage2": null
   },
   "fallbackProof": {
-    "households": 4,
+    "households": 2,
     "orderKept": true,
     "allTemplated": true
   }
