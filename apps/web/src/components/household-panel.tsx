@@ -119,7 +119,11 @@ export default function HouseholdPanel({
         <SectionHeading icon="users" hue="lavender">
           Who&apos;s coming
         </SectionHeading>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div
+          id="hh-members"
+          tabIndex={-1}
+          className="filter-anchor mt-2 flex flex-wrap gap-2"
+        >
           {AGE_BANDS.map((band) => {
             const hue = hueForBand(band);
             const selected = prefs.members.some(
@@ -299,7 +303,7 @@ export default function HouseholdPanel({
         </div>
       </div>
 
-      <fieldset className="mt-5">
+      <fieldset id="hh-availability" tabIndex={-1} className="filter-anchor mt-5">
         <legend className="flex items-center gap-2 text-sm font-bold">
           <Icon name="clock" className={`h-4 w-4 ${HUE_INK["lemon"]}`} />
           Availability (leave empty for any time)

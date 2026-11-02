@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { Preferences } from "@seatpop/shared";
+import type { AgeBand, Preferences } from "@seatpop/shared";
 import EmptyState from "@/components/empty-state";
 import ErrorBanner from "@/components/error-banner";
 import HouseholdPanel from "@/components/household-panel";
+import HouseholdSentence, {
+  focusFilterTarget,
+} from "@/components/household-sentence";
 import HouseholdSheet from "@/components/household-sheet";
 import ResultsList from "@/components/results-list";
 import { Badge } from "@/components/ui/Badge";
@@ -13,7 +16,6 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { hueForBand } from "@/components/ui/hue";
 import {
   fetchRecommend,
   parseProfile,
@@ -30,10 +32,10 @@ import {
   unhideEvent,
 } from "@/lib/feedback";
 import { useFeedbackActions } from "@/lib/use-feedback-actions";
+import { useMediaQuery } from "@/lib/use-media-query";
+import type { SentencePillTarget } from "@/lib/sentence";
 import {
-  BAND_LABELS,
   SAMPLE_HOUSEHOLD,
-  budgetDollars,
   dedupeMembers,
   isSampleHousehold,
   loadHousehold,
@@ -75,7 +77,10 @@ export default function Home() {
   const [hidden, setHidden] = useState<Record<string, string>>({});
   const [showHidden, setShowHidden] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showShortcut, setShowShortcut] = useState(false);
   const [syncNotes, setSyncNotes] = useState<Record<string, string>>({});
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   function noteSync(eventId: string, note: string | null): void {
     setSyncNotes((notes) => {
@@ -175,11 +180,12 @@ export default function Home() {
   const isSample = isSampleHousehold(prefs);
   const visible = items.filter((item) => !hidden[item.event_id]);
   const hiddenVisible = items.filter((item) => hidden[item.event_id]);
-  const budget = budgetDollars(prefs);
-  const windowCount = Object.values(prefs.availability ?? {}).reduce(
-    (count, parts) => count + (parts?.length ?? 0),
-    0,
-  );
+
+  function openFilters(target: SentencePillTarget, band?: AgeBand): void {
+    if (isDesktop) setShowFilters(true);
+    else setSheetOpen(true);
+    focusFilterTarget(target, band);
+  }
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -213,97 +219,106 @@ export default function Home() {
         </Link>
       </p>
 
-      <div className="mt-4 lg:hidden">
-        {isSample && <SampleHouseholdNote />}
-        <div className="flex flex-wrap gap-2" aria-label="Household summary">
-          {prefs.members.map((member, index) => (
-            <Badge
-              key={`${member.age_band}:${index}`}
-              tone={hueForBand(member.age_band)}
-              solid
+      <div className="mt-4">
+        <Card>
+          {isSample && <SampleHouseholdNote />}
+          <HouseholdSentence prefs={prefs} onPill={openFilters} />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              onClick={() => void search(prefs)}
+              disabled={busy !== null}
             >
-              {BAND_LABELS[member.age_band]}
-            </Badge>
-          ))}
-          {prefs.fsa && <Badge tone="neutral">{prefs.fsa}</Badge>}
-          {prefs.max_distance_km !== undefined && (
-            <Badge tone="sky" solid>
-              ≤ {prefs.max_distance_km} km
-            </Badge>
-          )}
-          {prefs.free_only ? (
-            <Badge tone="mint" solid>
-              Free only
-            </Badge>
-          ) : (
-            budget !== undefined && (
-              <Badge tone="mint" solid>
-                ≤ ${budget}
-              </Badge>
-            )
-          )}
-          {windowCount > 0 && (
-            <Badge tone="lavender" solid>
-              {windowCount} {windowCount === 1 ? "time" : "times"}
-            </Badge>
-          )}
-        </div>
-        <Button
-          variant="secondary"
-          hue="lavender"
-          className="mt-3 w-full"
-          onClick={() => setSheetOpen(true)}
-        >
-          <Icon name="filter" className="h-4 w-4" />
-          Edit household and filters
-        </Button>
+              Find activities
+            </Button>
+            <Button
+              variant="secondary"
+              hue="lavender"
+              className="hidden lg:inline-flex"
+              aria-expanded={showFilters}
+              aria-controls="all-filters-panel"
+              onClick={() => setShowFilters((show) => !show)}
+            >
+              <Icon name="filter" className="h-4 w-4" />
+              All filters
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setPrefs(SAMPLE_HOUSEHOLD);
+                void search(SAMPLE_HOUSEHOLD);
+              }}
+            >
+              Reset to sample
+            </Button>
+          </div>
+          <Button
+            variant="secondary"
+            hue="lavender"
+            className="mt-3 w-full lg:hidden"
+            onClick={() => setSheetOpen(true)}
+          >
+            <Icon name="filter" className="h-4 w-4" />
+            Edit household and filters
+          </Button>
+          <div className="mt-3">
+            <Button
+              variant="ghost"
+              aria-expanded={showShortcut}
+              aria-controls="shortcut-panel"
+              onClick={() => setShowShortcut((show) => !show)}
+            >
+              Or describe your family (shortcut)
+            </Button>
+            <section
+              id="shortcut-panel"
+              aria-label="Describe your family"
+              className={showShortcut ? "mt-2" : "hidden"}
+            >
+              <label htmlFor="hh-text" className="text-sm font-bold">
+                Or describe your family (shortcut)
+              </label>
+              <textarea
+                id="hh-text"
+                rows={3}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Two kids (7 and 10) who love music, Saturday mornings, under $25, near K1S. Don't include names."
+                className="mt-1 min-h-[44px] w-full rounded-xl border border-line bg-surface p-2 text-sm text-ink placeholder:text-faint"
+              />
+              <Button
+                className="mt-2"
+                onClick={() => void parse()}
+                disabled={busy !== null || text.trim() === ""}
+              >
+                {busy === "parse" ? "Parsing…" : "Parse and search"}
+              </Button>
+            </section>
+          </div>
+        </Card>
+      </div>
+
+      <div
+        id="all-filters-panel"
+        className={`mt-4 ${showFilters ? "hidden lg:block" : "hidden"}`}
+      >
+        <HouseholdPanel
+          prefs={prefs}
+          onChange={setPrefs}
+          onSearch={() => void search(prefs)}
+          onReset={() => {
+            setPrefs(SAMPLE_HOUSEHOLD);
+            void search(SAMPLE_HOUSEHOLD);
+          }}
+          busy={busy !== null}
+        />
       </div>
 
       {banner !== "" && (
         <ErrorBanner message={banner} onRetry={() => void search(prefs)} />
       )}
 
-      <div className="mt-6 lg:grid lg:grid-cols-[350px_minmax(0,1fr)] lg:items-start lg:gap-6">
-        <div className="hidden lg:block">
-          <div className="lg:sticky lg:top-24">
-            {isSample && <SampleHouseholdNote />}
-            <HouseholdPanel
-              prefs={prefs}
-              onChange={setPrefs}
-              onSearch={() => void search(prefs)}
-              onReset={() => {
-                setPrefs(SAMPLE_HOUSEHOLD);
-                void search(SAMPLE_HOUSEHOLD);
-              }}
-              busy={busy !== null}
-            />
-          </div>
-        </div>
-
+      <div className="mt-6">
         <div>
-          <section
-            aria-label="Describe your family"
-            className="rounded-card border border-line bg-surface p-4 shadow-card"
-          >
-            <label htmlFor="hh-text" className="text-sm font-bold">
-              Or describe your family (shortcut)
-            </label>
-            <textarea
-              id="hh-text"
-              rows={3}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Two kids (7 and 10) who love music, Saturday mornings, under $25, near K1S. Don't include names."
-              className="mt-1 min-h-[44px] w-full rounded-xl border border-line bg-surface p-2 text-sm text-ink placeholder:text-faint"
-            />
-            <Button
-              className="mt-2"
-              onClick={() => void parse()}
-              disabled={busy !== null || text.trim() === ""}
-            >
-              {busy === "parse" ? "Parsing…" : "Parse and search"}
-            </Button>
-          </section>
 
           {meta && meta.warnings.length > 0 && (
             <ul className="mt-4 list-disc pl-5 text-sm text-muted">

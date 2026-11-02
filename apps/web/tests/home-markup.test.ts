@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static contract for the ui(C) home page (this repo has no DOM test
-// harness): gradient hero with the 3-step strip, sticky desktop
-// filters beside the results column, hue summary chips with the sheet
-// opener on mobile, the shortcut card, the rainbow results header,
+// Static contract for the 2c home page (this repo has no DOM test
+// harness): gradient hero with the 3-step strip, the sentence card
+// with filter pills, the collapsible desktop filters, the mobile
+// sheet opener, the shortcut card, the rainbow results header,
 // and pastel skeletons behind the status text.
 const HOME = readFileSync(
   new URL("../src/app/page.tsx", import.meta.url),
@@ -12,6 +12,10 @@ const HOME = readFileSync(
 );
 const LIST = readFileSync(
   new URL("../src/components/results-list.tsx", import.meta.url),
+  "utf8",
+);
+const SENTENCE = readFileSync(
+  new URL("../src/components/household-sentence.tsx", import.meta.url),
   "utf8",
 );
 
@@ -35,28 +39,41 @@ describe("home page markup", () => {
     }
   });
 
-  it("sticks the filters beside the results on desktop", () => {
-    expect(HOME).toContain("lg:grid-cols-[350px_minmax(0,1fr)]");
-    expect(HOME).toContain("lg:sticky");
-    expect(HOME).toContain("hidden lg:block");
+  it("toggles the desktop filters from the sentence card", () => {
+    expect(HOME).toContain("All filters");
+    expect(HOME).toContain("all-filters-panel");
+    expect(HOME).toContain("aria-expanded");
+    expect(HOME).toContain("<HouseholdPanel");
+    expect(HOME).not.toContain("lg:grid-cols-[350px_minmax(0,1fr)]");
   });
 
-  it("summarizes the household in hues with a sheet opener on mobile", () => {
-    expect(HOME).toContain('aria-label="Household summary"');
-    expect(HOME).toContain("hueForBand(member.age_band)");
+  it("states the household as sentence pills with filter openers", () => {
+    expect(HOME).toContain("<HouseholdSentence");
+    expect(HOME).toContain("Find activities");
+    expect(HOME).toContain("Reset to sample");
     expect(HOME).toContain("Edit household and filters");
     expect(HOME).toContain("lg:hidden");
     expect(HOME).toContain("<HouseholdSheet");
+    expect(HOME).not.toContain('aria-label="Household summary"');
   });
 
-  it("badges the untouched sample next to the summary and the filters", () => {
+  it("lands sentence pills on the visible filter control", () => {
+    expect(SENTENCE).toContain("getClientRects");
+    expect(SENTENCE).toContain("scrollIntoView");
+    expect(SENTENCE).toContain("prefers-reduced-motion");
+    expect(SENTENCE).toContain("#hh-members");
+    expect(SENTENCE).toContain("#hh-availability");
+    expect(SENTENCE).toContain("edit ${segment.target}");
+  });
+
+  it("badges the untouched sample above the sentence", () => {
     expect(HOME).toContain("isSampleHousehold(prefs)");
     expect(HOME).toContain("Sample household");
     expect(HOME).toContain(
       "This is an example family. Edit it to see picks for yours.",
     );
     expect(HOME).toContain('tone="lavender" icon="sparkle"');
-    expect(HOME.match(/<SampleHouseholdNote \/>/g)).toHaveLength(2);
+    expect(HOME.match(/<SampleHouseholdNote \/>/g)).toHaveLength(1);
   });
 
   it("keeps the shortcut card labels and copy", () => {

@@ -169,3 +169,14 @@
 .dark :focus-visible {
   outline-color: #c6b8ea;
 }
+
+/** Programmatic focus landing pads for sentence-pill jumps. */
+.filter-anchor:focus {
+  outline: 2px solid #2b2f4a;
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
+.dark .filter-anchor:focus {
+  outline-color: #c6b8ea;
+}
