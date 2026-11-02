@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-01T05:13:37.082Z",
-  "promptVersion": "enrich.v4",
+  "generatedAt": "2026-11-01T23:34:55.955Z",
+  "promptVersion": "enrich.v5",
   "goldenPath": "worker/eval/golden/events.jsonl",
   "goldenEvents": 60,
   "models": [
@@ -8,232 +8,238 @@
       "key": "contributor",
       "provider": "meta",
       "model": "muse-spark-1.3-contributor",
-      "eventsScored": 60,
+      "eventsScored": 59,
       "eventsFailed": 0,
       "fields": {
         "age_min": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 52,
-          "nullRate": 0.8666666666666667
+          "modelNulls": 51,
+          "nullRate": 0.864406779661017
         },
         "age_max": {
-          "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
-          "modelNulls": 54,
-          "nullRate": 0.9
+          "correct": 56,
+          "total": 59,
+          "accuracy": 0.9491525423728814,
+          "modelNulls": 53,
+          "nullRate": 0.8983050847457628
         },
         "price_kind": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
+          "total": 59,
+          "accuracy": 1,
           "modelNulls": 35,
-          "nullRate": 0.5833333333333334
+          "nullRate": 0.5932203389830508
         },
         "amount": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
-          "modelNulls": 59,
-          "nullRate": 0.9833333333333333
+          "total": 59,
+          "accuracy": 1,
+          "modelNulls": 58,
+          "nullRate": 0.9830508474576272
         },
         "setting": {
           "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
           "modelNulls": 18,
-          "nullRate": 0.3
+          "nullRate": 0.3050847457627119
         },
         "language": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 44,
-          "nullRate": 0.7333333333333333
+          "modelNulls": 43,
+          "nullRate": 0.7288135593220338
         },
         "registration_hint": {
-          "correct": 52,
-          "total": 60,
-          "accuracy": 0.8666666666666667,
-          "modelNulls": 34,
-          "nullRate": 0.5666666666666667
+          "correct": 51,
+          "total": 59,
+          "accuracy": 0.864406779661017,
+          "modelNulls": 32,
+          "nullRate": 0.5423728813559322
         },
         "accessibility": {
-          "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
-          "modelNulls": 58,
-          "nullRate": 0.9666666666666667
+          "correct": 57,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
+          "modelNulls": 57,
+          "nullRate": 0.9661016949152542
         }
       },
-      "falseFree": 1,
-      "wrongPrice": 1,
-      "hallucinatedFields": 7,
+      "falseFree": 0,
+      "wrongPrice": 0,
+      "hallucinatedFields": 5,
       "tokens": {
-        "prompt": 188887,
-        "completion": 83050,
-        "reasoning": 43223,
-        "livePasses": 73,
-        "cachedPasses": 54
+        "prompt": 200649,
+        "completion": 83379,
+        "reasoning": 44453,
+        "livePasses": 64,
+        "cachedPasses": 61
       },
-      "costUsd": 0.013153970000000006,
-      "costPer1kUsd": 0.21923283333333343
+      "costUsd": 0.013374154000000003,
+      "costPer1kUsd": 0.22668057627118648
     },
     {
       "key": "spark",
       "provider": "meta",
       "model": "muse-spark-1.3",
-      "eventsScored": 60,
+      "eventsScored": 59,
       "eventsFailed": 0,
       "fields": {
         "age_min": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 52,
-          "nullRate": 0.8666666666666667
+          "modelNulls": 51,
+          "nullRate": 0.864406779661017
         },
         "age_max": {
-          "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
-          "modelNulls": 54,
-          "nullRate": 0.9
+          "correct": 56,
+          "total": 59,
+          "accuracy": 0.9491525423728814,
+          "modelNulls": 53,
+          "nullRate": 0.8983050847457628
         },
         "price_kind": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
+          "total": 59,
+          "accuracy": 1,
           "modelNulls": 35,
-          "nullRate": 0.5833333333333334
+          "nullRate": 0.5932203389830508
         },
         "amount": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
-          "modelNulls": 59,
-          "nullRate": 0.9833333333333333
+          "total": 59,
+          "accuracy": 1,
+          "modelNulls": 58,
+          "nullRate": 0.9830508474576272
         },
         "setting": {
           "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
           "modelNulls": 18,
-          "nullRate": 0.3
+          "nullRate": 0.3050847457627119
         },
         "language": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 44,
-          "nullRate": 0.7333333333333333
+          "modelNulls": 43,
+          "nullRate": 0.7288135593220338
         },
         "registration_hint": {
-          "correct": 52,
-          "total": 60,
-          "accuracy": 0.8666666666666667,
-          "modelNulls": 33,
-          "nullRate": 0.55
+          "correct": 51,
+          "total": 59,
+          "accuracy": 0.864406779661017,
+          "modelNulls": 32,
+          "nullRate": 0.5423728813559322
         },
         "accessibility": {
-          "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
+          "correct": 57,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
           "modelNulls": 58,
-          "nullRate": 0.9666666666666667
+          "nullRate": 0.9830508474576272
         }
       },
-      "falseFree": 1,
-      "wrongPrice": 1,
-      "hallucinatedFields": 7,
+      "falseFree": 0,
+      "wrongPrice": 0,
+      "hallucinatedFields": 5,
       "tokens": {
-        "prompt": 196435,
-        "completion": 88543,
-        "reasoning": 47091,
-        "livePasses": 75,
-        "cachedPasses": 57
+        "prompt": 198258,
+        "completion": 77195,
+        "reasoning": 38486,
+        "livePasses": 63,
+        "cachedPasses": 61
       },
-      "costUsd": 0.30582825000000013,
-      "costPer1kUsd": 5.097137500000002
+      "costUsd": 0.25348215,
+      "costPer1kUsd": 4.296307627118645
     },
     {
       "key": "baseten",
       "provider": "baseten",
       "model": "meta-models/muse-spark-open-1026",
-      "eventsScored": 60,
+      "eventsScored": 59,
       "eventsFailed": 0,
       "fields": {
         "age_min": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 52,
-          "nullRate": 0.8666666666666667
+          "modelNulls": 51,
+          "nullRate": 0.864406779661017
         },
         "age_max": {
-          "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
-          "modelNulls": 54,
-          "nullRate": 0.9
+          "correct": 56,
+          "total": 59,
+          "accuracy": 0.9491525423728814,
+          "modelNulls": 53,
+          "nullRate": 0.8983050847457628
         },
         "price_kind": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
+          "total": 59,
+          "accuracy": 1,
           "modelNulls": 35,
-          "nullRate": 0.5833333333333334
+          "nullRate": 0.5932203389830508
         },
         "amount": {
           "correct": 59,
-          "total": 60,
-          "accuracy": 0.9833333333333333,
-          "modelNulls": 59,
-          "nullRate": 0.9833333333333333
+          "total": 59,
+          "accuracy": 1,
+          "modelNulls": 58,
+          "nullRate": 0.9830508474576272
         },
         "setting": {
           "correct": 57,
-          "total": 60,
-          "accuracy": 0.95,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
           "modelNulls": 18,
-          "nullRate": 0.3
+          "nullRate": 0.3050847457627119
         },
         "language": {
-          "correct": 60,
-          "total": 60,
+          "correct": 59,
+          "total": 59,
           "accuracy": 1,
-          "modelNulls": 44,
-          "nullRate": 0.7333333333333333
+          "modelNulls": 43,
+          "nullRate": 0.7288135593220338
         },
         "registration_hint": {
-          "correct": 52,
-          "total": 60,
-          "accuracy": 0.8666666666666667,
-          "modelNulls": 34,
-          "nullRate": 0.5666666666666667
+          "correct": 51,
+          "total": 59,
+          "accuracy": 0.864406779661017,
+          "modelNulls": 33,
+          "nullRate": 0.559322033898305
         },
         "accessibility": {
-          "correct": 58,
-          "total": 60,
-          "accuracy": 0.9666666666666667,
+          "correct": 57,
+          "total": 59,
+          "accuracy": 0.9661016949152542,
           "modelNulls": 58,
-          "nullRate": 0.9666666666666667
+          "nullRate": 0.9830508474576272
         }
       },
-      "falseFree": 1,
-      "wrongPrice": 1,
-      "hallucinatedFields": 7,
+      "falseFree": 0,
+      "wrongPrice": 0,
+      "hallucinatedFields": 5,
       "tokens": {
-        "prompt": 218539,
-        "completion": 127803,
-        "reasoning": 75288,
-        "livePasses": 78,
-        "cachedPasses": 57
+        "prompt": 222432,
+        "completion": 115199,
+        "reasoning": 68081,
+        "livePasses": 65,
+        "cachedPasses": 63
       },
-      "costUsd": 0.36474449999999986,
-      "costPer1kUsd": 6.079074999999998
+      "costUsd": 0.278535,
+      "costPer1kUsd": 4.72093220338983
+    }
+  ],
+  "excluded": [
+    {
+      "event_id": "b2092319-1be1-4c2f-9f9b-ec7b89a82b35",
+      "reason": "\"Enjoy free general admission to the museum\" (Nov 11) is explicit, but Nov 10 tours are ticketed without a price (\"tickets must be reserved in advance\") and other days state nothing; \"free\" and \"unknown\" are both honest single-kind labels."
     }
   ]
 }
