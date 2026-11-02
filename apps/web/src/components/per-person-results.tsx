@@ -7,6 +7,7 @@ import EventCard from "@/components/event-card";
 import type { RecommendItemView } from "@/lib/api";
 import { BAND_LABELS } from "@/lib/household";
 import { groupPerPerson } from "@/lib/per-person";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { Badge } from "@/components/ui/Badge";
 import { Chip } from "@/components/ui/Chip";
 import {
@@ -120,6 +121,176 @@ interface PerPersonResultsProps extends CardProps {
   onApply: (next: Preferences) => void;
 }
 
+function RankBadge({ reranked }: { reranked: boolean }) {
+  return (
+    <Badge tone={reranked ? "lavender" : "neutral"} solid={reranked}>
+      {reranked ? "AI-ranked" : "match order"}
+    </Badge>
+  );
+}
+
+function TogetherSection({
+  together,
+  prefs,
+  savedIds,
+  syncNotes,
+  onToggleSave,
+  onNotForUs,
+}: CardProps & { together: RecommendItemView[] }) {
+  return (
+    <section aria-labelledby="per-person-together">
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="per-person-together" className="text-lg font-extrabold">
+          Everyone together
+        </h2>
+      </div>
+      <div
+        aria-hidden="true"
+        className="mt-1 h-1 w-28 rounded-full bg-rainbow"
+      />
+      {together.length === 0 ? (
+        <p className="mt-3 text-sm text-muted">
+          No single pick fits everyone — see each person&rsquo;s picks below.
+        </p>
+      ) : (
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          {together.map((item) => (
+            <EventCard
+              key={item.event_id}
+              item={item}
+              prefs={prefs}
+              saved={savedIds.has(item.event_id)}
+              syncNote={syncNotes[item.event_id] ?? null}
+              onToggleSave={onToggleSave}
+              onNotForUs={onNotForUs}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+const BAND_TAB_LABEL: Record<AgeBand, string> = {
+  baby: "Baby",
+  preschool: "Preschool",
+  kids: "Kids",
+  teens: "Teens",
+  adults: "Adults",
+  seniors: "Seniors",
+};
+
+function MobileTabs({
+  together,
+  columns,
+  reranked,
+  prefs,
+  savedIds,
+  syncNotes,
+  onToggleSave,
+  onNotForUs,
+  onApply,
+}: CardProps & {
+  together: RecommendItemView[];
+  columns: Array<{ band: AgeBand; picks: RecommendItemView[] }>;
+  reranked: boolean;
+  onApply: (next: Preferences) => void;
+}) {
+  const tabs = [
+    { id: "everyone", label: "Everyone", hue: "lavender" as Hue },
+    ...columns.map((column) => ({
+      id: column.band,
+      label: BAND_TAB_LABEL[column.band],
+      hue: hueForBand(column.band),
+    })),
+  ];
+  const [active, setActive] = useState("everyone");
+  const current = tabs.some((tab) => tab.id === active) ? active : "everyone";
+
+  function onTabKeyDown(event: React.KeyboardEvent): void {
+    const ids = tabs.map((tab) => tab.id);
+    const at = ids.indexOf(current);
+    let next: number | null = null;
+    if (event.key === "ArrowRight") next = (at + 1) % ids.length;
+    else if (event.key === "ArrowLeft")
+      next = (at - 1 + ids.length) % ids.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = ids.length - 1;
+    if (next === null) return;
+    event.preventDefault();
+    const id = ids[next] as string;
+    setActive(id);
+    document.getElementById(`per-person-tab-${id}`)?.focus();
+  }
+
+  const activeColumn = columns.find((column) => column.band === current);
+  return (
+    <div className="mt-4">
+      <div className="flex justify-end">
+        <RankBadge reranked={reranked} />
+      </div>
+      <div
+        role="tablist"
+        aria-label="Results by member"
+        onKeyDown={onTabKeyDown}
+        className="sticky top-[65px] z-30 -mx-4 mt-2 flex gap-2 overflow-x-auto border-b border-line bg-surface/95 px-4 pb-2 pt-2 backdrop-blur"
+      >
+        {tabs.map((tab) => {
+          const selected = tab.id === current;
+          return (
+            <Chip
+              key={tab.id}
+              hue={tab.hue}
+              size="sm"
+              selected={selected}
+              showCheck={false}
+              disclosure
+              role="tab"
+              id={`per-person-tab-${tab.id}`}
+              aria-selected={selected}
+              aria-controls={`per-person-panel-${tab.id}`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setActive(tab.id)}
+              className="min-h-[44px] shrink-0"
+            >
+              {tab.label}
+            </Chip>
+          );
+        })}
+      </div>
+      <div
+        role="tabpanel"
+        id={`per-person-panel-${current}`}
+        aria-labelledby={`per-person-tab-${current}`}
+        tabIndex={0}
+        className="mt-4"
+      >
+        {current === "everyone" || !activeColumn ? (
+          <TogetherSection
+            together={together}
+            prefs={prefs}
+            savedIds={savedIds}
+            syncNotes={syncNotes}
+            onToggleSave={onToggleSave}
+            onNotForUs={onNotForUs}
+          />
+        ) : (
+          <MemberColumn
+            band={activeColumn.band}
+            picks={activeColumn.picks}
+            prefs={prefs}
+            savedIds={savedIds}
+            syncNotes={syncNotes}
+            onToggleSave={onToggleSave}
+            onNotForUs={onNotForUs}
+            onApply={onApply}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function PerPersonResults({
   items,
   reranked,
@@ -130,43 +301,36 @@ export default function PerPersonResults({
   onNotForUs,
   onApply,
 }: PerPersonResultsProps) {
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const { together, columns } = groupPerPerson(items, prefs.members);
+  if (!isDesktop) {
+    return (
+      <MobileTabs
+        together={together}
+        columns={columns}
+        reranked={reranked}
+        prefs={prefs}
+        savedIds={savedIds}
+        syncNotes={syncNotes}
+        onToggleSave={onToggleSave}
+        onNotForUs={onNotForUs}
+        onApply={onApply}
+      />
+    );
+  }
   return (
     <div className="mt-4">
-      <section aria-labelledby="per-person-together">
-        <div className="flex items-center justify-between gap-2">
-          <h2 id="per-person-together" className="text-lg font-extrabold">
-            Everyone together
-          </h2>
-          <Badge tone={reranked ? "lavender" : "neutral"} solid={reranked}>
-            {reranked ? "AI-ranked" : "match order"}
-          </Badge>
-        </div>
-        <div
-          aria-hidden="true"
-          className="mt-1 h-1 w-28 rounded-full bg-rainbow"
-        />
-        {together.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">
-            No single pick fits everyone — see each person&rsquo;s column
-            below.
-          </p>
-        ) : (
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            {together.map((item) => (
-              <EventCard
-                key={item.event_id}
-                item={item}
-                prefs={prefs}
-                saved={savedIds.has(item.event_id)}
-                syncNote={syncNotes[item.event_id] ?? null}
-                onToggleSave={onToggleSave}
-                onNotForUs={onNotForUs}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="flex justify-end">
+        <RankBadge reranked={reranked} />
+      </div>
+      <TogetherSection
+        together={together}
+        prefs={prefs}
+        savedIds={savedIds}
+        syncNotes={syncNotes}
+        onToggleSave={onToggleSave}
+        onNotForUs={onNotForUs}
+      />
       <div className="mt-6 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
         {columns.map((column) => (
           <MemberColumn

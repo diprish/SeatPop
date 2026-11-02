@@ -110,6 +110,23 @@ describe("home page markup", () => {
     expect(GROUPED).toContain("auto-fit,minmax(260px,1fr)");
   });
 
+  it("tabs one member list at a time on mobile with a11y wiring", () => {
+    expect(GROUPED).toContain('role="tablist"');
+    expect(GROUPED).toContain('role="tab"');
+    expect(GROUPED).toContain('role="tabpanel"');
+    expect(GROUPED).toContain("aria-selected");
+    expect(GROUPED).toContain("aria-controls");
+    expect(GROUPED).toContain("aria-labelledby");
+    expect(GROUPED).toContain("ArrowRight");
+    expect(GROUPED).toContain("ArrowLeft");
+    expect(GROUPED).toContain("Home");
+    expect(GROUPED).toContain("End");
+    expect(GROUPED).toContain("top-[65px]");
+    expect(GROUPED).toContain("min-h-[44px]");
+    expect(GROUPED).toContain('aria-label="Results by member"');
+    expect(GROUPED).toContain("(min-width: 1024px)");
+  });
+
   it("shows pastel skeletons behind the searching status", () => {
     expect(HOME).toContain('role="status"');
     expect(HOME).toContain("Searching…");
