@@ -140,15 +140,15 @@ const MOIS_WORD = /\b[Mm][Oo][Ii][Ss](?![a-z])/;
 
 /**
  * Age display, with a safety net for months stored as years: when the
- * largest stated age is in [5, 36) and the listing text says
+ * largest stated age is in [5, 36] and the listing text says
  * month(s)/mois, the stored numbers are months-magnitudes — a
  * months-quoted age can never legitimately reach 5 as years (the same
  * ceiling verifyAge enforces) — so the label reads months, not years.
- * Converted rows (max under 5) render as years, and magnitudes of 36+
- * are years (36 months would have converted to 3). Months magnitudes
- * under 5 are indistinguishable from years here; the deterministic
- * repair script owns those. Frequency words ("every month") beside
- * years-scale ages can misfire — rare, and visibly quotable.
+ * Converted rows (max under 5) render as years, and magnitudes over 36
+ * are years. Months magnitudes under 5 are indistinguishable from
+ * years here; the deterministic repair script owns those. Frequency
+ * words ("every month") beside years-scale ages can misfire — rare,
+ * and visibly quotable.
  */
 export function ageLine(item: {
   age_min: number | null;
@@ -165,7 +165,7 @@ export function ageLine(item: {
   const months =
     magnitude !== null &&
     magnitude >= 5 &&
-    magnitude < 36 &&
+    magnitude <= 36 &&
     (MONTHS_WORD.test(text) || MOIS_WORD.test(text));
   const suffix = months ? " months" : "";
   if (age_min !== null && age_max !== null) {

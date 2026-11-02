@@ -101,7 +101,7 @@ describe("computeWhy", () => {
     const rows = computeWhy(testItem(), PREFS, testDetail());
     const byField = new Map(rows.map((row) => [row.field, row]));
     expect(byField.get("Age")).toMatchObject({
-      detail: "Close to the kids age band",
+      detail: "Close to kids",
       quote: "ages 3 to 5",
     });
     expect(byField.get("Price")).toMatchObject({
@@ -186,7 +186,7 @@ describe("computeWhy", () => {
       null,
     );
     expect(mixed.find((row) => row.field === "Age")?.detail).toBe(
-      "Fits kids; Close to the preschool age band",
+      "Fits kids; Close to preschool",
     );
 
     const adjacent = computeWhy(
@@ -197,7 +197,7 @@ describe("computeWhy", () => {
       null,
     );
     expect(adjacent.find((row) => row.field === "Age")?.detail).toBe(
-      "Close to the kids, baby age bands",
+      "Close to kids, baby",
     );
   });
 
@@ -219,7 +219,7 @@ describe("computeWhy", () => {
       }),
     );
     expect(rows.find((row) => row.field === "Age")).toMatchObject({
-      detail: "Close to the preschool age band",
+      detail: "Close to preschool",
       quote: "19–36 months",
     });
   });

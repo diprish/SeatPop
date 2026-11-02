@@ -155,6 +155,13 @@ describe("ageLine", () => {
     ).toBe("Ages 19–35 months");
     expect(
       ageLine({
+        age_min: 19,
+        age_max: 36,
+        description: "Play for ages 19-36 months.",
+      }),
+    ).toBe("Ages 19–36 months");
+    expect(
+      ageLine({
         age_min: 0,
         age_max: 18,
         description: "Songs for babies 0-18 months.",

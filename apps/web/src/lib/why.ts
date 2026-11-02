@@ -86,10 +86,7 @@ export function computeWhy(
     const adjacent = bandsAt("adjacent");
     const parts: string[] = [];
     if (exact.length > 0) parts.push(`Fits ${exact.join(", ")}`);
-    if (adjacent.length > 0) {
-      const noun = adjacent.length > 1 ? "age bands" : "age band";
-      parts.push(`Close to the ${adjacent.join(", ")} ${noun}`);
-    }
+    if (adjacent.length > 0) parts.push(`Close to ${adjacent.join(", ")}`);
     rows.push({
       field: "Age",
       detail: parts.length > 0 ? parts.join("; ") : "Overlaps no member band",
