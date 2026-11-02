@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import SiteNav from "@/components/site-nav";
 import "./globals.css";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["500", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -20,8 +27,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf7f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#1c1917" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf8f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#161828" },
   ],
 };
 
@@ -35,8 +42,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans text-ink antialiased">
+      <body
+        className={`${jakarta.className} min-h-screen bg-background font-medium text-ink antialiased`}
+      >
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+        >
+          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-blush-solid/30 blur-3xl" />
+          <div className="absolute -right-24 top-10 h-96 w-96 rounded-full bg-sky-solid/30 blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 h-96 w-96 rounded-full bg-lemon-solid/30 blur-3xl" />
+        </div>
         <SiteNav />
         {children}
       </body>

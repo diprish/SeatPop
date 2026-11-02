@@ -3,26 +3,58 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /**
- * SeatPop design tokens. Light values are the spec; dark values keep the
- * warm cast with AA contrast or better. Colors and shadow resolve
- * through runtime vars (@theme inline), so the .dark overrides below
- * apply with no per-component dark: classes for shell colors. Accent
- * orange is for large/bold/graphic accents only — too light for small
- * body text on either theme.
+ * SeatPop candy-pastel tokens. Light values are the spec; dark values
+ * keep every text pair at AA or better (verified by
+ * scripts/contrast-check.mjs). Colors resolve through runtime vars
+ * (@theme inline), so the .dark overrides below apply with no
+ * per-component dark: classes for shell colors — except primary
+ * buttons, which flip from navy/white to lavender-solid/navy.
+ *
+ * Rules: text on any pastel solid is NAVY (never white); the rainbow
+ * is thin bars and large-text gradient only, never behind small text.
  */
 @theme inline {
   --color-background: var(--sp-bg);
   --color-surface: var(--sp-surface);
   --color-ink: var(--sp-ink);
   --color-muted: var(--sp-muted);
+  --color-faint: var(--sp-faint);
   --color-primary: var(--sp-primary);
-  --color-accent: var(--sp-accent);
   --color-line: var(--sp-line);
+  --color-line-soft: var(--sp-line-soft);
+  --color-mist: var(--sp-mist);
+  --color-blush-solid: var(--sp-blush-solid);
+  --color-blush-tint: var(--sp-blush-tint);
+  --color-blush-ink: var(--sp-blush-ink);
+  --color-peach-solid: var(--sp-peach-solid);
+  --color-peach-tint: var(--sp-peach-tint);
+  --color-peach-ink: var(--sp-peach-ink);
+  --color-lemon-solid: var(--sp-lemon-solid);
+  --color-lemon-tint: var(--sp-lemon-tint);
+  --color-lemon-ink: var(--sp-lemon-ink);
+  --color-mint-solid: var(--sp-mint-solid);
+  --color-mint-tint: var(--sp-mint-tint);
+  --color-mint-ink: var(--sp-mint-ink);
+  --color-sky-solid: var(--sp-sky-solid);
+  --color-sky-tint: var(--sp-sky-tint);
+  --color-sky-ink: var(--sp-sky-ink);
+  --color-lavender-solid: var(--sp-lavender-solid);
+  --color-lavender-tint: var(--sp-lavender-tint);
+  --color-lavender-ink: var(--sp-lavender-ink);
   --shadow-card: var(--sp-shadow);
 }
 
 @theme {
+  --color-navy: #2b2f4a;
   --radius-card: 1rem;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+  }
 }
 
 /** 44px minimum touch target for icon buttons and nav hits. */
@@ -31,32 +63,102 @@
   min-width: 44px;
 }
 
+/** Rainbow thin bars (header rule, card tops, results underline). */
+@utility bg-rainbow {
+  background-image: linear-gradient(
+    90deg,
+    #f4a9b8,
+    #f8c08e,
+    #f2dc7a,
+    #a9deb9,
+    #9ccbea,
+    #c6b8ea
+  );
+}
+
+/** Deeper rainbow for large headline text only — never small text. */
+@utility text-rainbow {
+  background-image: linear-gradient(
+    90deg,
+    #d9708a,
+    #d4894a,
+    #a8901a,
+    #4f9d6e,
+    #4a8fbf,
+    #8a74c8
+  );
+  color: transparent;
+  background-clip: text;
+}
+
 :root {
   color-scheme: light;
-  --sp-bg: #faf7f2;
+  --sp-bg: #fbf8f3;
   --sp-surface: #ffffff;
-  --sp-ink: #1f2937;
-  --sp-muted: #6b7280;
-  --sp-primary: #0f766e;
-  --sp-accent: #f97316;
-  --sp-line: #e7e2d9;
+  --sp-ink: #2b2f4a;
+  --sp-muted: #565b78;
+  --sp-faint: #646a86;
+  --sp-primary: #2b2f4a;
+  --sp-line: #e6e3ee;
+  --sp-line-soft: #e4e1ed;
+  --sp-mist: #f3f1f8;
+  --sp-blush-solid: #f4a9b8;
+  --sp-blush-tint: #fde8ed;
+  --sp-blush-ink: #7d2a3d;
+  --sp-peach-solid: #f8c08e;
+  --sp-peach-tint: #fdeedd;
+  --sp-peach-ink: #7a4a14;
+  --sp-lemon-solid: #f2dc7a;
+  --sp-lemon-tint: #fbf3cc;
+  --sp-lemon-ink: #66560f;
+  --sp-mint-solid: #a9deb9;
+  --sp-mint-tint: #e6f6ec;
+  --sp-mint-ink: #2a5b3a;
+  --sp-sky-solid: #9ccbea;
+  --sp-sky-tint: #e4f1fa;
+  --sp-sky-ink: #1f5272;
+  --sp-lavender-solid: #c6b8ea;
+  --sp-lavender-tint: #efeafa;
+  --sp-lavender-ink: #4a3e7a;
   --sp-shadow:
-    0 1px 2px rgb(31 41 55 / 0.06),
-    0 8px 24px -12px rgb(31 41 55 / 0.18);
+    0 1px 2px rgb(43 47 74 / 0.06),
+    0 12px 32px -12px rgb(43 47 74 / 0.28);
 }
 
 .dark {
   color-scheme: dark;
-  --sp-bg: #1c1917;
-  --sp-surface: #292524;
-  --sp-ink: #f5f5f4;
-  --sp-muted: #a8a29e;
-  --sp-primary: #2dd4bf;
-  --sp-accent: #fb923c;
-  --sp-line: #44403c;
+  --sp-bg: #161828;
+  --sp-surface: #1d2033;
+  --sp-ink: #eceef8;
+  --sp-muted: #b6bad2;
+  --sp-faint: #9aa0bb;
+  --sp-primary: #c6b8ea;
+  --sp-line: #343850;
+  --sp-line-soft: #282c40;
+  --sp-mist: #262a3d;
+  /* Solids unchanged; tints are the solid at 18% over the surface
+     (flattened); inks are the hue's 200 shade. */
+  --sp-blush-solid: #f4a9b8;
+  --sp-blush-tint: #44394b;
+  --sp-blush-ink: #fecdd3;
+  --sp-peach-solid: #f8c08e;
+  --sp-peach-tint: #443d43;
+  --sp-peach-ink: #fed7aa;
+  --sp-lemon-solid: #f2dc7a;
+  --sp-lemon-tint: #434240;
+  --sp-lemon-ink: #fef08a;
+  --sp-mint-solid: #a9deb9;
+  --sp-mint-tint: #36424b;
+  --sp-mint-ink: #bbf7d0;
+  --sp-sky-solid: #9ccbea;
+  --sp-sky-tint: #343f54;
+  --sp-sky-ink: #bae6fd;
+  --sp-lavender-solid: #c6b8ea;
+  --sp-lavender-tint: #3b3b54;
+  --sp-lavender-ink: #ddd6fe;
   --sp-shadow:
     0 1px 2px rgb(0 0 0 / 0.4),
-    0 8px 24px -12px rgb(0 0 0 / 0.5);
+    0 12px 32px -12px rgb(0 0 0 / 0.5);
 }
 
 :focus-visible {
