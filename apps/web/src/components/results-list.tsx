@@ -26,7 +26,7 @@ export default function ResultsList({
       <h2 className="text-sm font-semibold">
         Top picks {!reranked && "(match order)"}
       </h2>
-      <div className="mt-2 space-y-3">
+      <div className="mt-2 space-y-4">
         {items.map((item) => (
           <EventCard
             key={item.event_id}

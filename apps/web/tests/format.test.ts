@@ -268,4 +268,12 @@ describe("priceBadgeClass", () => {
     expect(priceBadgeClass("free")).toContain("green");
     expect(priceBadgeClass("paid")).toContain("amber");
   });
+
+  it("renders the muted tone through the design tokens", () => {
+    const muted = priceBadgeClass("muted");
+    expect(muted).toContain("bg-background");
+    expect(muted).toContain("text-muted");
+    expect(muted).not.toContain("neutral-");
+    expect(muted).not.toContain("dark:");
+  });
 });

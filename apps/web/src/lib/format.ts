@@ -50,7 +50,7 @@ export function priceBadgeClass(tone: PriceTone): string {
     return "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100";
   }
   if (tone === "muted") {
-    return "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300";
+    return "bg-background text-muted";
   }
   return "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200";
 }

@@ -49,13 +49,13 @@ export default function EventCard({
     : null;
 
   return (
-    <article className="rounded border border-neutral-200 p-3 dark:border-neutral-800">
+    <article className="rounded-card border border-line bg-surface p-4 shadow-card">
       <h3 className="font-semibold">
         <Link className="underline" href={`/events/${item.event_id}`}>
           {sanitizeText(item.title)}
         </Link>
       </h3>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-sm text-muted">
         {formatWhenRange(item.starts_at, item.ends_at, item.timezone)}
         {item.venue_name ? ` · ${item.venue_name}` : ""}
         {distance ? ` · ${distance}` : ""}
@@ -63,11 +63,11 @@ export default function EventCard({
       {item.registration_window && badge && (
         <div className="mt-1 text-sm">
           <p>
-            <span className="inline-block rounded-full border border-neutral-300 px-2 py-0.5 text-xs font-semibold dark:border-neutral-700">
+            <span className="inline-block rounded-full border border-line px-2 py-0.5 text-xs font-semibold">
               {badge}
             </span>
           </p>
-          <p className="mt-1 text-xs italic text-neutral-600 dark:text-neutral-300">
+          <p className="mt-1 text-xs italic text-muted">
             <a
               className="underline"
               href={item.registration_window.source_url}
@@ -117,7 +117,7 @@ export default function EventCard({
                 </li>
               ))}
               {item.more_dates.length > 5 && (
-                <li className="text-neutral-500 dark:text-neutral-400">
+                <li className="text-muted">
                   …and {item.more_dates.length - 5} more
                 </li>
               )}
@@ -142,7 +142,7 @@ export default function EventCard({
             <span key={index}>{part.text}</span>
           ),
         )}{" "}
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+        <span className="text-xs text-muted">
           {item.reasonFromModel ? "(AI reason)" : "(match)"}
         </span>
       </p>
@@ -152,7 +152,7 @@ export default function EventCard({
           type="button"
           aria-pressed={saved}
           onClick={() => onToggleSave(item)}
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
         >
           {saved ? "★ Saved" : "☆ Save"}
         </button>
@@ -160,19 +160,19 @@ export default function EventCard({
           type="button"
           aria-expanded={hideOpen}
           onClick={() => setHideOpen((open) => !open)}
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
         >
           Not for us
         </button>
         <button
           type="button"
           onClick={() => setWhyOpen(true)}
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
         >
           Why this?
         </button>
         <a
-          className="rounded border border-neutral-300 px-3 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1"
           href={item.source_url}
           target="_blank"
           rel="noreferrer"
@@ -191,7 +191,7 @@ export default function EventCard({
                 onNotForUs(item, reason);
                 setHideOpen(false);
               }}
-              className="rounded-full border border-neutral-300 px-2 py-1 text-xs dark:border-neutral-700"
+              className="rounded-full border border-line px-2 py-1 text-xs"
             >
               {reason}
             </button>
@@ -199,7 +199,7 @@ export default function EventCard({
         </div>
       )}
       {syncNote && (
-        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-xs text-muted">
           {syncNote}
         </p>
       )}
