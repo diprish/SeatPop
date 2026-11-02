@@ -37,13 +37,19 @@ describe("saved and booked markup", () => {
     expect(SAVED).toContain("space-y-4");
   });
 
-  it("fills every commit button primary with readable text both themes", () => {
-    for (const source of [REMIND, CHECKLIST, CAPTURE]) {
-      expect(source).toContain("bg-primary");
-      expect(source).toContain("text-white");
-      expect(source).toContain("dark:text-background");
-      expect(source).not.toContain("bg-black");
-    }
+  it("fills the reminder commit primary with readable text both themes", () => {
+    expect(REMIND).toContain("bg-primary");
+    expect(REMIND).toContain("text-white");
+    expect(REMIND).toContain("dark:text-background");
+    expect(REMIND).not.toContain("bg-black");
+  });
+
+  it("commits bookings through the primary Button", () => {
+    expect(CHECKLIST).toContain("<Button");
+    expect(CAPTURE).toContain("<Button");
+    expect(CAPTURE).toContain('variant="ghost"');
+    expect(CHECKLIST).not.toContain("bg-black");
+    expect(CAPTURE).not.toContain("bg-black");
   });
 
   it("keeps the confirmation review panel flat on the surface", () => {
@@ -55,6 +61,58 @@ describe("saved and booked markup", () => {
     for (const source of [SAVED, BOOKED, REMIND, CHECKLIST, CAPTURE]) {
       expect(source).not.toContain("neutral-");
     }
+  });
+});
+
+describe("saved and booked pages", () => {
+  it("badges the headers with counts", () => {
+    expect(SAVED).toContain('<Badge tone="navy">{saved.length + apiOnly.length}</Badge>');
+    expect(BOOKED).toContain('<Badge tone="navy">{entries.length}</Badge>');
+  });
+
+  it("softens the empty panels with icons and kept links", () => {
+    expect(SAVED).toContain("bg-blush-tint");
+    expect(SAVED).toContain('name="heart"');
+    expect(SAVED).toContain("Nothing saved yet.");
+    expect(BOOKED).toContain("bg-sky-tint");
+    expect(BOOKED).toContain('name="ticket"');
+    expect(BOOKED).toContain("No bookings yet.");
+    expect(BOOKED).toContain("Book from a saved event");
+  });
+
+  it("lifts booking cards with icon actions and confirmation badges", () => {
+    expect(BOOKED).toContain("hover:-translate-y-0.5");
+    expect(BOOKED).toContain("<Badge tone=\"mint\" solid>");
+    expect(BOOKED).toContain("Confirmation {entry.confirmation_id}");
+    expect(BOOKED).toContain("No confirmation id");
+    expect(BOOKED).toContain("Download .ics");
+    expect(BOOKED).toContain("Delete booking");
+  });
+
+  it("keeps the feed hook under a prominent button", () => {
+    expect(BOOKED).toContain('aria-label="Family calendar feed URL"');
+    expect(BOOKED).toContain('aria-label="Family calendar feed"');
+    expect(BOOKED).toContain("{copied ? \"Copied\" : \"Copy\"}");
+  });
+
+  it("steps the checklist through pastel circles with kept hooks", () => {
+    expect(CHECKLIST).toContain("peer sr-only");
+    expect(CHECKLIST).toContain("HUE_TINT_BG[hue]");
+    expect(CHECKLIST).toContain("bg-mint-solid text-navy");
+    expect(CHECKLIST).toContain("book-${item.event_id}-${step.id}");
+    expect(CHECKLIST).toContain("(opens in a new tab)");
+    expect(CHECKLIST).toContain("Book for us");
+    expect(CHECKLIST).toContain("Booking checklist");
+  });
+
+  it("pastes confirmations into a dashed panel with kept hooks", () => {
+    expect(CAPTURE).toContain("border-dashed");
+    expect(CAPTURE).toContain("Paste the confirmation text or email body");
+    expect(CAPTURE).toContain("booking-paste-${item.event_id}");
+    expect(CAPTURE).toContain("Confirmation #ABC123");
+    expect(CAPTURE).toContain("Read confirmation");
+    expect(CAPTURE).toContain("Check before saving");
+    expect(CAPTURE).toContain("Confirm booking");
   });
 });
 

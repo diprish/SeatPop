@@ -7,6 +7,9 @@ import BookingCapture from "@/components/booking-capture";
 import BookingChecklist from "@/components/booking-checklist";
 import EventCard from "@/components/event-card";
 import RemindMe from "@/components/remind-me";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
 import type { RecommendItemView } from "@/lib/api";
 import {
   deleteFeedback,
@@ -99,20 +102,31 @@ export default function SavedPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-2xl font-bold">Saved</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-extrabold">Saved</h1>
+        <Badge tone="navy">{saved.length + apiOnly.length}</Badge>
+      </div>
       {syncFailed && (
         <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
           Couldn&apos;t load synced saves — showing this device.
         </p>
       )}
       {saved.length === 0 && apiOnly.length === 0 && (
-        <p className="mt-2 text-sm text-muted">
-          Nothing saved yet. Tap Save on any pick in{" "}
-          <Link className="underline" href="/">
-            For you
-          </Link>
-          .
-        </p>
+        <Card className="mt-4 text-center">
+          <span
+            aria-hidden="true"
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blush-tint"
+          >
+            <Icon name="heart" className="h-8 w-8 text-blush-ink" />
+          </span>
+          <p className="mt-3 text-sm text-muted">
+            Nothing saved yet. Tap Save on any pick in{" "}
+            <Link className="underline" href="/">
+              For you
+            </Link>
+            .
+          </p>
+        </Card>
       )}
       {saved.length > 0 && (
         <div className="mt-4 space-y-4">

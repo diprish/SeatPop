@@ -26,7 +26,7 @@ export function Field({
       .join(" ") || undefined;
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-semibold">
+      <label htmlFor={id} className="block text-sm font-semibold">
         {label}
       </label>
       <div className="relative mt-1">

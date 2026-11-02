@@ -13,7 +13,7 @@ import {
 } from "@/lib/reminders";
 
 interface RemindMeProps {
-  item: RecommendItemView;
+  item: Pick<RecommendItemView, "event_id">;
 }
 
 /**

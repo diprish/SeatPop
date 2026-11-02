@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Static contract for the step-6 trust treatment (this repo has no DOM
-// test harness): eval result panels shell as warm cards, pending and
-// metadata lines sit muted, and the amber ambiguity notice keeps its
-// semantic warning colors on both themes.
+// Static contract for the ui(E) trust page (this repo has no DOM test
+// harness): honest stat tiles, zebra tables with CSS meters, the large
+// gate badge, and the lemon ambiguity notice — every number shown,
+// every pending state kept.
 const TRUST = readFileSync(
   new URL("../src/app/trust/page.tsx", import.meta.url),
   "utf8",
@@ -15,25 +15,50 @@ const EMPTY = readFileSync(
 );
 
 describe("trust and empty-state markup", () => {
-  it("shells eval result panels as warm cards", () => {
-    expect(TRUST).toContain(
-      "mt-3 rounded-card border border-line bg-surface p-4 shadow-card",
-    );
-    expect(TRUST).toContain(
-      "mt-3 rounded-card border border-line bg-surface p-4 text-sm shadow-card",
-    );
+  it("tiles the four headline stats by status", () => {
+    for (const label of ["Violations", "False-free", "Wrong-price", "Accuracy"]) {
+      expect(TRUST).toContain(label);
+    }
+    expect(TRUST).toContain("bg-mint-tint");
+    expect(TRUST).toContain("bg-blush-tint");
+    expect(TRUST).toContain("bg-lemon-tint");
   });
 
-  it("shells empty states as warm cards with token buttons", () => {
+  it("badges the gate large without hiding the counts", () => {
+    expect(TRUST).toContain("Gate: PASS");
+    expect(TRUST).toContain("Gate: FAIL");
+    expect(TRUST).toContain("False-free {model.falseFree}");
+    expect(TRUST).toContain("wrong-price {model.wrongPrice}");
+  });
+
+  it("meters accuracy with CSS and zebras the rows", () => {
+    expect(TRUST).toContain("bg-mint-solid");
+    expect(TRUST).toContain("field.accuracy * 100");
+    expect(TRUST).toContain("bg-mist/60");
+  });
+
+  it("flags ambiguity in lemon and fallback results in badges", () => {
+    expect(TRUST).toContain("border-lemon-solid bg-lemon-tint");
+    expect(TRUST).toContain("Excluded from scoring as ambiguous");
+    expect(TRUST).toContain("<Badge tone=\"mint\" solid>yes</Badge>");
+    expect(TRUST).toContain("<Badge tone=\"blush\" solid>NO</Badge>");
+  });
+
+  it("keeps every section label and pending line", () => {
+    for (const label of ["Enrichment eval", "Recommend eval", "Fallback proof"]) {
+      expect(TRUST).toContain(`aria-label="${label}"`);
+    }
+    expect(TRUST).toContain("Enrichment eval pending");
+    expect(TRUST).toContain("Recommend eval pending");
+    expect(TRUST).toContain("Fallback proof pending");
+    expect(TRUST).toContain("Policy probe");
+    expect(TRUST).toContain("(must be 0)");
+  });
+
+  it("shells empty states as warm cards", () => {
     expect(EMPTY).toContain(
-      "rounded-card border border-line bg-surface p-4 shadow-card",
+      "rounded-card border border-line bg-surface",
     );
-    expect(EMPTY).toContain('"rounded border border-line px-3 py-1 text-sm"');
-  });
-
-  it("keeps the amber ambiguity notice semantic on both themes", () => {
-    expect(TRUST).toContain("border-amber-300 bg-amber-50");
-    expect(TRUST).toContain("dark:border-amber-700 dark:bg-amber-950");
   });
 
   it("keeps no raw neutral ramp in trust or empty states", () => {

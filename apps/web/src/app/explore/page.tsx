@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { AGE_BANDS, type AgeBand, type Preferences } from "@seatpop/shared";
 import ErrorBanner from "@/components/error-banner";
 import ResultsList from "@/components/results-list";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { Field } from "@/components/ui/Field";
+import { Toggle } from "@/components/ui/Toggle";
+import { hueForBand } from "@/components/ui/hue";
 import {
   fetchRecommend,
   type RecommendItemView,
@@ -103,71 +108,58 @@ export default function ExplorePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-2xl font-bold">Explore</h1>
-      <section aria-label="Filters" className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
-        <h2 className="text-sm font-semibold">Age band</h2>
+      <h1 className="text-2xl font-extrabold">Explore</h1>
+      <section
+        aria-label="Filters"
+        className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card"
+      >
+        <h2 className="text-sm font-bold">Age band</h2>
         <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Age band">
-          {(["any", ...AGE_BANDS] as const).map((option) => {
-            const selected = band === option;
-            return (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setBand(option)}
-                className={
-                  selected
-                    ? "rounded-full border border-primary bg-primary/10 px-3 py-1 text-sm font-semibold"
-                    : "rounded-full border border-line px-3 py-1 text-sm"
-                }
-              >
-                {option === "any" ? "Any age" : BAND_LABELS[option]}
-              </button>
-            );
-          })}
+          {(["any", ...AGE_BANDS] as const).map((option) => (
+            <Chip
+              key={option}
+              hue={option === "any" ? "lavender" : hueForBand(option)}
+              size="sm"
+              selected={band === option}
+              onClick={() => setBand(option)}
+            >
+              {option === "any" ? "Any age" : BAND_LABELS[option]}
+            </Chip>
+          ))}
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2 pb-2.5">
+            <Toggle
               checked={freeOnly}
-              onChange={(e) => setFreeOnly(e.target.checked)}
-              className="h-4 w-4"
+              onChange={setFreeOnly}
+              label="Free only"
             />
-            Free only
-          </label>
-          <div>
-            <label htmlFor="ex-distance" className="block text-sm font-semibold">
-              Distance (km{base.fsa ? ` near ${base.fsa}` : ""})
-            </label>
-            <input
+            <span className="text-sm font-semibold">Free only</span>
+          </div>
+          <div className="w-36">
+            <Field
               id="ex-distance"
+              label={`Distance (km${base.fsa ? ` near ${base.fsa}` : ""})`}
+              icon="route"
               type="number"
               inputMode="decimal"
               min={1}
               placeholder="Any"
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
-              aria-describedby={distanceNeedsArea ? "ex-distance-hint" : undefined}
-              className="mt-1 w-28 rounded border border-line bg-surface p-2 text-sm"
+              hint={
+                distanceNeedsArea
+                  ? "Distance needs a household area — set one in For you."
+                  : undefined
+              }
             />
-            {distanceNeedsArea && (
-              <p
-                id="ex-distance-hint"
-                className="mt-1 text-xs text-amber-700 dark:text-amber-400"
-              >
-                Distance needs a household area — set one in For you.
-              </p>
-            )}
           </div>
-          <button
-            type="button"
+          <Button
             onClick={() => void search(currentFilters(), base)}
             disabled={busy || distanceNeedsArea}
-            className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
           >
             {busy ? "Searching…" : "Search"}
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -194,6 +186,7 @@ export default function ExplorePage() {
         <ResultsList
           items={visible}
           reranked={meta.reranked}
+          layout="grid"
           prefs={searchedPrefs}
           savedIds={new Set(saved.map((entry) => entry.item.event_id))}
           syncNotes={syncNotes}

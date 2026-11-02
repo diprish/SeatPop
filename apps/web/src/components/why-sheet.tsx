@@ -8,6 +8,7 @@ import {
   type RecommendItemView,
 } from "@/lib/api";
 import { computeWhy } from "@/lib/why";
+import { Icon } from "./ui/Icon";
 
 interface WhySheetProps {
   item: RecommendItemView;
@@ -79,13 +80,13 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
         className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-surface p-4 sm:rounded-xl"
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-semibold">Why this pick?</h2>
+          <h2 className="font-bold">Why this pick?</h2>
           <button
             type="button"
             autoFocus
             onClick={onClose}
             aria-label="Close why sheet"
-            className="rounded border border-line px-2 py-0.5"
+            className="min-touch rounded-full border-2 border-line px-2 text-sm"
           >
             ×
           </button>
@@ -94,17 +95,20 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
           {item.title}
         </p>
         {failed && (
-          <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+          <p className="mt-2 rounded-xl bg-lemon-tint p-2 text-xs font-semibold text-lemon-ink">
             Quotes unavailable — showing matched fields only.
           </p>
         )}
-        <dl className="mt-2 space-y-3">
+        <dl className="mt-2 space-y-2">
           {rows.map((row) => (
-            <div key={row.field}>
-              <dt className="text-sm font-semibold">{row.field}</dt>
-              <dd className="text-sm">{row.detail}</dd>
+            <div key={row.field} className="rounded-xl bg-mist p-3">
+              <dt className="flex items-center gap-1.5 text-sm font-bold">
+                <Icon name="check" className="h-4 w-4 text-mint-ink" />
+                {row.field}
+              </dt>
+              <dd className="mt-1 text-sm">{row.detail}</dd>
               {row.quote && (
-                <dd className="mt-1 border-l-2 border-line pl-2 text-sm italic text-muted">
+                <dd className="mt-2 rounded-lg border border-line bg-surface p-2 text-sm italic text-muted">
                   “{row.quote}”
                 </dd>
               )}

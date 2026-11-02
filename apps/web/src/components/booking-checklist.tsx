@@ -7,6 +7,9 @@ import {
   loadBookingProgress,
   toggleBookingStep,
 } from "@/lib/booking";
+import { Button } from "./ui/Button";
+import { Icon } from "./ui/Icon";
+import { HUE_INK, HUE_TINT_BG, HUES } from "./ui/hue";
 
 interface BookingChecklistProps {
   item: RecommendItemView;
@@ -32,14 +35,9 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
   if (!open) {
     return (
       <div className="mt-2 text-sm">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-expanded={false}
-          className="rounded bg-primary px-4 py-1 font-semibold text-white dark:text-background"
-        >
+        <Button onClick={() => setOpen(true)} aria-expanded={false}>
           Book for us
-        </button>
+        </Button>
       </div>
     );
   }
@@ -50,15 +48,16 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
         type="button"
         onClick={() => setOpen(false)}
         aria-expanded={true}
-        className="font-semibold underline"
+        className="font-bold underline"
       >
         Booking checklist
       </button>
-      <ul className="mt-2 space-y-2">
-        {steps.map((step) => {
+      <ol className="mt-2 space-y-3">
+        {steps.map((step, index) => {
           const done = checked.includes(step.id);
+          const hue = HUES[index % HUES.length] ?? "sky";
           return (
-            <li key={step.id} className="flex items-start gap-2">
+            <li key={step.id} className="flex items-start gap-3">
               <input
                 id={`book-${item.event_id}-${step.id}`}
                 type="checkbox"
@@ -72,12 +71,26 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
                     )[item.event_id] ?? [],
                   )
                 }
-                className="mt-1"
+                className="peer sr-only"
               />
+              <span
+                aria-hidden="true"
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-extrabold peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-navy dark:peer-focus-visible:outline-lavender-solid ${
+                  done
+                    ? "bg-mint-solid text-navy"
+                    : `${HUE_TINT_BG[hue]} ${HUE_INK[hue]}`
+                }`}
+              >
+                {done ? (
+                  <Icon name="check" className="h-4 w-4" />
+                ) : (
+                  index + 1
+                )}
+              </span>
               <div>
                 <label
                   htmlFor={`book-${item.event_id}-${step.id}`}
-                  className={done ? "line-through" : "font-semibold"}
+                  className={done ? "line-through" : "font-bold"}
                 >
                   {step.title}
                 </label>
@@ -103,7 +116,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
             </li>
           );
         })}
-      </ul>
+      </ol>
     </div>
   );
 }

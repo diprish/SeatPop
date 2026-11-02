@@ -1,26 +1,23 @@
-interface ErrorBannerProps {
-  message: string;
-  onRetry?: () => void;
-}
+import { Button } from "./ui/Button";
+import { Icon } from "./ui/Icon";
 
 /** API failure mode: a visible banner, never a blank page. */
-export default function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
+export default function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div
       role="alert"
-      className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-100"
+      className="mt-4 flex items-start gap-3 rounded-card border-2 border-blush-solid bg-blush-tint p-4"
     >
-      <p className="font-semibold">Something went wrong</p>
-      <p className="mt-1">{message}</p>
-      {onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-2 rounded bg-red-900 px-3 py-1 text-sm text-white dark:bg-red-100 dark:text-red-950"
-        >
-          Try again
-        </button>
-      )}
+      <Icon name="warning" className="h-5 w-5 shrink-0 text-blush-ink" />
+      <div>
+        <p className="font-bold text-blush-ink">Something went wrong</p>
+        <p className="mt-1 text-sm text-blush-ink">{message}</p>
+        {onRetry && (
+          <Button onClick={onRetry} className="mt-2">
+            Try again
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

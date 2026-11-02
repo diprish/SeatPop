@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RecommendItemView } from "@/lib/api";
+import { Button } from "./ui/Button";
 import {
   deleteBookingApi,
   deleteBookingLocal,
@@ -122,7 +123,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
           type="button"
           onClick={() => void remove()}
           disabled={busy !== null}
-          className="mt-1 rounded border border-line px-3 py-1 disabled:opacity-40"
+          className="mt-1 inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none disabled:opacity-40"
         >
           {busy === "save" ? "Deleting…" : "Delete booking"}
         </button>
@@ -145,7 +146,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
             setError("");
             setParsed(null);
           }}
-          className="rounded border border-line px-3 py-1"
+          className="inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
         >
           Add confirmation
         </button>
@@ -154,10 +155,10 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
   }
 
   return (
-    <div className="mt-2 text-sm">
+    <div className="mt-2 rounded-card border-2 border-dashed border-line bg-surface p-4 text-sm">
       <label
         htmlFor={`booking-paste-${item.event_id}`}
-        className="block font-semibold"
+        className="block font-bold"
       >
         Paste the confirmation text or email body
       </label>
@@ -168,7 +169,7 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
         onChange={(event) => setText(event.target.value)}
         disabled={busy !== null}
         placeholder="Confirmation #ABC123 for Saturday Storytime on March 8…"
-        className="mt-1 w-full rounded border border-line bg-surface p-2 disabled:opacity-40"
+        className="mt-1 min-h-[44px] w-full rounded-xl border border-line bg-surface p-2 text-ink placeholder:text-faint disabled:opacity-40"
       />
       <p className="mt-1 text-xs text-muted">
         Paste only the confirmation — names, payment details, and contact
@@ -180,26 +181,23 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
         </p>
       )}
       <div className="mt-2 flex gap-2">
-        <button
-          type="button"
+        <Button
           onClick={() => void parse()}
           disabled={busy !== null || text.trim() === ""}
-          className="rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
         >
           {busy === "parse" ? "Reading…" : "Read confirmation"}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => {
             setFormOpen(false);
             setError("");
             setParsed(null);
           }}
           disabled={busy !== null}
-          className="rounded border border-line px-3 py-1 disabled:opacity-40"
         >
           Cancel
-        </button>
+        </Button>
       </div>
       {parsed && (
         <div className="mt-3 rounded border border-line bg-surface p-3">
@@ -240,14 +238,13 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
               booked a different occurrence.
             </p>
           )}
-          <button
-            type="button"
+          <Button
             onClick={() => void save()}
             disabled={busy !== null}
-            className="mt-2 rounded bg-primary px-4 py-1 font-semibold text-white disabled:opacity-40 dark:text-background"
+            className="mt-2"
           >
             {busy === "save" ? "Saving…" : "Confirm booking"}
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,6 +1,9 @@
+import type { ReactNode } from "react";
 import { applyRelaxation, relaxationsFor } from "@seatpop/shared";
 import type { Preferences } from "@seatpop/shared";
 import type { Diagnosis } from "@/lib/api";
+import { Chip } from "./ui/Chip";
+import { Icon } from "./ui/Icon";
 
 interface EmptyStateProps {
   prefs: Preferences;
@@ -10,7 +13,27 @@ interface EmptyStateProps {
   onResetSample: () => void;
 }
 
-const BUTTON = "rounded border border-line px-3 py-1 text-sm";
+function EmptyPanel({
+  children,
+  body,
+}: {
+  children: ReactNode;
+  body: ReactNode;
+}) {
+  return (
+    <div className="mt-4 rounded-card border border-line bg-surface p-4 text-center shadow-card">
+      <span
+        aria-hidden="true"
+        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sky-tint"
+      >
+        <Icon name="search" className="h-8 w-8 text-sky-ink" />
+      </span>
+      <p className="mt-3 font-bold">No events matched.</p>
+      <p className="mt-1 text-sm text-muted">{body}</p>
+      {children}
+    </div>
+  );
+}
 
 export default function EmptyState({
   prefs,
@@ -33,24 +56,20 @@ export default function EmptyState({
   if (!diagnosis) {
     const options = relaxationsFor(prefs);
     return (
-      <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
-        <p className="font-semibold">No events matched.</p>
-        <p className="mt-1 text-sm text-muted">
-          The measurement failed — these clear one filter each:
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
+      <EmptyPanel body="The measurement failed — these clear one filter each:">
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
           {options.map((option) => (
-            <button
+            <Chip
               key={option.id}
-              type="button"
+              hue="sky"
+              size="sm"
               onClick={() => onApply(option.prefs)}
-              className={BUTTON}
             >
               {option.label}
-            </button>
+            </Chip>
           ))}
         </div>
-      </div>
+      </EmptyPanel>
     );
   }
 
@@ -59,40 +78,36 @@ export default function EmptyState({
     .sort((a, b) => b.candidates - a.candidates);
   if (gainers.length === 0) {
     return (
-      <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
-        <p className="font-semibold">No events matched.</p>
-        <p className="mt-1 text-sm text-muted">
-          Nothing upcoming matches, even with filters cleared.
-        </p>
-        <button type="button" onClick={onResetSample} className={`${BUTTON} mt-2`}>
-          Back to the sample household
-        </button>
-      </div>
+      <EmptyPanel body="Nothing upcoming matches, even with filters cleared.">
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          <Chip hue="sky" size="sm" onClick={onResetSample}>
+            Back to the sample household
+          </Chip>
+        </div>
+      </EmptyPanel>
     );
   }
 
   const [top, ...rest] = gainers;
   return (
-    <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
-      <p className="font-semibold">No events matched.</p>
-      <p className="mt-1 text-sm text-muted">
-        {top.label} finds {top.candidates} event{top.candidates === 1 ? "" : "s"}:
-      </p>
-      <div className="mt-2 flex flex-wrap gap-2">
+    <EmptyPanel
+      body={`${top.label} finds ${top.candidates} event${top.candidates === 1 ? "" : "s"}:`}
+    >
+      <div className="mt-3 flex flex-wrap justify-center gap-2">
         {[top, ...rest].map((row) => (
-          <button
+          <Chip
             key={row.id}
-            type="button"
+            hue="sky"
+            size="sm"
             onClick={() => {
               const next = applyRelaxation(prefs, row.id);
               if (next) onApply(next);
             }}
-            className={BUTTON}
           >
             {row.label} ({row.candidates})
-          </button>
+          </Chip>
         ))}
       </div>
-    </div>
+    </EmptyPanel>
   );
 }

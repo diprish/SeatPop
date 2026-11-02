@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ErrorBanner from "@/components/error-banner";
+import { Badge } from "@/components/ui/Badge";
 import {
   parseEnrichmentReport,
   parseFallbackReport,
@@ -45,6 +46,41 @@ function pct(value: number | null): string {
   return value === null ? "—" : `${(value * 100).toFixed(1)}%`;
 }
 
+type TileStatus = "pass" | "fail" | "pending";
+
+function tileTone(status: TileStatus): string {
+  if (status === "pass") return "bg-mint-tint";
+  if (status === "fail") return "bg-blush-tint";
+  return "bg-lemon-tint";
+}
+
+function StatTile({
+  label,
+  value,
+  status,
+}: {
+  label: string;
+  value: string;
+  status: TileStatus;
+}) {
+  return (
+    <div className={`rounded-card p-4 ${tileTone(status)}`}>
+      <p className="text-2xl font-extrabold">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-muted">{label}</p>
+    </div>
+  );
+}
+
+function meanAccuracy(summary: EnrichmentSummary): number | null {
+  const values = summary.models.flatMap((model) =>
+    model.fields
+      .map((field) => field.accuracy)
+      .filter((value): value is number => value !== null),
+  );
+  if (values.length === 0) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
 export default function TrustPage() {
   const [enrichment, setEnrichment] = useState<Snapshot<EnrichmentSummary>>({
     status: "loading",
@@ -72,16 +108,56 @@ export default function TrustPage() {
     };
   }, []);
 
+  const violationsTile =
+    recommend.status === "ready"
+      ? {
+          value: String(recommend.data.violations),
+          status: (recommend.data.violations === 0 ? "pass" : "fail") as TileStatus,
+        }
+      : {
+          value: recommend.status === "loading" ? "…" : "pending",
+          status: "pending" as TileStatus,
+        };
+  const worstFalseFree =
+    enrichment.status === "ready"
+      ? Math.max(0, ...enrichment.data.models.map((model) => model.falseFree))
+      : null;
+  const worstWrongPrice =
+    enrichment.status === "ready"
+      ? Math.max(0, ...enrichment.data.models.map((model) => model.wrongPrice))
+      : null;
+  const accuracy =
+    enrichment.status === "ready" ? meanAccuracy(enrichment.data) : null;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-2xl font-bold">Trust</h1>
+      <h1 className="text-2xl font-extrabold">Trust</h1>
       <p className="mt-1 text-sm text-muted">
         Measured quality, straight from the eval reports. Anything missing is
         labelled pending.
       </p>
 
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile label="Violations" value={violationsTile.value} status={violationsTile.status} />
+        <StatTile
+          label="False-free"
+          value={worstFalseFree === null ? (enrichment.status === "loading" ? "…" : "pending") : String(worstFalseFree)}
+          status={worstFalseFree === null ? "pending" : worstFalseFree === 0 ? "pass" : "fail"}
+        />
+        <StatTile
+          label="Wrong-price"
+          value={worstWrongPrice === null ? (enrichment.status === "loading" ? "…" : "pending") : String(worstWrongPrice)}
+          status={worstWrongPrice === null ? "pending" : worstWrongPrice === 0 ? "pass" : "fail"}
+        />
+        <StatTile
+          label="Accuracy"
+          value={accuracy === null ? (enrichment.status === "loading" ? "…" : enrichment.status === "ready" ? "—" : "pending") : pct(accuracy)}
+          status={accuracy === null ? "pending" : "pass"}
+        />
+      </div>
+
       <section aria-label="Enrichment eval" className="mt-6">
-        <h2 className="font-semibold">Listing enrichment</h2>
+        <h2 className="font-extrabold">Listing enrichment</h2>
         {enrichment.status === "loading" && (
           <p className="mt-2 text-sm" role="status">
             Loading…
@@ -97,8 +173,8 @@ export default function TrustPage() {
         )}
         {enrichment.status === "ready" &&
           enrichment.data.excluded.length > 0 && (
-            <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
-              <p className="font-medium">
+            <div className="mt-3 rounded-xl border-2 border-lemon-solid bg-lemon-tint p-3 text-sm">
+              <p className="font-bold">
                 Excluded from scoring as ambiguous (
                 {enrichment.data.excluded.length}): labels kept, out of every
                 denominator.
@@ -121,20 +197,27 @@ export default function TrustPage() {
                 key={model.key}
                 className="mt-3 rounded-card border border-line bg-surface p-4 shadow-card"
               >
-                <h3 className="text-sm font-semibold">
+                <h3 className="text-sm font-bold">
                   {model.model}{" "}
                   <span className="font-normal text-muted">
                     ({model.provider}, {model.eventsScored} scored
                     {model.eventsFailed > 0 ? `, ${model.eventsFailed} failed` : ""})
                   </span>
                 </h3>
+                <p className="mt-2">
+                  {gatePass ? (
+                    <Badge tone="mint" solid>
+                      <span className="text-sm">Gate: PASS</span>
+                    </Badge>
+                  ) : (
+                    <Badge tone="blush" solid>
+                      <span className="text-sm">Gate: FAIL</span>
+                    </Badge>
+                  )}
+                </p>
                 <p className="mt-1 text-sm">
-                  Gate:{" "}
-                  <span className="font-semibold">
-                    {gatePass ? "PASS" : "FAIL"}
-                  </span>{" "}
-                  (false-free {model.falseFree}, wrong-price {model.wrongPrice},
-                  hallucinated {model.hallucinatedFields})
+                  False-free {model.falseFree}, wrong-price {model.wrongPrice},
+                  hallucinated {model.hallucinatedFields}
                 </p>
                 <table className="mt-2 w-full text-sm">
                   <thead>
@@ -145,10 +228,30 @@ export default function TrustPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {model.fields.map((field) => (
-                      <tr key={field.field}>
+                    {model.fields.map((field, index) => (
+                      <tr
+                        key={field.field}
+                        className={index % 2 === 1 ? "bg-mist/60" : ""}
+                      >
                         <td>{field.field}</td>
-                        <td>{pct(field.accuracy)}</td>
+                        <td>
+                          <span className="flex items-center gap-2">
+                            <span
+                              aria-hidden="true"
+                              className="h-2 w-16 overflow-hidden rounded-full bg-mist"
+                            >
+                              {field.accuracy !== null && (
+                                <span
+                                  className="block h-full rounded-full bg-mint-solid"
+                                  style={{
+                                    width: `${(field.accuracy * 100).toFixed(1)}%`,
+                                  }}
+                                />
+                              )}
+                            </span>
+                            {pct(field.accuracy)}
+                          </span>
+                        </td>
                         <td>{pct(field.nullRate)}</td>
                       </tr>
                     ))}
@@ -166,7 +269,7 @@ export default function TrustPage() {
       </section>
 
       <section aria-label="Recommend eval" className="mt-6">
-        <h2 className="font-semibold">Recommendations</h2>
+        <h2 className="font-extrabold">Recommendations</h2>
         {recommend.status === "loading" && (
           <p className="mt-2 text-sm" role="status">
             Loading…
@@ -189,7 +292,15 @@ export default function TrustPage() {
             </p>
             <p className="mt-1">
               Constraint violations in top 10:{" "}
-              <span className="font-semibold">{recommend.data.violations}</span>{" "}
+              {recommend.data.violations === 0 ? (
+                <Badge tone="mint" solid>
+                  {recommend.data.violations}
+                </Badge>
+              ) : (
+                <Badge tone="blush" solid>
+                  {recommend.data.violations}
+                </Badge>
+              )}{" "}
               (must be 0) · distance mismatches: {recommend.data.distanceMismatches}
             </p>
             <table className="mt-2 w-full">
@@ -200,18 +311,19 @@ export default function TrustPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Reranked</td>
-                  <td>{pct(recommend.data.meanNdcgReranked)}</td>
-                </tr>
-                <tr>
-                  <td>Date order (baseline)</td>
-                  <td>{pct(recommend.data.meanNdcgDate)}</td>
-                </tr>
-                <tr>
-                  <td>Stage 2 only (baseline)</td>
-                  <td>{pct(recommend.data.meanNdcgStage2)}</td>
-                </tr>
+                {[
+                  { method: "Reranked", value: recommend.data.meanNdcgReranked },
+                  { method: "Date order (baseline)", value: recommend.data.meanNdcgDate },
+                  { method: "Stage 2 only (baseline)", value: recommend.data.meanNdcgStage2 },
+                ].map((row, index) => (
+                  <tr
+                    key={row.method}
+                    className={index % 2 === 1 ? "bg-mist/60" : ""}
+                  >
+                    <td>{row.method}</td>
+                    <td>{pct(row.value)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
             {recommend.data.policyProbe && (
@@ -226,7 +338,7 @@ export default function TrustPage() {
       </section>
 
       <section aria-label="Fallback proof" className="mt-6">
-        <h2 className="font-semibold">Rerank fallback</h2>
+        <h2 className="font-extrabold">Rerank fallback</h2>
         {fallback.status === "loading" && (
           <p className="mt-2 text-sm" role="status">
             Loading…
@@ -243,8 +355,19 @@ export default function TrustPage() {
         {fallback.status === "ready" && (
           <p className="mt-2 text-sm">
             Key removed over {fallback.data.households} households: stage-2
-            order kept {fallback.data.orderKept ? "yes" : "NO"}, every reason
-            templated {fallback.data.allTemplated ? "yes" : "NO"}.
+            order kept{" "}
+            {fallback.data.orderKept ? (
+              <Badge tone="mint" solid>yes</Badge>
+            ) : (
+              <Badge tone="blush" solid>NO</Badge>
+            )}
+            , every reason templated{" "}
+            {fallback.data.allTemplated ? (
+              <Badge tone="mint" solid>yes</Badge>
+            ) : (
+              <Badge tone="blush" solid>NO</Badge>
+            )}
+            .
           </p>
         )}
       </section>
