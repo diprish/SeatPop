@@ -9,6 +9,8 @@ import {
   VOTE_TAGS,
   type VotesSummary,
 } from "@/lib/votes";
+import { Badge } from "./ui/Badge";
+import { Chip } from "./ui/Chip";
 
 /**
  * Worth-it control, shared by event cards and the detail page: thumbs
@@ -23,9 +25,6 @@ function worthLine(summary: VotesSummary): string {
     ? "1 parent says it's worth it"
     : `${summary.up} parents say it's worth it`;
 }
-
-const THUMB_CLASS =
-  "min-touch rounded-full border px-3 text-sm disabled:opacity-40";
 
 export default function WorthIt({
   eventId,
@@ -79,20 +78,11 @@ export default function WorthIt({
     if (myVote !== null && !busy) void vote(myVote, next);
   }
 
-  function thumbClass(pressed: boolean): string {
-    return pressed
-      ? `${THUMB_CLASS} border-primary bg-primary/10 font-semibold`
-      : `${THUMB_CLASS} border-line`;
-  }
-
   return (
-    <div className="mt-2">
-      <p className="text-sm font-semibold">Worth it?</p>
+    <div className="mt-3">
+      <p className="text-sm font-bold">Worth it?</p>
       {summary === undefined && !loadFailed && (
-        <p
-          role="status"
-          className="mt-1 text-sm text-muted"
-        >
+        <p role="status" className="mt-1 text-sm text-muted">
           Loading votes…
         </p>
       )}
@@ -117,77 +107,63 @@ export default function WorthIt({
       )}
       {summary !== undefined && !loadFailed && (
         <p className="mt-1 text-sm text-muted">
-          {summary === null
-            ? "Be the first to say if it was worth it"
-            : worthLine(summary)}
+          {summary === null ? "Be the first to say if it was worth it" : worthLine(summary)}
         </p>
       )}
-      <div
-        role="group"
-        aria-label="Cast your vote"
-        className="mt-1 flex flex-wrap gap-2"
-      >
-        <button
-          type="button"
-          aria-pressed={myVote === 1}
+      <div role="group" aria-label="Cast your vote" className="mt-2 flex flex-wrap gap-2">
+        <Chip
+          hue="mint"
+          size="sm"
+          selected={myVote === 1}
           aria-label={`Worth it: ${title}`}
           disabled={busy}
           onClick={() => void vote(1, tags)}
-          className={thumbClass(myVote === 1)}
         >
           👍 Worth it
-        </button>
-        <button
-          type="button"
-          aria-pressed={myVote === -1}
+          {summary !== undefined && summary !== null && (
+            <Badge tone="neutral">{summary.up}</Badge>
+          )}
+        </Chip>
+        <Chip
+          hue="mint"
+          size="sm"
+          selected={myVote === -1}
           aria-label={`Not worth it: ${title}`}
           disabled={busy}
           onClick={() => void vote(-1, tags)}
-          className={thumbClass(myVote === -1)}
         >
           👎 Not worth it
-        </button>
+          {summary !== undefined && summary !== null && (
+            <Badge tone="neutral">{summary.down}</Badge>
+          )}
+        </Chip>
         <button
           type="button"
           aria-expanded={tagsOpen}
           onClick={() => setTagsOpen((open) => !open)}
-          className={`${THUMB_CLASS} border-line`}
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
         >
           Tags{tags.length > 0 ? ` (${tags.length})` : ""}…
         </button>
       </div>
       {tagsOpen && (
-        <div
-          role="group"
-          aria-label="Vote tags"
-          className="mt-2 flex flex-wrap gap-2"
-        >
-          {VOTE_TAGS.map((tag) => {
-            const pressed = tags.includes(tag);
-            return (
-              <button
-                key={tag}
-                type="button"
-                aria-pressed={pressed}
-                disabled={busy}
-                onClick={() => toggleTag(tag)}
-                className={
-                  pressed
-                    ? `${THUMB_CLASS} border-primary bg-primary/10 text-sm font-semibold`
-                    : `${THUMB_CLASS} border-line text-sm`
-                }
-              >
-                {tag}
-              </button>
-            );
-          })}
+        <div role="group" aria-label="Vote tags" className="mt-2 flex flex-wrap gap-2">
+          {VOTE_TAGS.map((tag) => (
+            <Chip
+              key={tag}
+              hue="mint"
+              size="sm"
+              selected={tags.includes(tag)}
+              disabled={busy}
+              onClick={() => toggleTag(tag)}
+            >
+              {tag}
+            </Chip>
+          ))}
         </div>
       )}
       {voteError !== "" && (
-        <p
-          role="alert"
-          className="mt-1 text-sm text-red-700 dark:text-red-300"
-        >
+        <p role="alert" className="mt-1 text-sm font-semibold text-blush-ink">
           {voteError}
         </p>
       )}

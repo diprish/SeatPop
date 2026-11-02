@@ -18,6 +18,8 @@ interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean;
   size?: "md" | "sm";
   showCheck?: boolean;
+  /** Disclosure use (e.g. expanders): omits aria-pressed for aria-expanded. */
+  disclosure?: boolean;
   children: ReactNode;
 }
 
@@ -26,6 +28,7 @@ export function Chip({
   selected = false,
   size = "md",
   showCheck = true,
+  disclosure = false,
   className = "",
   type = "button",
   children,
@@ -41,8 +44,8 @@ export function Chip({
   return (
     <button
       type={type}
-      aria-pressed={selected}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-full border-2 font-semibold transition-colors duration-200 motion-reduce:transition-none ${sizing} ${tone} ${className}`}
+      aria-pressed={disclosure ? undefined : selected}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-full border-2 font-semibold transition-colors duration-200 motion-reduce:transition-none disabled:opacity-40 ${sizing} ${tone} ${className}`}
       {...rest}
     >
       {children}

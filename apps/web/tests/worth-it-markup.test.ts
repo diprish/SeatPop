@@ -18,10 +18,18 @@ const detail = readFileSync(
 
 describe("worth-it control", () => {
   it("renders thumbs with pressed state and honest count lines", () => {
-    expect(control).toContain("aria-pressed={myVote === 1}");
-    expect(control).toContain("aria-pressed={myVote === -1}");
+    expect(control).toContain("selected={myVote === 1}");
+    expect(control).toContain("selected={myVote === -1}");
     expect(control).toContain("parents say it's worth it");
     expect(control).toContain("Be the first to say if it was worth it");
+  });
+
+  it("pills the votes in mint with count badges", () => {
+    expect(control).toContain('hue="mint"');
+    expect(control).toContain("<Badge tone=\"neutral\">{summary.up}</Badge>");
+    expect(control).toContain("<Badge tone=\"neutral\">{summary.down}</Badge>");
+    expect(control).toContain("Worth it: ${title}");
+    expect(control).toContain("Not worth it: ${title}");
   });
 
   it("offers the fixed tag chips with no free-text input", () => {

@@ -61,7 +61,7 @@ describe("ui primitives", () => {
     expect(chip).toContain("border-2");
     expect(chip).toContain("HUE_SOLID_BG[hue]");
     expect(chip).toContain("text-navy");
-    expect(chip).toContain('aria-pressed={selected}');
+    expect(chip).toContain("aria-pressed={disclosure ? undefined : selected}");
     expect(chip).toContain('name="check"');
     expect(chip).toContain("min-h-[44px]");
   });
