@@ -76,7 +76,7 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
         role="dialog"
         aria-modal="true"
         aria-label={`Why ${item.title}`}
-        className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-white p-4 dark:bg-neutral-950 sm:rounded-xl"
+        className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-surface p-4 sm:rounded-xl"
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-semibold">Why this pick?</h2>
@@ -85,12 +85,12 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
             autoFocus
             onClick={onClose}
             aria-label="Close why sheet"
-            className="rounded border border-neutral-300 px-2 py-0.5 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-0.5"
           >
             ×
           </button>
         </div>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-1 text-sm text-muted">
           {item.title}
         </p>
         {failed && (
@@ -104,7 +104,7 @@ export default function WhySheet({ item, prefs, onClose }: WhySheetProps) {
               <dt className="text-sm font-semibold">{row.field}</dt>
               <dd className="text-sm">{row.detail}</dd>
               {row.quote && (
-                <dd className="mt-1 border-l-2 border-neutral-300 pl-2 text-sm italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+                <dd className="mt-1 border-l-2 border-line pl-2 text-sm italic text-muted">
                   “{row.quote}”
                 </dd>
               )}

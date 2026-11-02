@@ -31,7 +31,7 @@ function Fact({
       <dt className="text-sm font-semibold">{label}</dt>
       <dd className="text-sm">{value}</dd>
       {quote && (
-        <dd className="mt-1 border-l-2 border-neutral-300 pl-2 text-sm italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+        <dd className="mt-1 border-l-2 border-line pl-2 text-sm italic text-muted">
           “{quote}”
         </dd>
       )}
@@ -88,7 +88,7 @@ export default function EventDetailPage() {
     return (
       <main className="mx-auto max-w-2xl px-4 py-6">
         <h1 className="text-2xl font-bold">Event not found</h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-2 text-sm text-muted">
           This event isn&apos;t in the catalogue.{" "}
           <Link className="underline" href="/">
             Back to For you
@@ -137,7 +137,7 @@ export default function EventDetailPage() {
         </Link>
       </p>
       <h1 className="mt-2 text-2xl font-bold">{sanitizeText(detail.title)}</h1>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-sm text-muted">
         {formatWhenRange(detail.starts_at, detail.ends_at, detail.timezone)}
         {detail.venue ? ` · ${detail.venue.name}` : ""}
         {detail.category ? ` · ${detail.category}` : ""}
@@ -258,7 +258,7 @@ export default function EventDetailPage() {
               ? ` · ${detail.registration_window.kind}`
               : ""}
           </p>
-          <p className="mt-1 border-l-2 border-neutral-300 pl-2 text-sm italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+          <p className="mt-1 border-l-2 border-line pl-2 text-sm italic text-muted">
             “{detail.registration_window.quote}”
           </p>
           <p className="mt-1 text-sm">
