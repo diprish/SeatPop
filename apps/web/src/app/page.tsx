@@ -150,12 +150,12 @@ export default function Home() {
           type="button"
           aria-expanded={panelOpen}
           onClick={() => setPanelOpen((open) => !open)}
-          className="rounded border border-neutral-300 px-3 py-1 text-sm dark:border-neutral-700"
+          className="rounded border border-line px-3 py-1 text-sm"
         >
           {panelOpen ? "Hide household" : "Edit my household"}
         </button>
       </div>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-sm text-muted">
         {panelOpen
           ? "Sample household loaded — edit it or search straight away."
           : householdSummary(prefs)}
@@ -184,13 +184,13 @@ export default function Home() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Two kids (7 and 10) who love music, Saturday mornings, under $25, near K1S. Don't include names."
-          className="mt-1 w-full rounded border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+          className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm"
         />
         <button
           type="button"
           onClick={() => void parse()}
           disabled={busy !== null || text.trim() === ""}
-          className="mt-2 rounded border border-neutral-300 px-4 py-2 text-sm disabled:opacity-40 dark:border-neutral-700"
+          className="mt-2 rounded border border-line px-4 py-2 text-sm disabled:opacity-40"
         >
           {busy === "parse" ? "Parsing…" : "Parse and search"}
         </button>
@@ -201,13 +201,13 @@ export default function Home() {
       )}
 
       {busy === "search" && items.length === 0 && (
-        <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300" role="status">
+        <p className="mt-4 text-sm text-muted" role="status">
           Searching…
         </p>
       )}
 
       {meta && meta.warnings.length > 0 && (
-        <ul className="mt-4 list-disc pl-5 text-sm text-neutral-600 dark:text-neutral-300">
+        <ul className="mt-4 list-disc pl-5 text-sm text-muted">
           {meta.warnings.map((warning) => (
             <li key={warning}>{warning}</li>
           ))}
@@ -243,7 +243,7 @@ export default function Home() {
       )}
 
       {meta && items.length > 0 && visible.length === 0 && (
-        <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-4 text-sm text-muted">
           All {items.length} pick{items.length === 1 ? " is" : "s are"} hidden.
         </p>
       )}
@@ -265,18 +265,18 @@ export default function Home() {
               {hiddenVisible.map((item) => (
                 <li
                   key={item.event_id}
-                  className="flex items-center justify-between gap-2 rounded border border-neutral-200 p-2 text-sm dark:border-neutral-800"
+                  className="flex items-center justify-between gap-2 rounded border border-line bg-surface p-2 text-sm"
                 >
                   <span>
                     {item.title}{" "}
-                    <span className="text-neutral-500">
+                    <span className="text-muted">
                       ({hidden[item.event_id]})
                     </span>
                   </span>
                   <button
                     type="button"
                     onClick={() => void unhide(item.event_id)}
-                    className="rounded border border-neutral-300 px-2 py-0.5 text-xs dark:border-neutral-700"
+                    className="rounded border border-line px-2 py-0.5 text-xs"
                   >
                     Unhide
                   </button>

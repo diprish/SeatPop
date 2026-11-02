@@ -75,7 +75,7 @@ export default function TrustPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="text-2xl font-bold">Trust</h1>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-sm text-muted">
         Measured quality, straight from the eval reports. Anything missing is
         labelled pending.
       </p>
@@ -88,7 +88,7 @@ export default function TrustPage() {
           </p>
         )}
         {enrichment.status === "pending" && (
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+          <p className="mt-2 text-sm text-muted">
             Enrichment eval pending — human labelling isn&apos;t finished.
           </p>
         )}
@@ -119,11 +119,11 @@ export default function TrustPage() {
             return (
               <div
                 key={model.key}
-                className="mt-3 rounded border border-neutral-200 p-3 dark:border-neutral-800"
+                className="mt-3 rounded-card border border-line bg-surface p-4 shadow-card"
               >
                 <h3 className="text-sm font-semibold">
                   {model.model}{" "}
-                  <span className="font-normal text-neutral-500">
+                  <span className="font-normal text-muted">
                     ({model.provider}, {model.eventsScored} scored
                     {model.eventsFailed > 0 ? `, ${model.eventsFailed} failed` : ""})
                   </span>
@@ -138,7 +138,7 @@ export default function TrustPage() {
                 </p>
                 <table className="mt-2 w-full text-sm">
                   <thead>
-                    <tr className="text-left text-neutral-500">
+                    <tr className="text-left text-muted">
                       <th scope="col" className="font-normal">Field</th>
                       <th scope="col" className="font-normal">Accuracy</th>
                       <th scope="col" className="font-normal">Null rate</th>
@@ -154,7 +154,7 @@ export default function TrustPage() {
                     ))}
                   </tbody>
                 </table>
-                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+                <p className="mt-2 text-sm text-muted">
                   {model.tokensIn.toLocaleString()} in /{" "}
                   {model.tokensOut.toLocaleString()} out tokens
                   {model.costPer1kUsd !== null &&
@@ -173,7 +173,7 @@ export default function TrustPage() {
           </p>
         )}
         {recommend.status === "pending" && (
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+          <p className="mt-2 text-sm text-muted">
             Recommend eval pending.
           </p>
         )}
@@ -181,7 +181,7 @@ export default function TrustPage() {
           <ErrorBanner message={recommend.message} />
         )}
         {recommend.status === "ready" && (
-          <div className="mt-3 rounded border border-neutral-200 p-3 text-sm dark:border-neutral-800">
+          <div className="mt-3 rounded-card border border-line bg-surface p-4 text-sm shadow-card">
             <p>
               {recommend.data.households} synthetic households,{" "}
               {recommend.data.withCandidates} with candidates,{" "}
@@ -194,7 +194,7 @@ export default function TrustPage() {
             </p>
             <table className="mt-2 w-full">
               <thead>
-                <tr className="text-left text-neutral-500">
+                <tr className="text-left text-muted">
                   <th scope="col" className="font-normal">Method</th>
                   <th scope="col" className="font-normal">NDCG@10</th>
                 </tr>
@@ -233,7 +233,7 @@ export default function TrustPage() {
           </p>
         )}
         {fallback.status === "pending" && (
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+          <p className="mt-2 text-sm text-muted">
             Fallback proof pending — the no-key run hasn&apos;t published.
           </p>
         )}

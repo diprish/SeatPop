@@ -144,12 +144,12 @@ export default function RecommendPage() {
         ← SeatPop
       </a>
       <h1 className="mt-2 text-2xl font-bold">Find activities</h1>
-      <p className="mt-2 text-sm text-neutral-600">
+      <p className="mt-2 text-sm text-muted">
         Describe your household in your own words — ages, budget, area,
         availability, interests. Don&apos;t include names.
       </p>
       <textarea
-        className="mt-4 w-full rounded border p-3 text-sm"
+        className="mt-4 w-full rounded border border-line bg-surface p-3 text-sm"
         rows={4}
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -157,7 +157,7 @@ export default function RecommendPage() {
       />
       <div className="mt-2 flex gap-2">
         <button
-          className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-40"
+          className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
           onClick={() => void parse()}
           disabled={busy !== null || text.trim() === ""}
         >
@@ -172,12 +172,12 @@ export default function RecommendPage() {
             {chips.map((chip, index) => (
               <span
                 key={`${chip.key}:${index}`}
-                className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-sm"
+                className="inline-flex items-center gap-1 rounded-full bg-background px-3 py-1 text-sm"
               >
                 {chip.label}
                 <button
                   aria-label={`Remove ${chip.label}`}
-                  className="text-neutral-500"
+                  className="text-muted"
                   onClick={() => dropChip(chip.key)}
                 >
                   ×
@@ -187,14 +187,14 @@ export default function RecommendPage() {
           </div>
           <div className="mt-3 flex gap-2">
             <button
-              className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-40"
+              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
               onClick={() => void recommend()}
               disabled={!canRecommend}
             >
               {busy === "recommend" ? "Searching…" : "Find activities"}
             </button>
             <button
-              className="rounded border px-4 py-2 text-sm disabled:opacity-40"
+              className="rounded border border-line px-4 py-2 text-sm disabled:opacity-40"
               onClick={() => void save()}
               disabled={!canRecommend}
             >
@@ -212,7 +212,7 @@ export default function RecommendPage() {
       {notice !== "" && <p className="mt-4 text-sm text-amber-700">{notice}</p>}
 
       {meta && meta.warnings.length > 0 && (
-        <ul className="mt-4 list-disc pl-5 text-sm text-neutral-600">
+        <ul className="mt-4 list-disc pl-5 text-sm text-muted">
           {meta.warnings.map((warning) => (
             <li key={warning}>{warning}</li>
           ))}
@@ -226,7 +226,7 @@ export default function RecommendPage() {
           </h2>
           <ul className="mt-2 space-y-3">
             {items.map((item) => (
-              <li key={item.event_id} className="rounded border p-3">
+              <li key={item.event_id} className="rounded border border-line bg-surface p-3">
                 <a
                   className="font-semibold underline"
                   href={item.source_url}
@@ -235,7 +235,7 @@ export default function RecommendPage() {
                 >
                   {item.title}
                 </a>
-                <p className="mt-1 text-sm text-neutral-600">
+                <p className="mt-1 text-sm text-muted">
                   {item.starts_at.slice(0, 16).replace("T", " ")}
                   {item.venue_name ? ` · ${item.venue_name}` : ""}
                   {item.distance_km !== null
@@ -248,7 +248,7 @@ export default function RecommendPage() {
                 )}
                 <p className="mt-1 text-sm">
                   {item.reason}{" "}
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <span className="text-xs text-muted">
                     {item.reasonFromModel ? "(AI reason)" : "(match)"}
                   </span>
                 </p>

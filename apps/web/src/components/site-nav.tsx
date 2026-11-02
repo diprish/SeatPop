@@ -33,7 +33,7 @@ export default function SiteNav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface">
       <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
         <Link href="/" className="text-lg font-bold tracking-tight">
           SeatPop
@@ -50,7 +50,7 @@ export default function SiteNav() {
                 className={
                   active
                     ? "font-semibold underline underline-offset-4"
-                    : "text-neutral-600 hover:underline hover:underline-offset-4 dark:text-neutral-300"
+                    : "text-muted hover:underline hover:underline-offset-4"
                 }
               >
                 {link.label}
@@ -63,7 +63,7 @@ export default function SiteNav() {
           onClick={toggleTheme}
           aria-pressed={dark}
           aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-          className="rounded-full border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
+          className="rounded-full border border-line px-2 py-1 text-sm"
         >
           {dark ? "☀" : "☾"}
         </button>

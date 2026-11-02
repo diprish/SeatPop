@@ -10,8 +10,7 @@ interface EmptyStateProps {
   onResetSample: () => void;
 }
 
-const BUTTON =
-  "rounded border border-neutral-300 px-3 py-1 text-sm dark:border-neutral-700";
+const BUTTON = "rounded border border-line px-3 py-1 text-sm";
 
 export default function EmptyState({
   prefs,
@@ -24,7 +23,7 @@ export default function EmptyState({
     return (
       <p
         role="status"
-        className="mt-4 text-sm text-neutral-600 dark:text-neutral-300"
+        className="mt-4 text-sm text-muted"
       >
         Checking which filter removed everything…
       </p>
@@ -34,9 +33,9 @@ export default function EmptyState({
   if (!diagnosis) {
     const options = relaxationsFor(prefs);
     return (
-      <div className="mt-4 rounded border border-neutral-200 p-4 dark:border-neutral-800">
+      <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
         <p className="font-semibold">No events matched.</p>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-1 text-sm text-muted">
           The measurement failed — these clear one filter each:
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -60,9 +59,9 @@ export default function EmptyState({
     .sort((a, b) => b.candidates - a.candidates);
   if (gainers.length === 0) {
     return (
-      <div className="mt-4 rounded border border-neutral-200 p-4 dark:border-neutral-800">
+      <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
         <p className="font-semibold">No events matched.</p>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-1 text-sm text-muted">
           Nothing upcoming matches, even with filters cleared.
         </p>
         <button type="button" onClick={onResetSample} className={`${BUTTON} mt-2`}>
@@ -74,9 +73,9 @@ export default function EmptyState({
 
   const [top, ...rest] = gainers;
   return (
-    <div className="mt-4 rounded border border-neutral-200 p-4 dark:border-neutral-800">
+    <div className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
       <p className="font-semibold">No events matched.</p>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-1 text-sm text-muted">
         {top.label} finds {top.candidates} event{top.candidates === 1 ? "" : "s"}:
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
