@@ -104,7 +104,7 @@ export default function ExplorePage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="text-2xl font-bold">Explore</h1>
-      <section aria-label="Filters" className="mt-4 rounded border border-neutral-200 p-4 dark:border-neutral-800">
+      <section aria-label="Filters" className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
         <h2 className="text-sm font-semibold">Age band</h2>
         <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Age band">
           {(["any", ...AGE_BANDS] as const).map((option) => {
@@ -117,8 +117,8 @@ export default function ExplorePage() {
                 onClick={() => setBand(option)}
                 className={
                   selected
-                    ? "rounded-full bg-black px-3 py-1 text-sm text-white dark:bg-white dark:text-black"
-                    : "rounded-full border border-neutral-300 px-3 py-1 text-sm dark:border-neutral-700"
+                    ? "rounded-full border border-primary bg-primary/10 px-3 py-1 text-sm font-semibold"
+                    : "rounded-full border border-line px-3 py-1 text-sm"
                 }
               >
                 {option === "any" ? "Any age" : BAND_LABELS[option]}
@@ -149,7 +149,7 @@ export default function ExplorePage() {
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
               aria-describedby={distanceNeedsArea ? "ex-distance-hint" : undefined}
-              className="mt-1 w-28 rounded border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+              className="mt-1 w-28 rounded border border-line bg-surface p-2 text-sm"
             />
             {distanceNeedsArea && (
               <p
@@ -164,7 +164,7 @@ export default function ExplorePage() {
             type="button"
             onClick={() => void search(currentFilters(), base)}
             disabled={busy || distanceNeedsArea}
-            className="rounded bg-black px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-black"
+            className="rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
           >
             {busy ? "Searching…" : "Search"}
           </button>
@@ -179,13 +179,13 @@ export default function ExplorePage() {
       )}
 
       {busy && items.length === 0 && (
-        <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300" role="status">
+        <p className="mt-4 text-sm text-muted" role="status">
           Searching…
         </p>
       )}
 
       {meta && visible.length === 0 && (
-        <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-4 text-sm text-muted">
           No events match these filters. Loosen a filter and try again.
         </p>
       )}

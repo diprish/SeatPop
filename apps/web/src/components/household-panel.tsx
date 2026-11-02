@@ -65,7 +65,7 @@ export default function HouseholdPanel({
   }
 
   return (
-    <section aria-label="Edit my household" className="mt-4 rounded border border-neutral-200 p-4 dark:border-neutral-800">
+    <section aria-label="Edit my household" className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card">
       <div>
         <h2 className="text-sm font-semibold">Members (age bands only, never names)</h2>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -75,7 +75,7 @@ export default function HouseholdPanel({
               type="button"
               onClick={() => onChange(addMember(prefs, band))}
               aria-label={`Add ${BAND_LABELS[band]}`}
-              className="rounded-full border border-neutral-300 px-3 py-1 text-sm dark:border-neutral-700"
+              className="rounded-full border border-line px-3 py-1 text-sm"
             >
               + {BAND_LABELS[band]}
             </button>
@@ -86,14 +86,14 @@ export default function HouseholdPanel({
             {prefs.members.map((member, index) => (
               <li
                 key={`${member.age_band}:${index}`}
-                className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-sm dark:bg-neutral-800"
+                className="inline-flex items-center gap-1 rounded-full bg-background px-3 py-1 text-sm"
               >
                 {BAND_LABELS[member.age_band]}
                 <button
                   type="button"
                   aria-label={`Remove ${BAND_LABELS[member.age_band]}`}
                   onClick={() => onChange(removeMember(prefs, index))}
-                  className="text-neutral-500 dark:text-neutral-400"
+                  className="text-muted"
                 >
                   ×
                 </button>
@@ -117,7 +117,7 @@ export default function HouseholdPanel({
             placeholder="K2S"
             value={prefs.fsa ?? ""}
             onChange={(e) => onChange(setFsa(prefs, e.target.value))}
-            className="mt-1 w-full rounded border border-neutral-300 p-2 text-sm uppercase dark:border-neutral-700 dark:bg-neutral-900"
+            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm uppercase"
           />
           {fsaInvalid && (
             <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
@@ -137,7 +137,7 @@ export default function HouseholdPanel({
             placeholder="Any"
             value={prefs.max_distance_km ?? ""}
             onChange={(e) => onDistanceInput(e.target.value)}
-            className="mt-1 w-full rounded border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm"
           />
           {distanceNeedsArea && (
             <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
@@ -157,7 +157,7 @@ export default function HouseholdPanel({
             placeholder="Any"
             value={budgetDollars(prefs) ?? ""}
             onChange={(e) => onBudgetInput(e.target.value)}
-            className="mt-1 w-full rounded border border-neutral-300 p-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+            className="mt-1 w-full rounded border border-line bg-surface p-2 text-sm"
           />
         </div>
         <div className="flex items-end pb-2">
@@ -180,7 +180,7 @@ export default function HouseholdPanel({
         <div className="mt-2 space-y-2">
           {WEEKDAYS.map((day: Weekday) => (
             <div key={day} className="flex items-center gap-2">
-              <span className="w-10 text-xs text-neutral-500 dark:text-neutral-400">
+              <span className="w-10 text-xs text-muted">
                 {capitalize(day)}
               </span>
               <div className="flex flex-wrap gap-1">
@@ -194,8 +194,8 @@ export default function HouseholdPanel({
                       onClick={() => onChange(toggleAvailability(prefs, day, part))}
                       className={
                         selected
-                          ? "rounded-full bg-black px-2 py-1 text-xs text-white dark:bg-white dark:text-black"
-                          : "rounded-full border border-neutral-300 px-2 py-1 text-xs dark:border-neutral-700"
+                          ? "rounded-full border border-primary bg-primary/10 px-2 py-1 text-xs font-semibold"
+                          : "rounded-full border border-line px-2 py-1 text-xs"
                       }
                     >
                       {capitalize(part)}
@@ -213,7 +213,7 @@ export default function HouseholdPanel({
           type="button"
           onClick={onSearch}
           disabled={!canSearch}
-          className="flex-1 rounded bg-black px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:bg-white dark:text-black"
+          className="flex-1 rounded bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:text-background"
         >
           {busy ? "Searching…" : "Find activities"}
         </button>
@@ -221,7 +221,7 @@ export default function HouseholdPanel({
           type="button"
           onClick={onReset}
           disabled={busy}
-          className="rounded border border-neutral-300 px-4 py-2 text-sm disabled:opacity-40 dark:border-neutral-700"
+          className="rounded border border-line px-4 py-2 text-sm disabled:opacity-40"
         >
           Reset to sample
         </button>
