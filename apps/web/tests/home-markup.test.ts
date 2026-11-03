@@ -22,6 +22,10 @@ const FORM = readFileSync(
   new URL("../src/components/household-form.tsx", import.meta.url),
   "utf8",
 );
+const FORM_LOGIC = readFileSync(
+  new URL("../src/lib/household-form.ts", import.meta.url),
+  "utf8",
+);
 const CARD = readFileSync(
   new URL("../src/components/event-card.tsx", import.meta.url),
   "utf8",
@@ -83,6 +87,64 @@ describe("home page markup", () => {
     expect(FORM).toContain("Finding picks…");
     expect(FORM).toContain("Reset to sample");
     expect(FORM).toContain('type="submit"');
+  });
+
+  it("toggles fixed-order age chips with state in the name", () => {
+    expect(FORM).toContain("AGE_BANDS.map");
+    expect(FORM).toContain("BAND_LABELS[band]");
+    expect(FORM).toContain(", ${selected ? \"selected\" : \"not selected\"}");
+    expect(FORM).toContain("toggleBand(prefs, band)");
+    expect(FORM).toContain('aria-live="polite"');
+    expect(FORM).toContain("LAST_BAND_NOTICE");
+  });
+
+  it("labels postal, within, and budget fields", () => {
+    expect(FORM).toContain('id="hf-postal"');
+    expect(FORM).toContain('htmlFor="hf-within"');
+    expect(FORM).toContain('htmlFor="hf-budget"');
+    expect(FORM).toContain("<select");
+    expect(FORM).toContain("WITHIN_KM.map");
+    expect(FORM).toContain("BUDGET_DOLLARS.map");
+    expect(FORM).toContain("{km} km");
+    expect(FORM).toContain("up to $");
+    expect(FORM).toContain("fsaFieldError(prefs.fsa)");
+    expect(FORM).toContain("distanceAreaError(prefs)");
+    expect(FORM_LOGIC).toContain("Enter 3 characters like K2S.");
+    expect(FORM_LOGIC).toContain("Add a postal area to use Within.");
+  });
+
+  it("discloses the time grid behind an Any-time summary", () => {
+    expect(FORM).toContain("<details");
+    expect(FORM).toContain("<summary");
+    expect(FORM).toContain("timeSlotsSummary(prefs.availability)");
+    expect(FORM).toContain("<AvailabilityGrid");
+    expect(FORM).toContain("Clear");
+  });
+
+  it("submits the form to exactly one search call", () => {
+    expect(FORM).toContain("onSubmit={handleSubmit}");
+    expect(FORM).toContain("onShowPicks();");
+    expect(FORM.match(/onShowPicks\(\);/g)).toHaveLength(1);
+    expect(HOME).toContain("onShowPicks={showPicks}");
+    expect(HOME.match(/void search\(prefs\);/g)).toHaveLength(1);
+  });
+
+  it("reveals results with scroll and focus after Show picks", () => {
+    expect(HOME).toContain("resultsRef");
+    expect(HOME).toContain("scrollIntoView");
+    expect(HOME).toContain("prefers-reduced-motion");
+    expect(HOME).toContain("scroll-mt-20");
+    expect(HOME).toContain('tabIndex={-1}');
+  });
+
+  it("keeps no sentence or sheet remnants on home", () => {
+    for (const source of [HOME, FORM]) {
+      expect(source).not.toContain("HouseholdSentence");
+      expect(source).not.toContain("HouseholdSheet");
+      expect(source).not.toContain("HouseholdPanel");
+      expect(source).not.toContain("focusFilterTarget");
+      expect(source).not.toContain("filter-anchor");
+    }
   });
 
   it("badges the untouched sample near the form heading", () => {
