@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T04:54:50.028Z",
+  "generatedAt": "2026-11-02T23:46:45.925Z",
   "mode": "full (model-graded)",
   "grading": "model-graded (muse-wonder)",
   "households": [
@@ -10,8 +10,8 @@
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": 1,
-      "ndcgDate": 0,
-      "ndcgStage2": 0,
+      "ndcgDate": 0.12098920528291014,
+      "ndcgStage2": 0.10521164418397552,
       "graded": true,
       "fallback": false,
       "orderKept": null,
@@ -90,7 +90,7 @@
     {
       "id": "h07",
       "description": "Single French-speaking senior, free only",
-      "candidates": 48,
+      "candidates": 46,
       "violations": [],
       "distanceMismatches": 0,
       "ndcgReranked": 1,
@@ -135,9 +135,9 @@
       "candidates": 200,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.8679897215133439,
-      "ndcgDate": 0.13487466829862643,
-      "ndcgStage2": 0.6855459555476018,
+      "ndcgReranked": 0.9409688759086484,
+      "ndcgDate": 0.25536380624545146,
+      "ndcgStage2": 0.6869150265281767,
       "graded": true,
       "fallback": false,
       "orderKept": null,
@@ -216,12 +216,12 @@
     {
       "id": "h16",
       "description": "Kids and preschooler in Manotick, free only, wide range",
-      "candidates": 62,
+      "candidates": 59,
       "violations": [],
       "distanceMismatches": 0,
-      "ndcgReranked": 0.8298107423817964,
-      "ndcgDate": 0.5435598009071464,
-      "ndcgStage2": 0.9017106871380401,
+      "ndcgReranked": 0.9319752093999738,
+      "ndcgDate": 0.5086036327117673,
+      "ndcgStage2": 0.8967437251680671,
       "graded": true,
       "fallback": false,
       "orderKept": null,
@@ -285,16 +285,16 @@
     }
   ],
   "policyProbe": {
-    "candidates": 246,
+    "candidates": 239,
     "freePerOpl": 6,
     "ok": true
   },
   "totals": {
     "violations": 0,
     "distanceMismatches": 0,
-    "meanNdcgReranked": 0.8593005004758351,
-    "meanNdcgDate": 0.7191522642086771,
-    "meanNdcgStage2": 0.7698071714415864
+    "meanNdcgReranked": 0.8752226478770608,
+    "meanNdcgDate": 0.7379270073936186,
+    "meanNdcgStage2": 0.7790447853683662
   },
   "fallbackProof": null
 }

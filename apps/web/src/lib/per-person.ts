@@ -14,7 +14,9 @@ import {
  * range overlaps every member's own band, plus ageless picks (null
  * ages fit no band verifiably and every band possibly; their "check
  * the age group" flag travels with them). Adjacent-without-overlap
- * never qualifies for together. Each band column holds that band's
+ * never qualifies for together, and caregiver-only picks (parenting,
+ * prenatal, infant feeding, ...) qualify only with a grown-up member
+ * (adults or seniors band) selected. Each band column holds that band's
  * exact fits, then adjacent fits that are exact for no other member
  * — an adjacent pick exact elsewhere reads as a wrong-member pick,
  * since its reason names the exact band. Within a tier, broader age
@@ -29,6 +31,7 @@ export interface PerPersonItem {
   event_id: string;
   age_min: number | null;
   age_max: number | null;
+  title?: string;
 }
 
 export interface MemberColumn<T> {
@@ -61,6 +64,20 @@ export function bandCoverage(
       1,
   );
   return overlap / width;
+}
+
+/**
+ * Caregiver-only audience from title keywords (parent/parenting,
+ * caregiver, prenatal, infant feeding, grandparent compounds).
+ * Bounded word stems: "Apparent ..." does not match, plurals do.
+ * Title only — descriptions legitimately mention parents.
+ */
+export function isCaregiverOnly(title: string | undefined): boolean {
+  if (!title) return false;
+  return (
+    /\b(grandparent\w*|parent\w*|caregiver\w*|prenatal\w*)\b/i.test(title) ||
+    /\binfant[-\s]+feeding\b/i.test(title)
+  );
 }
 
 /**
@@ -176,27 +193,46 @@ export function columnReason(
 }
 
 /**
- * Together-context reason: a good-for clause naming only some of the
- * served bands is expanded to name every served band, so a together
- * card never spotlights one member. Clauses already complete, and
- * reasons without a band list, pass through untouched.
+ * Drop a "close to ... age" clause: a together pick overlaps every
+ * band by construction, so hedging about fit is always wrong there.
+ * The lookahead keeps proximity claims ("close to the library").
+ */
+function stripCloseToAge(reason: string): string {
+  return reason
+    .replace(
+      /,?\s*close to (?=[^,;()]*\bages?\b)[^,;()]*?\bages?\b(\s+group|\s+range)?(\s*\((?:inferred|stated)\))?/gi,
+      "",
+    )
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([,.;])/g, "$1")
+    .replace(/^[\s.,;]+/, "")
+    .trim();
+}
+
+/**
+ * Together-context reason: close-to-age hedging is stripped (a
+ * together pick overlaps every band), and a good-for clause naming
+ * only some of the served bands is expanded to name every served
+ * band, so a together card never spotlights one member. Complete,
+ * neutral, and ageless reasons pass through untouched.
  */
 export function togetherReason(
   reason: string,
   ages: { age_min: number | null; age_max: number | null },
   bands: AgeBand[],
 ): string {
-  if (ages.age_min === null && ages.age_max === null) return reason;
+  const stripped = stripCloseToAge(reason);
+  if (ages.age_min === null && ages.age_max === null) return stripped;
   const served = bands.filter((band) => overlapsStatedBand(ages, band));
-  if (served.length === 0) return reason;
-  const head = reason.match(/\b[Gg]ood for your /);
-  if (!head || head.index === undefined) return reason;
+  if (served.length === 0) return stripped;
+  const head = stripped.match(/\b[Gg]ood for your /);
+  if (!head || head.index === undefined) return stripped;
   const alt = AGE_BANDS.map(labelPattern).join("|");
   const start = head.index + head[0].length;
-  const first = reason
+  const first = stripped
     .slice(start)
     .match(new RegExp(`^\\s*(${alt})\\b`));
-  if (!first || !first[1]) return reason;
+  if (!first || !first[1]) return stripped;
   const named = new Set<AgeBand>();
   const add = (text: string): void => {
     const band = bandOfLabel(text);
@@ -205,20 +241,20 @@ export function togetherReason(
   add(first[1]);
   let pos = start + first[0].length;
   for (;;) {
-    const next = reason
+    const next = stripped
       .slice(pos)
       .match(new RegExp(`^\\s*(?:,|and)\\s+(${alt})\\b`));
     if (!next || !next[1]) break;
     add(next[1]);
     pos += next[0].length;
   }
-  if (served.every((band) => named.has(band))) return reason;
+  if (served.every((band) => named.has(band))) return stripped;
   const labels = served.map((band) => coverBandLabel(band));
   const joined =
     labels.length > 1
       ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1] as string}`
       : (labels[0] as string);
-  return reason.slice(0, start) + joined + reason.slice(pos);
+  return stripped.slice(0, start) + joined + stripped.slice(pos);
 }
 
 export function groupPerPerson<T extends PerPersonItem>(
@@ -253,10 +289,13 @@ export function groupPerPerson<T extends PerPersonItem>(
         levelOf(id, memberIndex.get(other) as number) === "exact",
     );
   const togetherIds = new Set<string>();
+  const hasGrownUp =
+    memberIndex.has("adults") || memberIndex.has("seniors");
   const together =
     bands.length <= 1
       ? []
       : items.filter((item) => {
+          if (isCaregiverOnly(item.title) && !hasGrownUp) return false;
           if (item.age_min === null && item.age_max === null) {
             togetherIds.add(item.event_id);
             return true;

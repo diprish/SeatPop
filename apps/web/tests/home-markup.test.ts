@@ -226,6 +226,7 @@ describe("home page markup", () => {
 
   it("qualifies together by band overlap and names every band", () => {
     expect(GROUPING).toContain("overlapsStatedBand(item, band)");
+    expect(GROUPING).toContain("isCaregiverOnly(item.title)");
     expect(GROUPED).toContain("togetherReason(item.reason, item, bands)");
     expect(GROUPED).toContain("bands={columns.map((column) => column.band)}");
   });

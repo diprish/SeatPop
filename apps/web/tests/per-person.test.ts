@@ -3,6 +3,7 @@ import type { Preferences } from "@seatpop/shared";
 import {
   columnReason,
   groupPerPerson,
+  isCaregiverOnly,
   togetherReason,
 } from "../src/lib/per-person";
 import { SAMPLE_HOUSEHOLD } from "../src/lib/household";
@@ -67,6 +68,30 @@ describe("groupPerPerson", () => {
       members,
     );
     expect(ids(together)).toEqual(["all", "span"]);
+  });
+
+  it("keeps caregiver-only picks out of together without an adult", () => {
+    // Reported: "Parenting in Ottawa" sat in together for a
+    // Preschool+Kids household. Caregiver-only picks need a
+    // grown-up member; otherwise they show nowhere.
+    const kidsOnly: Preferences["members"] = [
+      { age_band: "preschool", include_adjacent: true },
+      { age_band: "kids", include_adjacent: true },
+    ];
+    const parenting = {
+      ...row("parenting", null, null),
+      title: "Parenting in Ottawa",
+    };
+    const alone = groupPerPerson([parenting], kidsOnly);
+    expect(alone.together).toEqual([]);
+    for (const column of alone.columns) {
+      expect(ids(column.picks)).toEqual([]);
+    }
+    const withAdult = groupPerPerson(
+      [parenting],
+      [...kidsOnly, { age_band: "adults", include_adjacent: true }],
+    );
+    expect(ids(withAdult.together)).toEqual(["parenting"]);
   });
 
   it("keeps the check-age flag on ageless together picks", () => {
@@ -284,6 +309,47 @@ describe("columnReason", () => {
   });
 });
 
+describe("isCaregiverOnly", () => {
+  it("matches caregiver-audience titles, any case", () => {
+    for (const title of [
+      "Parenting in Ottawa",
+      "New parent meetup",
+      "Parents' night out",
+      "Caregiver coffee morning",
+      "Prenatal yoga",
+      "Infant feeding support",
+      "Infant-feeding clinic",
+      "Grandparents Day tea",
+    ]) {
+      expect(isCaregiverOnly(title)).toBe(true);
+    }
+  });
+
+  it("leaves ordinary and lookalike titles alone", () => {
+    for (const title of [
+      "Family storytime",
+      "The Apparent Heir",
+      "Saturday swim",
+      "",
+    ]) {
+      expect(isCaregiverOnly(title)).toBe(false);
+    }
+    expect(isCaregiverOnly(undefined)).toBe(false);
+  });
+
+  it("counts a senior member as a grown-up for together", () => {
+    const members: Preferences["members"] = [
+      { age_band: "kids", include_adjacent: true },
+      { age_band: "seniors", include_adjacent: true },
+    ];
+    const { together } = groupPerPerson(
+      [{ ...row("parenting", null, null), title: "Parenting in Ottawa" }],
+      members,
+    );
+    expect(ids(together)).toEqual(["parenting"]);
+  });
+});
+
 describe("togetherReason", () => {
   it("expands a single-band clause to every served band", () => {
     expect(
@@ -314,6 +380,47 @@ describe("togetherReason", () => {
     expect(
       togetherReason(
         "Good for your 18-64 adult (inferred)",
+        row("e", 3, 12),
+        ["preschool", "kids"],
+      ),
+    ).toBe("Good for your 3-5 preschooler and 6-12 kid (inferred)");
+  });
+
+  it("strips close-to-age claims, keeping the neutral facts", () => {
+    expect(
+      togetherReason(
+        "Storytime on 2026-11-07, Free (stated), close to your baby's and preschooler's ages (inferred)",
+        row("e", 1, 3),
+        ["baby", "preschool"],
+      ),
+    ).toBe("Storytime on 2026-11-07, Free (stated)");
+    expect(
+      togetherReason(
+        "Family storytime with stay-and-play (stated), close to preschool age (inferred)",
+        row("e", 0, 5),
+        ["baby", "preschool"],
+      ),
+    ).toBe("Family storytime with stay-and-play (stated)");
+  });
+
+  it("strips close-to-age even for ageless picks, keeps proximity", () => {
+    expect(
+      togetherReason(
+        "Free play (stated), close to preschool age (inferred)",
+        row("e", null, null),
+        ["preschool", "kids"],
+      ),
+    ).toBe("Free play (stated)");
+    const near = "Two blocks away, close to the library (stated)";
+    expect(togetherReason(near, row("e", 0, 5), ["baby", "preschool"])).toBe(
+      near,
+    );
+  });
+
+  it("strips close-to and expands naming in one pass", () => {
+    expect(
+      togetherReason(
+        "Good for your 3-5 preschooler (inferred), close to kids age",
         row("e", 3, 12),
         ["preschool", "kids"],
       ),
