@@ -109,8 +109,13 @@ describe("home page markup", () => {
     expect(FORM).toContain("up to $");
     expect(FORM).toContain("fsaFieldError(prefs.fsa)");
     expect(FORM).toContain("distanceAreaError(prefs)");
+    expect(FORM).toContain("normaliseFsaInput(e.target.value)");
+    expect(FORM).toContain("serverPostalError");
     expect(FORM_LOGIC).toContain("Enter 3 characters like K2S.");
     expect(FORM_LOGIC).toContain("Add a postal area to use Within.");
+    expect(FORM_LOGIC).toContain("OTTAWA_FSA_MESSAGE");
+    expect(HOME).toContain("isUnknownAreaError(message)");
+    expect(HOME).toContain("setAreaError(OTTAWA_FSA_MESSAGE)");
   });
 
   it("discloses the time grid behind an Any-time summary", () => {

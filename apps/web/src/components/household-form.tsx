@@ -20,6 +20,7 @@ import {
   countTimeSlots,
   distanceAreaError,
   fsaFieldError,
+  normaliseFsaInput,
   timeSlotsSummary,
   toggleBand,
   withinSelectValue,
@@ -36,6 +37,7 @@ export default function HouseholdForm({
   onReset,
   busy,
   isSample,
+  serverPostalError,
 }: {
   prefs: Preferences;
   onChange: (next: Preferences) => void;
@@ -43,12 +45,17 @@ export default function HouseholdForm({
   onReset: () => void;
   busy: boolean;
   isSample: boolean;
+  /** API 400 "unknown area" mapped back onto the field. */
+  serverPostalError: string | null;
 }) {
   const [notice, setNotice] = useState<string | null>(null);
   const postalRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     setNotice(null);
   }, [prefs]);
+  useEffect(() => {
+    if (serverPostalError) postalRef.current?.focus();
+  }, [serverPostalError]);
 
   function toggle(band: AgeBand): void {
     const next = toggleBand(prefs, band);
@@ -75,7 +82,10 @@ export default function HouseholdForm({
   const within = withinSelectValue(prefs);
   const budget = budgetSelectValue(prefs);
   const postalError =
-    fsaFieldError(prefs.fsa) ?? distanceAreaError(prefs);
+    fsaFieldError(prefs.fsa) ??
+    distanceAreaError(prefs) ??
+    serverPostalError ??
+    undefined;
 
   return (
     <form onSubmit={handleSubmit} aria-label="Who's coming">
@@ -129,7 +139,9 @@ export default function HouseholdForm({
           maxLength={3}
           placeholder="K2S"
           value={prefs.fsa ?? ""}
-          onChange={(e) => onChange(setFsa(prefs, e.target.value))}
+          onChange={(e) =>
+            onChange(setFsa(prefs, normaliseFsaInput(e.target.value)))
+          }
           error={postalError}
           className="uppercase"
         />

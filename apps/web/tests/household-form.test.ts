@@ -3,6 +3,7 @@ import type { Preferences } from "@seatpop/shared";
 import { SAMPLE_HOUSEHOLD } from "../src/lib/household";
 import {
   LAST_BAND_NOTICE,
+  OTTAWA_FSA_MESSAGE,
   applyBudgetValue,
   applyWithinValue,
   budgetSelectValue,
@@ -10,10 +11,14 @@ import {
   countTimeSlots,
   distanceAreaError,
   fsaFieldError,
+  isOttawaFsa,
+  isUnknownAreaError,
+  normaliseFsaInput,
   timeSlotsSummary,
   toggleBand,
   withinSelectValue,
 } from "../src/lib/household-form";
+import { OTTAWA_FSAS } from "../src/lib/ottawa-fsas";
 
 describe("household form logic", () => {
   it("toggles bands on and off", () => {
@@ -52,6 +57,47 @@ describe("household form logic", () => {
     expect(fsaFieldError("k2s")).toBeUndefined();
     expect(fsaFieldError("K2")).toBe("Enter 3 characters like K2S.");
     expect(fsaFieldError("ZZZ")).toBe("Enter 3 characters like K2S.");
+  });
+
+  it("normalises case, spaces, and full postal codes", () => {
+    expect(fsaFieldError("k2s ")).toBeUndefined();
+    expect(fsaFieldError("K2S 1A1")).toBeUndefined();
+    expect(fsaFieldError(" k1s")).toBeUndefined();
+  });
+
+  it("rejects well-formed but unknown Ottawa areas", () => {
+    expect(fsaFieldError("K9V")).toBe(OTTAWA_FSA_MESSAGE);
+    expect(fsaFieldError("M5V")).toBe(OTTAWA_FSA_MESSAGE);
+    expect(OTTAWA_FSA_MESSAGE).toBe(
+      "That doesn't look like an Ottawa postal area (for example K2S).",
+    );
+  });
+
+  it("normalises raw postal input to an FSA prefix", () => {
+    expect(normaliseFsaInput("k2s ")).toBe("K2S");
+    expect(normaliseFsaInput("K2S 1A1")).toBe("K2S");
+    expect(normaliseFsaInput(" k1s")).toBe("K1S");
+    expect(normaliseFsaInput("")).toBe("");
+  });
+
+  it("knows the seeded Ottawa areas, including the sample's", () => {
+    expect(OTTAWA_FSAS.size).toBeGreaterThan(0);
+    for (const code of OTTAWA_FSAS) {
+      expect(code).toMatch(/^K[0-9][A-Z]$/);
+    }
+    expect(isOttawaFsa("K2S")).toBe(true);
+    expect(isOttawaFsa("k2s ")).toBe(true);
+    expect(isOttawaFsa("K9V")).toBe(false);
+    expect(isOttawaFsa("M5V")).toBe(false);
+  });
+
+  it("recognises the API's unknown-area 400 text", () => {
+    expect(
+      isUnknownAreaError("unknown area K9V: Ottawa K-prefixed areas only"),
+    ).toBe(true);
+    expect(isUnknownAreaError("request failed (400)")).toBe(false);
+    expect(isUnknownAreaError("fetch failed")).toBe(false);
+    expect(isUnknownAreaError("")).toBe(false);
   });
 
   it("requires an area for a distance cap", () => {

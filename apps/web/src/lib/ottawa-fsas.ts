@@ -1,0 +1,50 @@
+/**
+ * Ottawa-area FSAs the app knows (mirror of the home_area seeds in
+ * supabase/migrations/0008_households.sql). The form validates
+ * against this list before calling the API; the API re-validates
+ * against home_area and answers 400 "unknown area" on drift, which
+ * the page maps back to the same inline message.
+ */
+export const OTTAWA_FSAS: ReadonlySet<string> = new Set([
+  "K1A",
+  "K1B",
+  "K1C",
+  "K1E",
+  "K1G",
+  "K1H",
+  "K1J",
+  "K1K",
+  "K1L",
+  "K1M",
+  "K1N",
+  "K1P",
+  "K1R",
+  "K1S",
+  "K1T",
+  "K1V",
+  "K1W",
+  "K1X",
+  "K1Y",
+  "K1Z",
+  "K2A",
+  "K2B",
+  "K2C",
+  "K2E",
+  "K2G",
+  "K2H",
+  "K2J",
+  "K2K",
+  "K2L",
+  "K2M",
+  "K2P",
+  "K2R",
+  "K2S",
+  "K2T",
+  "K2V",
+  "K2W",
+  "K4A",
+  "K4B",
+  "K4C",
+  "K4M",
+  "K4P",
+]);

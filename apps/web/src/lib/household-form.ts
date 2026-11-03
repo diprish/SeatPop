@@ -8,6 +8,7 @@ import {
   setDistanceKm,
   setFreeOnly,
 } from "./household";
+import { OTTAWA_FSAS } from "./ottawa-fsas";
 
 /**
  * Plain-form logic (For-you input card): every rule the form
@@ -32,10 +33,33 @@ export function toggleBand(
   return { prefs: removeMember(prefs, index), notice: null };
 }
 
-/** Friendly postal error; empty means unset and is fine. */
+export const OTTAWA_FSA_MESSAGE =
+  "That doesn't look like an Ottawa postal area (for example K2S).";
+
+/** Uppercase, no whitespace, FSA prefix ("K2S 1A1" -> "K2S"). */
+export function normaliseFsaInput(raw: string): string {
+  return raw.toUpperCase().replace(/\s+/g, "").slice(0, 3);
+}
+
+/** Normalised value is one of the app's known Ottawa areas. */
+export function isOttawaFsa(fsa: string): boolean {
+  return OTTAWA_FSAS.has(normaliseFsaInput(fsa));
+}
+
+/**
+ * Friendly postal error; empty means unset and is fine. Format
+ * first, then the known-Ottawa list.
+ */
 export function fsaFieldError(fsa: string | undefined): string | undefined {
   if (fsa === undefined || fsa.trim() === "") return undefined;
-  return isFsaValid(fsa) ? undefined : "Enter 3 characters like K2S.";
+  const code = normaliseFsaInput(fsa);
+  if (!isFsaValid(code)) return "Enter 3 characters like K2S.";
+  return OTTAWA_FSAS.has(code) ? undefined : OTTAWA_FSA_MESSAGE;
+}
+
+/** True for the API's 400 "unknown area ..." answers. */
+export function isUnknownAreaError(message: string): boolean {
+  return /unknown area/i.test(message);
 }
 
 /** Distance needs an area to measure from. */

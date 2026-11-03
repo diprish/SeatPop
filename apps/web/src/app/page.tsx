@@ -33,6 +33,10 @@ import {
   loadHousehold,
   saveHousehold,
 } from "@/lib/household";
+import {
+  OTTAWA_FSA_MESSAGE,
+  isUnknownAreaError,
+} from "@/lib/household-form";
 
 const HERO_STEPS = [
   { circle: "bg-blush-solid", label: "Tell us who's coming" },
@@ -56,7 +60,13 @@ export default function Home() {
   const [showHidden, setShowHidden] = useState(false);
   const [showShortcut, setShowShortcut] = useState(false);
   const [syncNotes, setSyncNotes] = useState<Record<string, string>>({});
+  const [areaError, setAreaError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  function handleFormChange(next: Preferences): void {
+    setAreaError(null);
+    setPrefs(next);
+  }
 
   function noteSync(eventId: string, note: string | null): void {
     setSyncNotes((notes) => {
@@ -75,6 +85,7 @@ export default function Home() {
   async function search(next: Preferences): Promise<void> {
     setBusy("search");
     setBanner("");
+    setAreaError(null);
     setDiagnosis(null);
     try {
       const data = await fetchRecommend(next);
@@ -92,13 +103,19 @@ export default function Home() {
           setDiagnosing(false);
         }
       }
-    } catch {
-      // Friendly copy only: previous results stay, nothing clears.
-      setBanner(
-        items.length > 0
-          ? "Couldn't load picks. Your previous results are unchanged."
-          : "Couldn't load picks. Try again.",
-      );
+    } catch (error) {
+      // An "unknown area" 400 lands back on the postal field, never
+      // the generic panel. Previous results stay, nothing clears.
+      const message = error instanceof Error ? error.message : "";
+      if (isUnknownAreaError(message)) {
+        setAreaError(OTTAWA_FSA_MESSAGE);
+      } else {
+        setBanner(
+          items.length > 0
+            ? "Couldn't load picks. Your previous results are unchanged."
+            : "Couldn't load picks. Try again.",
+        );
+      }
     } finally {
       setBusy(null);
     }
@@ -221,11 +238,12 @@ export default function Home() {
         <Card>
           <HouseholdForm
             prefs={prefs}
-            onChange={setPrefs}
+            onChange={handleFormChange}
             onShowPicks={showPicks}
             onReset={resetToSample}
             busy={busy !== null}
             isSample={isSample}
+            serverPostalError={areaError}
           />
           <div className="mt-3">
             <Button
