@@ -42,6 +42,7 @@ const EventRowSchema = z.object({
   starts_at: z.string(),
   title: z.string(),
   category: z.string().nullable(),
+  description: z.string().nullable(),
 });
 
 const CreatedSchema = z.object({
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           base,
           supabase.anonKey,
           jwt,
-          `public_events?id=eq.${encodeURIComponent(parsed.data.event_id)}&select=starts_at,title,category&limit=1`,
+          `public_events?id=eq.${encodeURIComponent(parsed.data.event_id)}&select=starts_at,title,category,description&limit=1`,
         )
       ).json,
     )[0];
@@ -135,6 +136,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       matchWindow(windows, sources.get(parsed.data.event_id) ?? [], Date.now(), {
         title: event.title,
         category: event.category,
+        starts_at: event.starts_at,
+        description: event.description,
       }),
       event.starts_at,
     );

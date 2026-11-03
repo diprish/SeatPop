@@ -85,7 +85,13 @@ export async function loadEventSourceNames(
 
 /** Attach the matching window (or null) to each item. */
 export async function attachWindows<
-  T extends { event_id: string; title: string; category: string | null },
+  T extends {
+    event_id: string;
+    title: string;
+    category: string | null;
+    starts_at: string;
+    description: string | null;
+  },
 >(
   supabase: { url: string; anonKey: string },
   items: T[],
@@ -105,6 +111,8 @@ export async function attachWindows<
     registration_window: matchWindow(windows, sources.get(item.event_id) ?? [], now, {
       title: item.title,
       category: item.category,
+      starts_at: item.starts_at,
+      description: item.description,
     }),
   }));
 }

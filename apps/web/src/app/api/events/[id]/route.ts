@@ -197,7 +197,13 @@ export async function GET(
     } | null = null;
     try {
       const attached = await attachWindows(supabase, [
-        { event_id: row.id, title: row.title, category: row.category },
+        {
+          event_id: row.id,
+          title: row.title,
+          category: row.category,
+          starts_at: row.starts_at,
+          description: row.description,
+        },
       ]);
       registration_window = attached[0]?.registration_window ?? null;
     } catch (error) {

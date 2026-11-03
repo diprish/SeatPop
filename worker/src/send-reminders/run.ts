@@ -51,6 +51,7 @@ interface EventFacts {
   venue_id: string | null;
   source_url: string;
   category: string | null;
+  description: string | null;
 }
 
 async function rest<T>(
@@ -165,7 +166,7 @@ async function main(): Promise<number> {
   const events = await rest<EventFacts[]>(
     deps,
     "events",
-    `?select=id,title,starts_at,ends_at,timezone,venue_id,source_url,category&id=in.(${eventIds.map((id) => encodeURIComponent(id)).join(",")})`,
+    `?select=id,title,starts_at,ends_at,timezone,venue_id,source_url,category,description&id=in.(${eventIds.map((id) => encodeURIComponent(id)).join(",")})`,
   );
   const byEvent = new Map(events.map((event) => [event.id, event]));
   const venueIds = [
@@ -212,6 +213,8 @@ async function main(): Promise<number> {
           ? matchWindow(windows, sourcesByEvent.get(row.event_id) ?? [], Date.now(), {
               title: event.title,
               category: event.category,
+              starts_at: event.starts_at,
+              description: event.description,
             })
           : null;
       const facts: ReminderEmailFacts = {
