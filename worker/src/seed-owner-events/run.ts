@@ -83,7 +83,9 @@ async function ensureSource(deps: Deps, dryRun: boolean): Promise<string> {
     console.log(
       `  ${dryRun ? "would create" : "creating"} source "${OWNER_SOURCE_NAME}" (user_submitted, disabled)`,
     );
-    if (dryRun) return "(dry-run source id)";
+    // Nil UUID: keeps the dedupe query valid (it matches nothing, so
+    // every row reports "would create") without inventing an id.
+    if (dryRun) return "00000000-0000-0000-0000-000000000000";
     const created = await rest<SourceRow[]>(deps, "sources", "", {
       method: "POST",
       body: {
@@ -198,7 +200,7 @@ async function upsertEvent(
   const rows = await rest<EventRow[]>(
     deps,
     "events",
-    `?select=id,source_url,starts_at,status&source_id=eq.${sourceId}&source_url=eq.${encodeURIComponent(event.source_url)}&limit=50`,
+    `?select=id,source_url,starts_at,status&source_id=eq.${encodeURIComponent(sourceId)}&source_url=eq.${encodeURIComponent(event.source_url)}&limit=50`,
   );
   const wantMs = Date.parse(event.starts_at);
   const match = rows.find((row) => Date.parse(row.starts_at) === wantMs);

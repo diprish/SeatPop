@@ -77,7 +77,9 @@ enrichment eval shows pending there until its run completes.
   (https://ottawa.ca/en/city-hall/get-know-your-city/open-data#open-data-licence-version-2-0).
   Museum, theatre, and market coordinates cite the venues' Wikipedia
   pages per entry (`source`); three entries are marked `"verified":
-  false` pending a map check.
+  false` pending a map check. City recreation-facility coordinates cite
+  their OpenStreetMap objects per entry (`source`), © OpenStreetMap
+  contributors, ODbL (https://www.openstreetmap.org/copyright).
 
 ## Provenance
 

@@ -185,8 +185,15 @@ describe("isOwnerRow", () => {
 });
 
 describe("loadOwnerSeed", () => {
-  it("loads the (currently empty) committed seed file", () => {
-    expect(loadOwnerSeed()).toEqual([]);
+  it("loads the committed seed file with every row validated", () => {
+    // loadOwnerSeed throws unless every row validates, so reaching
+    // the assertions below proves the file is clean.
+    const events = loadOwnerSeed();
+    expect(events.length).toBeGreaterThan(0);
+    for (const event of events) {
+      expect(event.title).not.toBe("");
+      expect(event.source_url).toMatch(/^https:/);
+    }
   });
 });
 

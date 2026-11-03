@@ -72,6 +72,69 @@
     "verified": true
   },
   {
+    "key": "pinecrest-recreation-complex",
+    "match": ["Pinecrest Rec Cplx", "Pinecrest Recreation Complex"],
+    "name": "Pinecrest Recreation Complex",
+    "lat": 45.3478,
+    "lng": -75.7734,
+    "source": "OpenStreetMap sports_centre building at 2250 Torquay Ave (https://www.openstreetmap.org/way/251701687).",
+    "verified": true
+  },
+  {
+    "key": "cardelrec-recreation-complex",
+    "match": ["CardelRec Cplx (Goulbourn)", "CardelRec Recreation Complex", "CardelRec", "Goulbourn Recreation Complex"],
+    "name": "CardelRec Recreation Complex (Goulbourn)",
+    "lat": 45.2631,
+    "lng": -75.9079,
+    "source": "OpenStreetMap sports_centre at 1500 Shea Rd (https://www.openstreetmap.org/way/471520447); OSM names it 'Goulbourn Recreation Complex', the same facility the City lists as CardelRec Cplx (Goulbourn).",
+    "verified": true
+  },
+  {
+    "key": "dempsey-community-centre",
+    "match": ["Dempsey Cmty Centre", "Dempsey Community Centre"],
+    "name": "Dempsey Community Centre",
+    "lat": 45.4026,
+    "lng": -75.6277,
+    "source": "OpenStreetMap community_centre building at 1895 Russell Rd (https://www.openstreetmap.org/way/160781052).",
+    "verified": true
+  },
+  {
+    "key": "glen-cairn-community-centre",
+    "match": ["Glen Cairn Cmty Centre", "Glen Cairn Community Centre"],
+    "name": "Glen Cairn Community Centre",
+    "lat": 45.2961,
+    "lng": -75.8849,
+    "source": "OpenStreetMap community_centre building at 186 Morrena Rd (https://www.openstreetmap.org/way/68609643).",
+    "verified": true
+  },
+  {
+    "key": "johnny-leroux-arena",
+    "match": ["Johnny Leroux Stittsville Cmty Arena", "Johnny Leroux Stittsville Community Arena", "Johnny Leroux"],
+    "name": "Johnny Leroux Stittsville Community Arena",
+    "lat": 45.2607,
+    "lng": -75.9267,
+    "source": "OpenStreetMap sports_centre building at 10 Warner Colpitts Ln (https://www.openstreetmap.org/way/471490876).",
+    "verified": true
+  },
+  {
+    "key": "pat-clark-community-centre",
+    "match": ["Pat Clark Cmty Centre", "Pat Clark Community Centre"],
+    "name": "Pat Clark Community Centre",
+    "lat": 45.4288,
+    "lng": -75.6197,
+    "source": "OpenStreetMap community_centre building at 4355 Halmont Dr (https://www.openstreetmap.org/way/68658248).",
+    "verified": true
+  },
+  {
+    "key": "ray-friel-recreation-complex",
+    "match": ["Ray Friel Rec Cplx", "Ray Friel Recreation Complex"],
+    "name": "Ray Friel Recreation Complex",
+    "lat": 45.472,
+    "lng": -75.4926,
+    "source": "OpenStreetMap sports_centre on Tenth Line Rd, Fallingbrook (https://www.openstreetmap.org/way/640151491).",
+    "verified": true
+  },
+  {
     "key": "ottawa-public-library-alta-vista",
     "match": ["Alta Vista at", "Alta Vista Branch", "Alta Vista Library"],
     "name": "Alta Vista Branch",
