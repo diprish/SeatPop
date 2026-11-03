@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s · SeatPop",
   },
   description:
-    "Find the right activity for each person in your household, book it in time.",
+    "Find the right activity for each person in your household, and never miss registration.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",

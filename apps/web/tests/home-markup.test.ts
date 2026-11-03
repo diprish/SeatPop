@@ -62,7 +62,7 @@ describe("home page markup", () => {
     for (const step of [
       "Tell us who's coming",
       "We match every age",
-      "Book and get reminded",
+      "Register on the official page and get reminded",
     ]) {
       expect(HOME).toContain(step);
     }
