@@ -1,4 +1,5 @@
 import {
+  AGE_BANDS,
   AGE_BAND_RANGES,
   coverBandLabel,
   fitLevelForMember,
@@ -9,10 +10,11 @@ import {
 
 /**
  * Per-person grouping (For-you 2c): a lossless, stable partition of
- * the served picks. "Everyone together" holds picks with an exact or
- * adjacent fit for every member, plus ageless picks (null ages fit
- * no band verifiably and every band possibly; their "check the age
- * group" flag travels with them). Each band column holds that band's
+ * the served picks. "Everyone together" holds picks whose stated
+ * range overlaps every member's own band, plus ageless picks (null
+ * ages fit no band verifiably and every band possibly; their "check
+ * the age group" flag travels with them). Adjacent-without-overlap
+ * never qualifies for together. Each band column holds that band's
  * exact fits, then adjacent fits that are exact for no other member
  * — an adjacent pick exact elsewhere reads as a wrong-member pick,
  * since its reason names the exact band. Within a tier, broader age
@@ -61,6 +63,22 @@ export function bandCoverage(
   return overlap / width;
 }
 
+/**
+ * The stated range meets the member's own band (single-year touch
+ * counts). Ageless ranges never overlap; they qualify separately.
+ */
+export function overlapsStatedBand(
+  ages: { age_min: number | null; age_max: number | null },
+  band: AgeBand,
+): boolean {
+  if (ages.age_min === null && ages.age_max === null) return false;
+  const range = AGE_BAND_RANGES[band] as { min: number; max: number };
+  return (
+    Math.max(ages.age_min ?? 0, range.min) <=
+    Math.min(ages.age_max ?? 130, range.max)
+  );
+}
+
 /** Order within a fit tier: full band, then share, then served order. */
 function sortByCoverage<T extends PerPersonItem>(
   tier: T[],
@@ -89,6 +107,22 @@ const PARTIAL_NOUN: Record<AgeBand, string> = {
   adults: "adults",
   seniors: "seniors",
 };
+
+/** Cover label as a regex atom, tolerant of en-dash ranges. */
+function labelPattern(band: AgeBand): string {
+  return coverBandLabel(band)
+    .replace(/[+()]/g, (c) => `\\${c}`)
+    .replace(/-/g, "[-–]");
+}
+
+function bandOfLabel(text: string): AgeBand | null {
+  const plain = text.replace(/–/g, "-");
+  return (
+    (AGE_BANDS as readonly AgeBand[]).find(
+      (band) => coverBandLabel(band) === plain,
+    ) ?? null
+  );
+}
 
 /** "50+", "10–12", "up to 12" — the ageLine range conventions. */
 function statedRange(ages: {
@@ -127,9 +161,7 @@ export function columnReason(
   }
   const range = statedRange(ages);
   if (!range) return reason;
-  const label = coverBandLabel(band)
-    .replace(/[+()]/g, (c) => `\\${c}`)
-    .replace(/-/g, "[-–]");
+  const label = labelPattern(band);
   const match = reason.match(
     new RegExp(`\\b([Gg]ood for your ${label}\\b)(?!\\s*(?:,|and)\\s+\\d)`),
   );
@@ -141,6 +173,52 @@ export function columnReason(
     `${open} ${PARTIAL_NOUN[band]} ${range}` +
     reason.slice(match.index + clause.length)
   );
+}
+
+/**
+ * Together-context reason: a good-for clause naming only some of the
+ * served bands is expanded to name every served band, so a together
+ * card never spotlights one member. Clauses already complete, and
+ * reasons without a band list, pass through untouched.
+ */
+export function togetherReason(
+  reason: string,
+  ages: { age_min: number | null; age_max: number | null },
+  bands: AgeBand[],
+): string {
+  if (ages.age_min === null && ages.age_max === null) return reason;
+  const served = bands.filter((band) => overlapsStatedBand(ages, band));
+  if (served.length === 0) return reason;
+  const head = reason.match(/\b[Gg]ood for your /);
+  if (!head || head.index === undefined) return reason;
+  const alt = AGE_BANDS.map(labelPattern).join("|");
+  const start = head.index + head[0].length;
+  const first = reason
+    .slice(start)
+    .match(new RegExp(`^\\s*(${alt})\\b`));
+  if (!first || !first[1]) return reason;
+  const named = new Set<AgeBand>();
+  const add = (text: string): void => {
+    const band = bandOfLabel(text);
+    if (band) named.add(band);
+  };
+  add(first[1]);
+  let pos = start + first[0].length;
+  for (;;) {
+    const next = reason
+      .slice(pos)
+      .match(new RegExp(`^\\s*(?:,|and)\\s+(${alt})\\b`));
+    if (!next || !next[1]) break;
+    add(next[1]);
+    pos += next[0].length;
+  }
+  if (served.every((band) => named.has(band))) return reason;
+  const labels = served.map((band) => coverBandLabel(band));
+  const joined =
+    labels.length > 1
+      ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1] as string}`
+      : (labels[0] as string);
+  return reason.slice(0, start) + joined + reason.slice(pos);
 }
 
 export function groupPerPerson<T extends PerPersonItem>(
@@ -183,13 +261,9 @@ export function groupPerPerson<T extends PerPersonItem>(
             togetherIds.add(item.event_id);
             return true;
           }
-          const servesAll = bands.every((band) => {
-            const level = levelOf(
-              item.event_id,
-              memberIndex.get(band) as number,
-            );
-            return level === "exact" || level === "adjacent";
-          });
+          const servesAll = bands.every((band) =>
+            overlapsStatedBand(item, band),
+          );
           if (servesAll) togetherIds.add(item.event_id);
           return servesAll;
         });

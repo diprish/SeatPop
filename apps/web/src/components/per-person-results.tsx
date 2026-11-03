@@ -6,7 +6,11 @@ import type { AgeBand, Preferences } from "@seatpop/shared";
 import EventCard from "@/components/event-card";
 import type { RecommendItemView } from "@/lib/api";
 import { BAND_LABELS } from "@/lib/household";
-import { columnReason, groupPerPerson } from "@/lib/per-person";
+import {
+  columnReason,
+  groupPerPerson,
+  togetherReason,
+} from "@/lib/per-person";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { Badge } from "@/components/ui/Badge";
 import { Chip } from "@/components/ui/Chip";
@@ -134,12 +138,17 @@ function RankBadge({ reranked }: { reranked: boolean }) {
 
 function TogetherSection({
   together,
+  bands,
   prefs,
   savedIds,
   syncNotes,
   onToggleSave,
   onNotForUs,
-}: CardProps & { together: RecommendItemView[] }) {
+}: CardProps & { together: RecommendItemView[]; bands: AgeBand[] }) {
+  const shown = together.map((item) => ({
+    ...item,
+    reason: togetherReason(item.reason, item, bands),
+  }));
   return (
     <section aria-labelledby="per-person-together">
       <div className="flex items-center justify-between gap-2">
@@ -151,13 +160,13 @@ function TogetherSection({
         aria-hidden="true"
         className="mt-1 h-1 w-28 rounded-full bg-rainbow"
       />
-      {together.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="mt-3 text-sm text-muted">
           No single pick fits everyone — see each person&rsquo;s picks below.
         </p>
       ) : (
         <div className="mt-3 grid gap-4 md:grid-cols-2">
-          {together.map((item) => (
+          {shown.map((item) => (
             <EventCard
               key={item.event_id}
               item={item}
@@ -292,6 +301,7 @@ function MobileTabs({
         {current === "everyone" || !activeColumn ? (
           <TogetherSection
             together={together}
+            bands={columns.map((column) => column.band)}
             prefs={prefs}
             savedIds={savedIds}
             syncNotes={syncNotes}
@@ -350,6 +360,7 @@ export default function PerPersonResults({
       {columns.length !== 1 && (
         <TogetherSection
           together={together}
+          bands={columns.map((column) => column.band)}
           prefs={prefs}
           savedIds={savedIds}
           syncNotes={syncNotes}

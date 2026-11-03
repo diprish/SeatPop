@@ -26,6 +26,10 @@ const FORM_LOGIC = readFileSync(
   new URL("../src/lib/household-form.ts", import.meta.url),
   "utf8",
 );
+const GROUPING = readFileSync(
+  new URL("../src/lib/per-person.ts", import.meta.url),
+  "utf8",
+);
 const CARD = readFileSync(
   new URL("../src/components/event-card.tsx", import.meta.url),
   "utf8",
@@ -218,6 +222,12 @@ describe("home page markup", () => {
 
   it("states partial age ranges in column reasons", () => {
     expect(GROUPED).toContain("columnReason(item.reason, item, band)");
+  });
+
+  it("qualifies together by band overlap and names every band", () => {
+    expect(GROUPING).toContain("overlapsStatedBand(item, band)");
+    expect(GROUPED).toContain("togetherReason(item.reason, item, bands)");
+    expect(GROUPED).toContain("bands={columns.map((column) => column.band)}");
   });
 
   it("skips the together row when a single band owns every pick", () => {

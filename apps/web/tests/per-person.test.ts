@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Preferences } from "@seatpop/shared";
-import { columnReason, groupPerPerson } from "../src/lib/per-person";
+import {
+  columnReason,
+  groupPerPerson,
+  togetherReason,
+} from "../src/lib/per-person";
 import { SAMPLE_HOUSEHOLD } from "../src/lib/household";
 
 interface Row {
@@ -24,7 +28,57 @@ function ids(rows: Row[]): string[] {
 }
 
 describe("groupPerPerson", () => {
-  it("fills Everyone together only with exact-or-adjacent for all", () => {
+  it("keeps adjacent-without-overlap out of Everyone together", () => {
+    // Reported: storytime 0-5 sat in together for a
+    // Preschool+Kids household with a preschool-only reason. 0-5
+    // never overlaps the 6-12 band, so it cannot serve everyone.
+    const members: Preferences["members"] = [
+      { age_band: "preschool", include_adjacent: true },
+      { age_band: "kids", include_adjacent: true },
+    ];
+    const { together, columns } = groupPerPerson([row("story", 0, 5)], members);
+    expect(together).toEqual([]);
+    expect(
+      ids(columns.find((column) => column.band === "preschool")?.picks ?? []),
+    ).toEqual(["story"]);
+    expect(
+      ids(columns.find((column) => column.band === "kids")?.picks ?? []),
+    ).toEqual([]);
+  });
+
+  it("admits single-year overlap to Everyone together", () => {
+    // 1-3 touches preschool only at age 3: not exact, but a
+    // genuine overlap, so a Baby+Preschool household may share it.
+    const members: Preferences["members"] = [
+      { age_band: "baby", include_adjacent: true },
+      { age_band: "preschool", include_adjacent: true },
+    ];
+    const { together } = groupPerPerson([row("toddler", 1, 3)], members);
+    expect(ids(together)).toEqual(["toddler"]);
+  });
+
+  it("keeps all-ages and spanning ranges in Everyone together", () => {
+    const members: Preferences["members"] = [
+      { age_band: "preschool", include_adjacent: true },
+      { age_band: "kids", include_adjacent: true },
+    ];
+    const { together } = groupPerPerson(
+      [row("all", 0, 130), row("span", 3, 12)],
+      members,
+    );
+    expect(ids(together)).toEqual(["all", "span"]);
+  });
+
+  it("keeps the check-age flag on ageless together picks", () => {
+    const { together } = groupPerPerson(
+      [{ ...row("mystery", null, null), age_flag: "check the age group" }],
+      MEMBERS,
+    );
+    expect(ids(together)).toEqual(["mystery"]);
+    expect(together[0]?.age_flag).toBe("check the age group");
+  });
+
+  it("fills Everyone together only with overlap for all", () => {
     // 0-130 hits every band exactly; 0-5 is preschool-exact but
     // adjacent-or-worse for the kid and the adult.
     const { together, columns } = groupPerPerson(
@@ -227,5 +281,42 @@ describe("columnReason", () => {
     expect(columnReason(multi, row("e", 6, 30), "adults")).toBe(multi);
     const plain = "Free drop-in, close to home (stated)";
     expect(columnReason(plain, row("e", 50, null), "adults")).toBe(plain);
+  });
+});
+
+describe("togetherReason", () => {
+  it("expands a single-band clause to every served band", () => {
+    expect(
+      togetherReason(
+        "Good for your 3-5 preschooler (inferred)",
+        row("e", 3, 12),
+        ["preschool", "kids"],
+      ),
+    ).toBe("Good for your 3-5 preschooler and 6-12 kid (inferred)");
+  });
+
+  it("leaves complete, neutral, and ageless reasons alone", () => {
+    const complete = "good for your 3-5 preschooler and 6-12 kid (inferred)";
+    expect(togetherReason(complete, row("e", 3, 12), ["preschool", "kids"])).toBe(
+      complete,
+    );
+    const plain = "Free drop-in, close to home (stated)";
+    expect(togetherReason(plain, row("e", 3, 12), ["preschool", "kids"])).toBe(
+      plain,
+    );
+    const ageless = "Good for your 3-5 preschooler (inferred)";
+    expect(
+      togetherReason(ageless, row("e", null, null), ["preschool", "kids"]),
+    ).toBe(ageless);
+  });
+
+  it("drops a wrong-band mention while naming the served bands", () => {
+    expect(
+      togetherReason(
+        "Good for your 18-64 adult (inferred)",
+        row("e", 3, 12),
+        ["preschool", "kids"],
+      ),
+    ).toBe("Good for your 3-5 preschooler and 6-12 kid (inferred)");
   });
 });
