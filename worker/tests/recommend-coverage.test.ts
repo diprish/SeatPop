@@ -74,6 +74,39 @@ describe("applyCoverageOrder", () => {
     );
   });
 
+  it("rescues an adult exact when kid events saturate the top 10", () => {
+    // Regression: six kid-exacts plus four preschool-exacts on top (the
+    // live reranked shape), two adult-only events below. Every top slot
+    // covers a member, so a victim rule that only accepts non-covering
+    // slots strands the adults at zero picks.
+    const { ids, ages, scores } = pool([
+      { id: "k1", age_min: 6, age_max: 12, score: 100 },
+      { id: "k2", age_min: 6, age_max: 13, score: 99 },
+      { id: "k3", age_min: 6, age_max: 15, score: 98 },
+      { id: "k4", age_min: 8, age_max: 13, score: 97 },
+      { id: "k5", age_min: 6, age_max: 10, score: 96 },
+      { id: "k6", age_min: 6, age_max: 12, score: 95 },
+      { id: "p1", age_min: 0, age_max: 5, score: 94 },
+      { id: "p2", age_min: 0, age_max: 5, score: 93 },
+      { id: "p3", age_min: 3, age_max: 5, score: 92 },
+      { id: "p4", age_min: 0, age_max: 5, score: 91 },
+      { id: "a1", age_min: 50, age_max: null, score: 50 },
+      { id: "a2", age_min: 50, age_max: null, score: 40 },
+    ]);
+    const result = applyCoverageOrder(ids, ages, SAMPLE_MEMBERS, scores, 10);
+    expect(result).toHaveLength(ids.length);
+    // The better-scored adult-only event enters the top 10...
+    expect(result.slice(0, 10)).toContain("a1");
+    expect(result.slice(0, 10)).not.toContain("a2");
+    // ...into the last redundant slot; kids and preschool stay covered
+    // and every other slot keeps its exact position.
+    expect(result[9]).toBe("a1");
+    expect(result.slice(0, 9)).toEqual(ids.slice(0, 9));
+    expect(result[10]).toBe("p4");
+    expect(result.slice(0, 10)).toContain("k1");
+    expect(result.slice(0, 10)).toContain("p1");
+  });
+
   it("never drops a candidate that already covers a member", () => {
     // Top 2 both cover someone; the only teen exact sits below with
     // no room to enter without evicting a covering pick.

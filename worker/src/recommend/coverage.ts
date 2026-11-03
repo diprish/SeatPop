@@ -10,12 +10,15 @@ export interface CoverageAges {
  * that every household member with at least one exact-fit candidate in
  * the pool is covered by one in the top N. For each uncovered member
  * (household order), the best-scored exact fit from beyond N swaps into
- * the slot of the last top-N candidate covering no member exactly;
- * every other candidate keeps its exact position. Members with no
- * exact fit anywhere, and members left roomless because every top slot
- * already covers someone, are skipped — never an error, never a drop
- * of a candidate that already covers a member. Input ids must be
- * unique; unknown ages/scores sort as non-covering / unscored.
+ * the last top-N slot whose exactly-covered members are all covered by
+ * other top-N slots too — a slot covering nobody always qualifies, and
+ * a slot covering only redundantly-covered members yields without
+ * uncovering anyone; every other candidate keeps its exact position.
+ * Members with no exact fit anywhere, and members left roomless because
+ * every top slot is load-bearing for another member, are skipped —
+ * never an error, never a drop of a candidate that already covers a
+ * member. Input ids must be unique; unknown ages/scores sort as
+ * non-covering / unscored.
  */
 export function applyCoverageOrder(
   orderedIds: string[],
@@ -55,9 +58,20 @@ export function applyCoverageOrder(
       }
     }
     if (best < 0) continue;
+    // Coverage counts across the current top N (after earlier swaps).
+    const topCover = new Map<number, number>();
+    for (let i = 0; i < n; i++) {
+      for (const k of exactMembers(result[i] as string)) {
+        topCover.set(k, (topCover.get(k) ?? 0) + 1);
+      }
+    }
+    // Victim: the last slot no member depends on — every member it
+    // covers exactly is covered by another top-N slot as well. Slots
+    // covering nobody qualify vacuously.
     let victim = -1;
     for (let i = n - 1; i >= 0; i--) {
-      if (exactMembers(result[i] as string).length === 0) {
+      const covers = exactMembers(result[i] as string);
+      if (covers.every((k) => (topCover.get(k) ?? 0) > 1)) {
         victim = i;
         break;
       }
