@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, Ref } from "react";
 import { Icon, type IconName } from "./Icon";
 
 /** Labeled 44px input with an icon prefix and hint/error slots. */
@@ -9,6 +9,7 @@ interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   icon: IconName;
   hint?: string;
   error?: string;
+  inputRef?: Ref<HTMLInputElement>;
 }
 
 export function Field({
@@ -17,6 +18,7 @@ export function Field({
   icon,
   hint,
   error,
+  inputRef,
   className = "",
   ...rest
 }: FieldProps) {
@@ -36,6 +38,7 @@ export function Field({
         />
         <input
           id={id}
+          ref={inputRef}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
           className={`min-h-[44px] w-full rounded-xl border border-line bg-surface pl-10 pr-3 text-sm text-ink placeholder:text-faint ${className}`}

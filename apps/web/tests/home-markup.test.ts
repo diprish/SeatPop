@@ -22,6 +22,10 @@ const GROUPED = readFileSync(
   new URL("../src/components/per-person-results.tsx", import.meta.url),
   "utf8",
 );
+const FORM = readFileSync(
+  new URL("../src/components/household-form.tsx", import.meta.url),
+  "utf8",
+);
 const CARD = readFileSync(
   new URL("../src/components/event-card.tsx", import.meta.url),
   "utf8",
@@ -63,22 +67,26 @@ describe("home page markup", () => {
     }
   });
 
-  it("toggles the desktop filters from the sentence card", () => {
-    expect(HOME).toContain("All filters");
-    expect(HOME).toContain("all-filters-panel");
-    expect(HOME).toContain("aria-expanded");
-    expect(HOME).toContain("<HouseholdPanel");
+  it("renders one plain form with no filter panel or sheet", () => {
+    expect(HOME).toContain("<HouseholdForm");
+    expect(HOME).toContain("onShowPicks={showPicks}");
+    expect(HOME).toContain('id="results"');
+    expect(HOME).toContain("aria-busy");
+    expect(HOME).not.toContain("all-filters-panel");
+    expect(HOME).not.toContain("<HouseholdPanel");
+    expect(HOME).not.toContain("<HouseholdSheet");
+    expect(HOME).not.toContain("<HouseholdSentence");
+    expect(HOME).not.toContain("All filters");
+    expect(HOME).not.toContain("Edit household and filters");
     expect(HOME).not.toContain("lg:grid-cols-[350px_minmax(0,1fr)]");
   });
 
-  it("states the household as sentence pills with filter openers", () => {
-    expect(HOME).toContain("<HouseholdSentence");
-    expect(HOME).toContain("Find activities");
-    expect(HOME).toContain("Reset to sample");
-    expect(HOME).toContain("Edit household and filters");
-    expect(HOME).toContain("lg:hidden");
-    expect(HOME).toContain("<HouseholdSheet");
-    expect(HOME).not.toContain('aria-label="Household summary"');
+  it("commits the form through Show picks with a sample reset", () => {
+    expect(FORM).toContain("<form");
+    expect(FORM).toContain("Show picks");
+    expect(FORM).toContain("Finding picks…");
+    expect(FORM).toContain("Reset to sample");
+    expect(FORM).toContain('type="submit"');
   });
 
   it("lands sentence pills on the visible filter control", () => {
@@ -90,14 +98,14 @@ describe("home page markup", () => {
     expect(SENTENCE).toContain("edit ${segment.target}");
   });
 
-  it("badges the untouched sample above the sentence", () => {
+  it("badges the untouched sample near the form heading", () => {
     expect(HOME).toContain("isSampleHousehold(prefs)");
-    expect(HOME).toContain("Sample household");
-    expect(HOME).toContain(
+    expect(FORM).toContain("Sample household");
+    expect(FORM).toContain(
       "This is an example family. Edit it to see picks for yours.",
     );
-    expect(HOME).toContain('tone="lavender" icon="sparkle"');
-    expect(HOME.match(/<SampleHouseholdNote \/>/g)).toHaveLength(1);
+    expect(FORM).toContain('tone="lavender" icon="sparkle"');
+    expect(FORM).toContain("Who&apos;s coming?");
   });
 
   it("keeps the shortcut card labels and copy", () => {
@@ -168,9 +176,11 @@ describe("home page markup", () => {
     expect(SENTENCE).toContain("align-middle");
   });
 
-  it("hides All filters below desktop without fighting the button", () => {
-    expect(HOME).toContain("hidden lg:inline");
-    expect(HOME).not.toContain('className="hidden lg:inline-flex"');
+  it("dims old results while reloading instead of blanking", () => {
+    expect(HOME).toContain("aria-busy={busy");
+    expect(HOME).toContain("opacity-60");
+    expect(HOME).toContain("Finding picks…");
+    expect(HOME).toContain("Your previous results are unchanged.");
   });
 
   it("shows pastel skeletons behind the searching status", () => {

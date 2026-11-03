@@ -2,19 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { AgeBand, Preferences } from "@seatpop/shared";
+import type { Preferences } from "@seatpop/shared";
 import EmptyState from "@/components/empty-state";
 import ErrorBanner from "@/components/error-banner";
-import HouseholdPanel from "@/components/household-panel";
-import HouseholdSentence, {
-  focusFilterTarget,
-} from "@/components/household-sentence";
-import HouseholdSheet from "@/components/household-sheet";
+import HouseholdForm from "@/components/household-form";
 import PerPersonResults from "@/components/per-person-results";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
   fetchRecommend,
@@ -32,8 +26,6 @@ import {
   unhideEvent,
 } from "@/lib/feedback";
 import { useFeedbackActions } from "@/lib/use-feedback-actions";
-import { useMediaQuery } from "@/lib/use-media-query";
-import type { SentencePillTarget } from "@/lib/sentence";
 import {
   SAMPLE_HOUSEHOLD,
   dedupeMembers,
@@ -47,20 +39,6 @@ const HERO_STEPS = [
   { circle: "bg-lemon-solid", label: "We match every age" },
   { circle: "bg-mint-solid", label: "Book and get reminded" },
 ];
-
-/** Shown only while the prefs in use are the built-in sample. */
-function SampleHouseholdNote() {
-  return (
-    <div className="mb-2">
-      <Badge tone="lavender" icon="sparkle">
-        Sample household
-      </Badge>
-      <p className="mt-1 text-sm text-muted">
-        This is an example family. Edit it to see picks for yours.
-      </p>
-    </div>
-  );
-}
 
 /**
  * For you: opens straight into the sample household (guest mode, no
@@ -76,11 +54,9 @@ export default function Home() {
   const [text, setText] = useState("");
   const [hidden, setHidden] = useState<Record<string, string>>({});
   const [showHidden, setShowHidden] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [showShortcut, setShowShortcut] = useState(false);
   const [syncNotes, setSyncNotes] = useState<Record<string, string>>({});
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
   function noteSync(eventId: string, note: string | null): void {
     setSyncNotes((notes) => {
@@ -116,8 +92,13 @@ export default function Home() {
           setDiagnosing(false);
         }
       }
-    } catch (error) {
-      setBanner(error instanceof Error ? error.message : "recommend failed");
+    } catch {
+      // Friendly copy only: previous results stay, nothing clears.
+      setBanner(
+        items.length > 0
+          ? "Couldn't load picks. Your previous results are unchanged."
+          : "Couldn't load picks. Try again.",
+      );
     } finally {
       setBusy(null);
     }
@@ -145,8 +126,10 @@ export default function Home() {
       setPrefs(parsed);
       saveHousehold(parsed);
       await search(parsed);
-    } catch (error) {
-      setBanner(error instanceof Error ? error.message : "parse failed");
+    } catch {
+      setBanner(
+        "Couldn't understand that description. Try short phrases like 'two kids, Saturday mornings'.",
+      );
     } finally {
       setBusy(null);
     }
@@ -180,11 +163,26 @@ export default function Home() {
   const isSample = isSampleHousehold(prefs);
   const visible = items.filter((item) => !hidden[item.event_id]);
   const hiddenVisible = items.filter((item) => hidden[item.event_id]);
+  const reloading = busy === "search" && items.length > 0;
 
-  function openFilters(target: SentencePillTarget, band?: AgeBand): void {
-    if (isDesktop) setShowFilters(true);
-    else setSheetOpen(true);
-    focusFilterTarget(target, band);
+  function revealResults(): void {
+    const node = resultsRef.current;
+    if (!node) return;
+    const smooth =
+      typeof window !== "undefined" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+    node.focus({ preventScroll: true });
+  }
+
+  function showPicks(): void {
+    void search(prefs);
+    revealResults();
+  }
+
+  function resetToSample(): void {
+    setPrefs(SAMPLE_HOUSEHOLD);
+    void search(SAMPLE_HOUSEHOLD);
   }
 
   return (
@@ -221,46 +219,14 @@ export default function Home() {
 
       <div className="mt-4">
         <Card>
-          {isSample && <SampleHouseholdNote />}
-          <HouseholdSentence prefs={prefs} onPill={openFilters} />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button
-              onClick={() => void search(prefs)}
-              disabled={busy !== null}
-            >
-              Find activities
-            </Button>
-            <span className="hidden lg:inline">
-              <Button
-                variant="secondary"
-                hue="lavender"
-                aria-expanded={showFilters}
-                aria-controls="all-filters-panel"
-                onClick={() => setShowFilters((show) => !show)}
-              >
-                <Icon name="filter" className="h-4 w-4" />
-                All filters
-              </Button>
-            </span>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setPrefs(SAMPLE_HOUSEHOLD);
-                void search(SAMPLE_HOUSEHOLD);
-              }}
-            >
-              Reset to sample
-            </Button>
-          </div>
-          <Button
-            variant="secondary"
-            hue="lavender"
-            className="mt-3 w-full lg:hidden"
-            onClick={() => setSheetOpen(true)}
-          >
-            <Icon name="filter" className="h-4 w-4" />
-            Edit household and filters
-          </Button>
+          <HouseholdForm
+            prefs={prefs}
+            onChange={setPrefs}
+            onShowPicks={showPicks}
+            onReset={resetToSample}
+            busy={busy !== null}
+            isSample={isSample}
+          />
           <div className="mt-3">
             <Button
               variant="ghost"
@@ -298,28 +264,23 @@ export default function Home() {
         </Card>
       </div>
 
-      <div
-        id="all-filters-panel"
-        className={`mt-4 ${showFilters ? "hidden lg:block" : "hidden"}`}
-      >
-        <HouseholdPanel
-          prefs={prefs}
-          onChange={setPrefs}
-          onSearch={() => void search(prefs)}
-          onReset={() => {
-            setPrefs(SAMPLE_HOUSEHOLD);
-            void search(SAMPLE_HOUSEHOLD);
-          }}
-          busy={busy !== null}
-        />
-      </div>
-
       {banner !== "" && (
         <ErrorBanner message={banner} onRetry={() => void search(prefs)} />
       )}
 
       <div className="mt-6">
-        <div>
+        <div
+          id="results"
+          ref={resultsRef}
+          tabIndex={-1}
+          aria-busy={busy === "search"}
+          className={`scroll-mt-20 transition-opacity duration-200 motion-reduce:transition-none ${reloading ? "opacity-60" : ""}`}
+        >
+          {reloading && (
+            <p className="text-sm text-muted" role="status">
+              Finding picks…
+            </p>
+          )}
 
           {meta && meta.warnings.length > 0 && (
             <ul className="mt-4 list-disc pl-5 text-sm text-muted">
@@ -421,20 +382,6 @@ export default function Home() {
         </div>
       </div>
 
-      {sheetOpen && (
-        <HouseholdSheet
-          prefs={prefs}
-          onChange={setPrefs}
-          onSearch={() => void search(prefs)}
-          onReset={() => {
-            setPrefs(SAMPLE_HOUSEHOLD);
-            void search(SAMPLE_HOUSEHOLD);
-          }}
-          busy={busy !== null}
-          resultCount={visible.length}
-          onClose={() => setSheetOpen(false)}
-        />
-      )}
     </main>
   );
 }
