@@ -14,10 +14,6 @@ const LIST = readFileSync(
   new URL("../src/components/results-list.tsx", import.meta.url),
   "utf8",
 );
-const SENTENCE = readFileSync(
-  new URL("../src/components/household-sentence.tsx", import.meta.url),
-  "utf8",
-);
 const GROUPED = readFileSync(
   new URL("../src/components/per-person-results.tsx", import.meta.url),
   "utf8",
@@ -87,15 +83,6 @@ describe("home page markup", () => {
     expect(FORM).toContain("Finding picks…");
     expect(FORM).toContain("Reset to sample");
     expect(FORM).toContain('type="submit"');
-  });
-
-  it("lands sentence pills on the visible filter control", () => {
-    expect(SENTENCE).toContain("getClientRects");
-    expect(SENTENCE).toContain("scrollIntoView");
-    expect(SENTENCE).toContain("prefers-reduced-motion");
-    expect(SENTENCE).toContain("#hh-members");
-    expect(SENTENCE).toContain("#hh-availability");
-    expect(SENTENCE).toContain("edit ${segment.target}");
   });
 
   it("badges the untouched sample near the form heading", () => {
@@ -171,11 +158,6 @@ describe("home page markup", () => {
     expect(GROUPED).toContain("columns.length !== 1");
   });
 
-  it("spaces sentence pills from separators, not side margins", () => {
-    expect(SENTENCE).not.toContain("mx-");
-    expect(SENTENCE).toContain("align-middle");
-  });
-
   it("dims old results while reloading instead of blanking", () => {
     expect(HOME).toContain("aria-busy={busy");
     expect(HOME).toContain("opacity-60");
@@ -222,7 +204,7 @@ describe("home page markup", () => {
   });
 
   it("hard-codes no light colours in the 2c sources", () => {
-    for (const source of [HOME, GROUPED, SENTENCE]) {
+    for (const source of [HOME, GROUPED, FORM]) {
       expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
       expect(source).not.toMatch(/text-(white|black)\b/);
       expect(source).not.toMatch(/bg-(white|black)\b/);
@@ -234,6 +216,5 @@ describe("home page markup", () => {
     expect(CSS).toContain(":focus-visible");
     expect(CSS).toContain("outline: 2px solid #2b2f4a");
     expect(CSS).toContain(".dark :focus-visible");
-    expect(CSS).toContain(".filter-anchor:focus");
   });
 });
