@@ -20,8 +20,8 @@ Your World"). Guest-first: results with no sign-up.
 ![For you, desktop](docs/screenshots/01-for-you.png)
 
 <p>
-  <img src="docs/screenshots/02-for-you-mobile.png" width="260" alt="Mobile: Everyone / per-member tabs">
-  <img src="docs/screenshots/02b-kids-tab-mobile.png" width="260" alt="Mobile: Kids tab with a pick">
+  <img src="docs/screenshots/02-for-you-mobile.png" width="260" alt="Mobile: Kids tab with a pick">
+  <img src="docs/screenshots/02b-preschool-tab-mobile.png" width="260" alt="Mobile: Preschool tab with a free pick">
 </p>
 
 ## Why it matters
@@ -128,8 +128,6 @@ cp .env.example .env   # fill in: SUPABASE_URL, SUPABASE_ANON_KEY, ...
 npx supabase db push   # linked project; applies supabase/migrations
 npm run dev --workspace @seatpop/web   # http://localhost:3000
 ```
-
-For worth-it votes, also set `VOTE_SALT` in `.env` (generate with `openssl rand -hex 32`).
 
 Without Supabase credentials the app still runs but shows
 not-configured states instead of data. Gates:
