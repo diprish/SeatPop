@@ -5,9 +5,11 @@ import { publicSupabase } from "../../lib/recommend-server";
 /** GET /health: status and build info. Never includes secrets. */
 export async function GET(): Promise<NextResponse> {
   // Deploy check for voting: boolean only, never values.
+  // publicSupabase() first: it fills unset vars from the repo-root .env,
+  // so the salt read below must come after it.
+  const supabase = publicSupabase();
   const votes =
-    (process.env["VOTE_SALT"]?.trim() ?? "") !== "" &&
-    publicSupabase() !== null;
+    (process.env["VOTE_SALT"]?.trim() ?? "") !== "" && supabase !== null;
   const body = {
     status: "ok",
     service: "seatpop-web",

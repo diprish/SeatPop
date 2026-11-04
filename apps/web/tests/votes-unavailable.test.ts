@@ -173,3 +173,63 @@ describe("GET /health votes signal", () => {
     expect(JSON.stringify(presentBody)).not.toContain(TEST_SALT);
   });
 });
+
+describe("re-vote by the same device", () => {
+  it("sends the same stable voter hash so the RPC upserts instead of duplicating", async () => {
+    process.env["VOTE_SALT"] = TEST_SALT;
+    process.env["SUPABASE_URL"] = "http://supabase.test";
+    process.env["SUPABASE_ANON_KEY"] = "anon";
+    const voteBodies: Array<Record<string, unknown>> = [];
+    globalThis.fetch = (async (input: unknown, init?: RequestInit) => {
+      const url =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.href
+            : (input as Request).url;
+      if (url.includes("public_events")) {
+        return new Response(
+          JSON.stringify([{ title: "Storytime", venue_id: null }]),
+          { status: 200 },
+        );
+      }
+      if (url.includes("rpc/create_vote")) {
+        if (typeof init?.body === "string") {
+          voteBodies.push(JSON.parse(init.body) as Record<string, unknown>);
+        }
+        return new Response(JSON.stringify({ ok: true, id: "v1" }), {
+          status: 200,
+        });
+      }
+      return new Response("not found", { status: 404 });
+    }) as typeof fetch;
+    const first = await votesPOST(
+      postRequest({ ...validBody(), vote: 1 }, "10.0.1.1"),
+    );
+    const second = await votesPOST(
+      postRequest({ ...validBody(), vote: -1, tags: ["crowded"] }, "10.0.1.2"),
+    );
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await first.json()).toEqual({ ok: true });
+    expect(await second.json()).toEqual({ ok: true });
+    expect(voteBodies).toHaveLength(2);
+    const hashes = voteBodies.map((body) => body["p_voter_hash"]);
+    expect(hashes[0]).toMatch(/^[0-9a-f]{64}$/);
+    expect(hashes[1]).toBe(hashes[0]);
+    expect(voteBodies[1]?.["p_vote"]).toBe(-1);
+  });
+
+  it("upserts on (series_key, voter_hash) in migration 0021", () => {
+    const migration = readFileSync(
+      new URL(
+        "../../../supabase/migrations/0021_series_votes.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    expect(migration).toContain("unique (series_key, voter_hash)");
+    expect(migration).toContain("on conflict (series_key, voter_hash)");
+    expect(migration).toContain("do update set");
+  });
+});

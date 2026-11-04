@@ -180,12 +180,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 400 },
     );
   }
-  const salt = process.env["VOTE_SALT"]?.trim();
-  if (!salt) {
-    return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
-  }
+  // Supabase lookup first: it fills unset vars from the repo-root
+  // .env, so the salt read below must come after it.
   const supabase = publicSupabase();
   if (!supabase) {
+    return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
+  }
+  const salt = process.env["VOTE_SALT"]?.trim();
+  if (!salt) {
     return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
   }
   const base = supabase.url.replace(/\/$/, "");
