@@ -20,8 +20,9 @@ describe("worth-it control", () => {
   it("renders thumbs with pressed state and honest count lines", () => {
     expect(control).toContain("selected={myVote === 1}");
     expect(control).toContain("selected={myVote === -1}");
+    expect(control).toContain("Been before? Was it worth it?");
     expect(control).toContain("parents say it's worth it");
-    expect(control).toContain("Be the first to say if it was worth it");
+    expect(control).toContain("Be the first to vote");
   });
 
   it("pills the votes in mint with count badges", () => {

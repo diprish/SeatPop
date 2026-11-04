@@ -45,8 +45,8 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
     setParsed(null);
     try {
       setParsed(await postBookingParse(text, item.starts_at));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "confirmation parse failed");
+    } catch {
+      setError("Couldn't read that confirmation. Try again.");
     } finally {
       setBusy(null);
     }
@@ -88,8 +88,8 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
       setFormOpen(false);
       setText("");
       setParsed(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "booking failed");
+    } catch {
+      setError("Couldn't save that booking. Try again.");
     } finally {
       setBusy(null);
     }
@@ -103,8 +103,8 @@ export default function BookingCapture({ item }: BookingCaptureProps) {
       await deleteBookingApi(booking.booking_id, booking.delete_token);
       setBooking(null);
       deleteBookingLocal(loadBookings(), item.event_id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "booking delete failed");
+    } catch {
+      setError("Couldn't delete that booking. Try again.");
     } finally {
       setBusy(null);
     }

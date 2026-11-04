@@ -16,9 +16,10 @@ interface BookingChecklistProps {
 }
 
 /**
- * "Book for us": a guided checklist walked on the OFFICIAL site. Every
- * step is either a stored fact (link, opening, price, age flag) or an
- * explicit boundary line — the component never books anything itself.
+ * Registration checklist: guided steps walked on the OFFICIAL site.
+ * Every step is either a stored fact (link, opening, price, age flag)
+ * or an explicit boundary line — the component never books anything
+ * itself.
  */
 export default function BookingChecklist({ item }: BookingChecklistProps) {
   const [open, setOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
     return (
       <div className="mt-2 text-sm">
         <Button onClick={() => setOpen(true)} aria-expanded={false}>
-          Book for us
+          Registration checklist
         </Button>
       </div>
     );
@@ -50,7 +51,7 @@ export default function BookingChecklist({ item }: BookingChecklistProps) {
         aria-expanded={true}
         className="font-bold underline"
       >
-        Booking checklist
+        Registration checklist
       </button>
       <ol className="mt-2 space-y-3">
         {steps.map((step, index) => {

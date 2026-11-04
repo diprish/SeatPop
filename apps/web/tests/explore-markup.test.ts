@@ -12,7 +12,7 @@ const SOURCE = readFileSync(
 
 describe("explore filter markup", () => {
   it("chips the bands with an any-age reset", () => {
-    expect(SOURCE).toContain('aria-label="Age band"');
+    expect(SOURCE).toContain('aria-label="Age"');
     expect(SOURCE).toContain("hueForBand(option)");
     expect(SOURCE).toContain("Any age");
     expect(SOURCE).toContain("BAND_LABELS[option]");
@@ -32,10 +32,10 @@ describe("explore filter markup", () => {
     expect(SOURCE).toContain("distanceNeedsArea");
   });
 
-  it("keeps keyboard focus order switch, distance, search", () => {
+  it("keeps keyboard focus order switch, distance, find", () => {
     const toggle = SOURCE.indexOf("<Toggle");
     const distance = SOURCE.indexOf('id="ex-distance"');
-    const search = SOURCE.indexOf('"Search"');
+    const search = SOURCE.indexOf('"Find activities"');
     expect(toggle).toBeGreaterThan(-1);
     expect(distance).toBeGreaterThan(toggle);
     expect(search).toBeGreaterThan(distance);

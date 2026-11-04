@@ -69,8 +69,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           end: row.ends_at,
           location: row.venue_name,
           description: row.confirmation_id
-            ? `Confirmation ${row.confirmation_id} · Booked via SeatPop`
-            : "Booked via SeatPop",
+            ? `Confirmation ${row.confirmation_id} · Tracked in SeatPop`
+            : "Tracked in SeatPop",
           url: row.source_url,
         });
       } catch (error) {

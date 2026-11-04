@@ -10,6 +10,7 @@ import RemindMe from "@/components/remind-me";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type { RecommendItemView } from "@/lib/api";
 import {
   deleteFeedback,
@@ -93,9 +94,10 @@ export default function SavedPage() {
     return (
       <main className="mx-auto max-w-6xl px-4 py-6">
         <h1 className="text-2xl font-bold">Saved</h1>
-        <p className="mt-2 text-sm" role="status">
-          Loading…
-        </p>
+        <div aria-hidden="true" className="mt-4 space-y-4">
+          <Skeleton tone="blush" className="h-36" />
+          <Skeleton tone="sky" className="h-36" />
+        </div>
       </main>
     );
   }
@@ -120,11 +122,7 @@ export default function SavedPage() {
             <Icon name="heart" className="h-8 w-8 text-blush-ink" />
           </span>
           <p className="mt-3 text-sm text-muted">
-            Nothing saved yet. Tap Save on any pick in{" "}
-            <Link className="underline" href="/">
-              For you
-            </Link>
-            .
+            Nothing saved yet. Tap Save on an activity you like.
           </p>
         </Card>
       )}

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AGE_BANDS, type AgeBand, type Preferences } from "@seatpop/shared";
 import AvailabilityGrid from "./availability-grid";
-import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { Chip } from "./ui/Chip";
 import { Field } from "./ui/Field";
@@ -94,14 +93,9 @@ export default function HouseholdForm({
         Pick everyone who&apos;ll join. We match activities to each person.
       </p>
       {isSample && (
-        <div className="mt-2">
-          <Badge tone="lavender" icon="sparkle">
-            Sample household
-          </Badge>
-          <p className="mt-1 text-sm text-muted">
-            This is an example family. Edit it to see picks for yours.
-          </p>
-        </div>
+        <p className="mt-2 text-sm text-muted">
+          Showing a sample family. Change it to see yours.
+        </p>
       )}
 
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Ages">
@@ -131,7 +125,8 @@ export default function HouseholdForm({
           inputRef={postalRef}
           id="hf-postal"
           name="postal"
-          label="Postal area"
+          label="Postal code (first 3 characters)"
+          hint="We never ask for your full postal code."
           icon="pin"
           type="text"
           inputMode="text"
@@ -147,7 +142,7 @@ export default function HouseholdForm({
         />
         <div>
           <label htmlFor="hf-within" className="block text-sm font-semibold">
-            Within
+            How far
           </label>
           <select
             id="hf-within"
@@ -215,10 +210,10 @@ export default function HouseholdForm({
 
       <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center">
         <Button type="submit" disabled={busy} className="w-full md:w-auto">
-          {busy ? "Finding picks…" : "Show picks"}
+          {busy ? "Finding activities…" : "Find activities"}
         </Button>
         <Button variant="ghost" onClick={onReset} disabled={busy}>
-          Reset to sample
+          Start over
         </Button>
       </div>
     </form>

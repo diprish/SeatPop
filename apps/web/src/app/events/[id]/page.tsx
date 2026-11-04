@@ -138,7 +138,7 @@ export default function EventDetailPage({
           </span>
           <h1 className="mt-3 text-2xl font-extrabold">Event not found</h1>
           <p className="mt-2 text-sm text-muted">
-            This event isn&apos;t in the catalogue.{" "}
+            We couldn&apos;t find that event.{" "}
             <Link className="underline" href="/">
               Back to For you
             </Link>
@@ -171,7 +171,9 @@ export default function EventDetailPage({
 
   const ages = ageLine(detail);
   const priceBasis =
-    detail.price_basis === "source_policy" ? "Source policy" : "Event text";
+    detail.price_basis === "source_policy"
+      ? "from the venue's policy"
+      : "from the listing";
   const windowOpens =
     detail.registration_window &&
     formatWindowOpens(
@@ -219,7 +221,7 @@ export default function EventDetailPage({
               Free
             </Badge>
           ) : detail.price_kind === "unknown" ? (
-            <Badge tone="neutral">Price not stated</Badge>
+            <Badge tone="neutral">Price not listed</Badge>
           ) : (
             <Badge tone="navy">{detail.price_text ?? detail.price_kind}</Badge>
           )}
@@ -304,8 +306,8 @@ export default function EventDetailPage({
             </dl>
           </section>
 
-          <section aria-label="Price basis" className="mt-6">
-            <h2 className="font-bold">Price basis: {priceBasis}</h2>
+          <section aria-label="Price" className="mt-6">
+            <h2 className="font-bold">Price: {priceBasis}</h2>
             <dl className="mt-2 space-y-3">
               {detail.amount_min_cents !== null && (
                 <Fact

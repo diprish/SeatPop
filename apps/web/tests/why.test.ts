@@ -108,9 +108,7 @@ describe("computeWhy", () => {
       detail: "Free",
       quote: "Free admission",
     });
-    expect(byField.get("Distance")?.detail).toBe(
-      "2.3 km away (limit 10 km from K2S)",
-    );
+    expect(byField.get("Distance")?.detail).toBe("2.3 km from K2S");
     expect(byField.get("Time")?.detail).toBe("Sat morning — in your windows");
     expect(byField.get("Language")).toMatchObject({
       detail: "English — matches",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** Footer on every page: data credit, hackathon line, Trust + repo links. */
+/** Footer on every page: data credit, hackathon line, check/about/repo links. */
 
 export function SiteFooter() {
   return (
@@ -20,7 +20,7 @@ export function SiteFooter() {
         <p>Built for the Meta Global AI Developer Hackathon.</p>
         <p>
           <Link className="underline" href="/trust">
-            Trust
+            How we check
           </Link>{" "}
           ·{" "}
           <Link className="underline" href="/about">

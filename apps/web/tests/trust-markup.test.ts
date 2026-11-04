@@ -15,13 +15,23 @@ const EMPTY = readFileSync(
 );
 
 describe("trust and empty-state markup", () => {
-  it("tiles the four headline stats by status", () => {
-    for (const label of ["Violations", "False-free", "Wrong-price", "Accuracy"]) {
+  it("titles How we check with a plain summary and three tiles", () => {
+    expect(TRUST).toContain("How we check");
+    expect(TRUST).toContain("These numbers come from our own test runs");
+    expect(TRUST).toContain("hand-labeled real");
+    expect(TRUST).toContain("never called a paid activity free and never got a price wrong");
+    for (const label of ["wrong prices", "'free' mistakes", "results outside your limits"]) {
       expect(TRUST).toContain(label);
     }
     expect(TRUST).toContain("bg-mint-tint");
     expect(TRUST).toContain("bg-blush-tint");
     expect(TRUST).toContain("bg-lemon-tint");
+  });
+
+  it("collapses the technical tables under one details", () => {
+    expect(TRUST).toContain("<details");
+    expect(TRUST).toContain("Technical details");
+    expect(TRUST).toContain("</details>");
   });
 
   it("badges the gate large without hiding the counts", () => {

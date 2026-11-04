@@ -56,7 +56,7 @@ export function bookingSteps(item: RecommendItemView): BookingStep[] {
   } else if (item.price_kind === "unknown") {
     steps.push({
       id: "payment",
-      title: "Price not stated",
+      title: "Price not listed",
       detail: "Check the official page for fees before you register.",
     });
   } else {

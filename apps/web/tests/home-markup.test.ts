@@ -61,8 +61,8 @@ describe("home page markup", () => {
     );
     for (const step of [
       "Tell us who's coming",
-      "We match every age",
-      "Register on the official page and get reminded",
+      "See what fits each person",
+      "Register on the official page, and we'll remind you",
     ]) {
       expect(HOME).toContain(step);
     }
@@ -85,11 +85,11 @@ describe("home page markup", () => {
     expect(HOME).not.toContain("lg:grid-cols-[350px_minmax(0,1fr)]");
   });
 
-  it("commits the form through Show picks with a sample reset", () => {
+  it("commits the form through Find activities with a start-over reset", () => {
     expect(FORM).toContain("<form");
-    expect(FORM).toContain("Show picks");
-    expect(FORM).toContain("Finding picks…");
-    expect(FORM).toContain("Reset to sample");
+    expect(FORM).toContain("Find activities");
+    expect(FORM).toContain("Finding activities…");
+    expect(FORM).toContain("Start over");
     expect(FORM).toContain('type="submit"');
   });
 
@@ -116,7 +116,7 @@ describe("home page markup", () => {
     expect(FORM).toContain("normaliseFsaInput(e.target.value)");
     expect(FORM).toContain("serverPostalError");
     expect(FORM_LOGIC).toContain("Enter 3 characters like K2S.");
-    expect(FORM_LOGIC).toContain("Add a postal area to use Within.");
+    expect(FORM_LOGIC).toContain("Add a postal code to use How far.");
     expect(FORM_LOGIC).toContain("OTTAWA_FSA_MESSAGE");
     expect(HOME).toContain("isUnknownAreaError(message)");
     expect(HOME).toContain("setAreaError(OTTAWA_FSA_MESSAGE)");
@@ -138,7 +138,7 @@ describe("home page markup", () => {
     expect(HOME.match(/void search\(prefs\);/g)).toHaveLength(1);
   });
 
-  it("reveals results with scroll and focus after Show picks", () => {
+  it("reveals results with scroll and focus after Find activities", () => {
     expect(HOME).toContain("resultsRef");
     expect(HOME).toContain("scrollIntoView");
     expect(HOME).toContain("prefers-reduced-motion");
@@ -156,13 +156,11 @@ describe("home page markup", () => {
     }
   });
 
-  it("badges the untouched sample near the form heading", () => {
+  it("notes the untouched sample near the form heading", () => {
     expect(HOME).toContain("isSampleHousehold(prefs)");
-    expect(FORM).toContain("Sample household");
     expect(FORM).toContain(
-      "This is an example family. Edit it to see picks for yours.",
+      "Showing a sample family. Change it to see yours.",
     );
-    expect(FORM).toContain('tone="lavender" icon="sparkle"');
     expect(FORM).toContain("Who&apos;s coming?");
   });
 
@@ -170,23 +168,23 @@ describe("home page markup", () => {
     expect(HOME).toContain('aria-label="Describe your family"');
     expect(HOME).toContain('htmlFor="hh-text"');
     expect(HOME).toContain('id="hh-text"');
-    expect(HOME).toContain("Or describe your family (shortcut)");
-    expect(HOME).toContain("Don't include names.");
-    expect(HOME).toContain("Parse and search");
+    expect(HOME).toContain("Or just tell us about your family");
+    expect(HOME).toContain("No names needed.");
+    expect(HOME).toContain("Find activities");
   });
 
   it("headers results with the rainbow and the rank pill", () => {
     expect(LIST).toContain("picks for your household");
     expect(LIST).toContain("bg-rainbow");
-    expect(LIST).toContain("AI-ranked");
-    expect(LIST).toContain("match order");
+    expect(LIST).toContain("Picked for your family");
+    expect(LIST).toContain("Best matches");
   });
 
   it("groups For-you picks per person with a together row", () => {
     expect(HOME).toContain("<PerPersonResults");
     expect(GROUPED).toContain("Everyone together");
-    expect(GROUPED).toContain("AI-ranked");
-    expect(GROUPED).toContain("match order");
+    expect(GROUPED).toContain("Picked for your family");
+    expect(GROUPED).toContain("Best matches");
     expect(GROUPED).toContain("groupPerPerson");
     expect(GROUPED).toContain("No single pick fits everyone");
     expect(GROUPED).toContain("Nothing for ");
@@ -239,13 +237,13 @@ describe("home page markup", () => {
   it("dims old results while reloading instead of blanking", () => {
     expect(HOME).toContain("aria-busy={busy");
     expect(HOME).toContain("opacity-60");
-    expect(HOME).toContain("Finding picks…");
+    expect(HOME).toContain("Finding activities…");
     expect(HOME).toContain("Your previous results are unchanged.");
   });
 
-  it("shows pastel skeletons behind the searching status", () => {
+  it("shows pastel skeletons behind the finding status", () => {
     expect(HOME).toContain('role="status"');
-    expect(HOME).toContain("Searching…");
+    expect(HOME).toContain("Finding activities…");
     expect(HOME).toContain('<Skeleton tone="blush"');
     expect(HOME).toContain('<Skeleton tone="sky"');
     expect(HOME).toContain('<Skeleton tone="lavender"');

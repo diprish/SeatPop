@@ -11,7 +11,6 @@ const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: "/explore", label: "Explore", icon: "search" },
   { href: "/saved", label: "Saved", icon: "heart" },
   { href: "/booked", label: "Booked", icon: "ticket" },
-  { href: "/trust", label: "Trust", icon: "shield" },
 ];
 
 function isActiveLink(href: string, pathname: string): boolean {
@@ -103,7 +102,7 @@ export default function SiteNav() {
         aria-label="Primary"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-4">
           {LINKS.map((link) => {
             const active = isActiveLink(link.href, pathname);
             return (

@@ -79,7 +79,7 @@ describe("why sheet and detail markup", () => {
   it("keeps every fact section, label, and fallback", () => {
     for (const label of [
       "Verified facts",
-      "Price basis",
+      "Price: {priceBasis}",
       "About",
       "Listing text",
       "Also at this branch",

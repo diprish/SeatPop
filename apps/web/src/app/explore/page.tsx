@@ -76,7 +76,12 @@ export default function ExplorePage() {
       setItems(data.items);
       setMeta(data.meta);
     } catch (error) {
-      setBanner(error instanceof Error ? error.message : "explore failed");
+      const message = error instanceof Error ? error.message : "";
+      setBanner(
+        /cap reached/i.test(message)
+          ? "You've reached today's search limit — try again tomorrow."
+          : "Couldn't load activities. Try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -113,8 +118,8 @@ export default function ExplorePage() {
         aria-label="Filters"
         className="mt-4 rounded-card border border-line bg-surface p-4 shadow-card"
       >
-        <h2 className="text-sm font-bold">Age band</h2>
-        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Age band">
+        <h2 className="text-sm font-bold">Age</h2>
+        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Age">
           {(["any", ...AGE_BANDS] as const).map((option) => (
             <Chip
               key={option}
@@ -139,7 +144,7 @@ export default function ExplorePage() {
           <div className="w-36">
             <Field
               id="ex-distance"
-              label={`Distance (km${base.fsa ? ` near ${base.fsa}` : ""})`}
+              label={`How far (km${base.fsa ? ` from ${base.fsa}` : ""})`}
               icon="route"
               type="number"
               inputMode="decimal"
@@ -158,7 +163,7 @@ export default function ExplorePage() {
             onClick={() => void search(currentFilters(), base)}
             disabled={busy || distanceNeedsArea}
           >
-            {busy ? "Searching…" : "Search"}
+            {busy ? "Finding activities…" : "Find activities"}
           </Button>
         </div>
       </section>
@@ -172,7 +177,7 @@ export default function ExplorePage() {
 
       {busy && items.length === 0 && (
         <p className="mt-4 text-sm text-muted" role="status">
-          Searching…
+          Finding activities…
         </p>
       )}
 

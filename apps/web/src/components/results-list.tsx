@@ -33,7 +33,7 @@ export default function ResultsList({
             : `${items.length} picks for your household`}
         </h2>
         <Badge tone={reranked ? "lavender" : "neutral"} solid={reranked}>
-          {reranked ? "AI-ranked" : "match order"}
+          {reranked ? "Picked for your family" : "Best matches"}
         </Badge>
       </div>
       <div aria-hidden="true" className="mt-1 h-1 w-28 rounded-full bg-rainbow" />

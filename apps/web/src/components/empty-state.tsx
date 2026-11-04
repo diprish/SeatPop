@@ -56,7 +56,7 @@ export default function EmptyState({
   if (!diagnosis) {
     const options = relaxationsFor(prefs);
     return (
-      <EmptyPanel body="The measurement failed — these clear one filter each:">
+      <EmptyPanel body="We couldn't run that check — each of these clears one filter:">
         <div className="mt-3 flex flex-wrap justify-center gap-2">
           {options.map((option) => (
             <Chip

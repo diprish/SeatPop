@@ -71,16 +71,6 @@ function StatTile({
   );
 }
 
-function meanAccuracy(summary: EnrichmentSummary): number | null {
-  const values = summary.models.flatMap((model) =>
-    model.fields
-      .map((field) => field.accuracy)
-      .filter((value): value is number => value !== null),
-  );
-  if (values.length === 0) return null;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
 export default function TrustPage() {
   const [enrichment, setEnrichment] = useState<Snapshot<EnrichmentSummary>>({
     status: "loading",
@@ -126,37 +116,58 @@ export default function TrustPage() {
     enrichment.status === "ready"
       ? Math.max(0, ...enrichment.data.models.map((model) => model.wrongPrice))
       : null;
-  const accuracy =
-    enrichment.status === "ready" ? meanAccuracy(enrichment.data) : null;
+  const listingsChecked =
+    enrichment.status === "ready" ? enrichment.data.goldenEvents : null;
+  const allClean = worstFalseFree === 0 && worstWrongPrice === 0;
+  const loadingWord = (loading: boolean): string =>
+    loading ? "…" : "pending";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-2xl font-extrabold">Trust</h1>
+      <h1 className="text-2xl font-extrabold">How we check</h1>
       <p className="mt-1 text-sm text-muted">
-        Measured quality, straight from the eval reports. Anything missing is
-        labelled pending.
+        These numbers come from our own test runs. Anything not measured yet
+        says pending.
       </p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Violations" value={violationsTile.value} status={violationsTile.status} />
+      {enrichment.status === "ready" ? (
+        <p className="mt-2 text-muted">
+          We checked our system against {listingsChecked} hand-labeled real
+          listings.{" "}
+          {allClean
+            ? "It never called a paid activity free and never got a price wrong."
+            : "See the exact counts below."}
+        </p>
+      ) : enrichment.status === "loading" ? (
+        <p className="mt-2 text-muted" role="status">
+          Checking our system against real listings…
+        </p>
+      ) : (
+        <p className="mt-2 text-muted">
+          Our listing checks aren&apos;t published yet — anything below says
+          pending.
+        </p>
+      )}
+
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatTile
-          label="False-free"
-          value={worstFalseFree === null ? (enrichment.status === "loading" ? "…" : "pending") : String(worstFalseFree)}
-          status={worstFalseFree === null ? "pending" : worstFalseFree === 0 ? "pass" : "fail"}
-        />
-        <StatTile
-          label="Wrong-price"
-          value={worstWrongPrice === null ? (enrichment.status === "loading" ? "…" : "pending") : String(worstWrongPrice)}
+          label="wrong prices"
+          value={worstWrongPrice === null ? loadingWord(enrichment.status === "loading") : String(worstWrongPrice)}
           status={worstWrongPrice === null ? "pending" : worstWrongPrice === 0 ? "pass" : "fail"}
         />
         <StatTile
-          label="Accuracy"
-          value={accuracy === null ? (enrichment.status === "loading" ? "…" : enrichment.status === "ready" ? "—" : "pending") : pct(accuracy)}
-          status={accuracy === null ? "pending" : "pass"}
+          label="'free' mistakes"
+          value={worstFalseFree === null ? loadingWord(enrichment.status === "loading") : String(worstFalseFree)}
+          status={worstFalseFree === null ? "pending" : worstFalseFree === 0 ? "pass" : "fail"}
         />
+        <StatTile label="results outside your limits" value={violationsTile.value} status={violationsTile.status} />
       </div>
 
-      <section aria-label="Enrichment eval" className="mt-6">
+      <details className="mt-6 rounded-card border border-line bg-surface p-4 shadow-card">
+        <summary className="flex min-h-[44px] cursor-pointer items-center font-extrabold">
+          Technical details
+        </summary>
+      <section aria-label="Enrichment eval" className="mt-4">
         <h2 className="font-extrabold">Listing enrichment</h2>
         {enrichment.status === "loading" && (
           <p className="mt-2 text-sm" role="status">
@@ -371,6 +382,7 @@ export default function TrustPage() {
           </p>
         )}
       </section>
+      </details>
     </main>
   );
 }

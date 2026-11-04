@@ -71,7 +71,7 @@ describe("bookingSteps", () => {
       bookingSteps(item({ price_kind: "unknown", price_label: "Price not stated" })).find(
         (step) => step.id === "payment",
       )?.title,
-    ).toBe("Price not stated");
+    ).toBe("Price not listed");
     const paid = bookingSteps(
       item({ price_kind: "paid", price_label: "$12.00" }),
     ).find((step) => step.id === "payment");

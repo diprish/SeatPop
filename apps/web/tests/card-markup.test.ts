@@ -58,14 +58,15 @@ describe("event card markup", () => {
     expect(CARD).toContain("…and {item.more_dates.length - 5} more");
   });
 
-  it("callouts the reason with AA marks and the kept suffix", () => {
+  it("callouts the reason in plain parenthetical words, no suffix", () => {
     expect(CARD).toContain("bg-lavender-tint");
     expect(CARD).toContain("bg-mist");
     expect(CARD).toContain('name="sparkle"');
-    expect(CARD).toContain("text-green-800 dark:text-green-300");
-    expect(CARD).toContain("text-amber-800 dark:text-amber-300");
-    expect(CARD).toContain('"(AI reason)"');
-    expect(CARD).toContain('"(match)"');
+    expect(CARD).toContain("formatReasonMarks(");
+    expect(CARD).not.toContain("(AI reason)");
+    expect(CARD).not.toContain("(match)");
+    expect(CARD).not.toContain("(stated)");
+    expect(CARD).not.toContain("(inferred)");
   });
 
   it("fills saved navy and pills every action with an icon", () => {
@@ -73,7 +74,7 @@ describe("event card markup", () => {
     expect(CARD).toContain("dark:bg-lavender-solid dark:text-navy");
     expect(CARD).toContain("aria-pressed={saved}");
     expect(CARD).toContain("Official page for ${item.title}");
-    for (const label of ["Saved", "Save", "Not for us", "Why this?", "Official page"]) {
+    for (const label of ["Saved", "Save", "Not for us", "Why this pick?", "Official page"]) {
       expect(CARD).toContain(label);
     }
   });

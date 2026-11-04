@@ -83,12 +83,7 @@ export default function WorthIt({
 
   return (
     <div className="mt-3">
-      <p className="text-sm font-bold">Worth it?</p>
-      {summary === undefined && !loadFailed && (
-        <p role="status" className="mt-1 text-sm text-muted">
-          Loading votes…
-        </p>
-      )}
+      <p className="text-sm font-bold">Been before? Was it worth it?</p>
       {loadFailed && (
         <p className="mt-1 text-sm text-muted">
           {VOTES_UNAVAILABLE_COPY}{" "}
@@ -110,7 +105,7 @@ export default function WorthIt({
       )}
       {summary !== undefined && !loadFailed && (
         <p className="mt-1 text-sm text-muted">
-          {summary === null ? "Be the first to say if it was worth it" : worthLine(summary)}
+          {summary === null ? "Be the first to vote" : worthLine(summary)}
         </p>
       )}
       <div role="group" aria-label="Cast your vote" className="mt-2 flex flex-wrap gap-2">
@@ -146,7 +141,7 @@ export default function WorthIt({
           onClick={() => setTagsOpen((open) => !open)}
           className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
         >
-          Tags{tags.length > 0 ? ` (${tags.length})` : ""}…
+          Add a note{tags.length > 0 ? ` (${tags.length})` : ""}
         </button>
       </div>
       {tagsOpen && (

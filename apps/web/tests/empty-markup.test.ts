@@ -22,7 +22,7 @@ describe("empty, error, and 404 markup", () => {
     expect(EMPTY).toContain("bg-sky-tint");
     expect(EMPTY).toContain('name="search"');
     expect(EMPTY).toContain("No events matched.");
-    expect(EMPTY).toContain("The measurement failed");
+    expect(EMPTY).toContain("We couldn't run that check");
     expect(EMPTY).toContain("Nothing upcoming matches");
     expect(EMPTY).toContain("Back to the sample household");
     expect(EMPTY).toContain('hue="sky"');

@@ -74,10 +74,11 @@ describe("saved and booked pages", () => {
     expect(SAVED).toContain("bg-blush-tint");
     expect(SAVED).toContain('name="heart"');
     expect(SAVED).toContain("Nothing saved yet.");
+    expect(SAVED).toContain("Tap Save on an activity you like.");
     expect(BOOKED).toContain("bg-sky-tint");
     expect(BOOKED).toContain('name="ticket"');
-    expect(BOOKED).toContain("No bookings yet.");
-    expect(BOOKED).toContain("Book from a saved event");
+    expect(BOOKED).toContain("Nothing booked yet.");
+    expect(BOOKED).toContain("mark it booked once");
   });
 
   it("lifts booking cards with icon actions and confirmation badges", () => {
@@ -85,7 +86,7 @@ describe("saved and booked pages", () => {
     expect(BOOKED).toContain("<Badge tone=\"mint\" solid>");
     expect(BOOKED).toContain("Confirmation {entry.confirmation_id}");
     expect(BOOKED).toContain("No confirmation id");
-    expect(BOOKED).toContain("Download .ics");
+    expect(BOOKED).toContain("Download calendar file");
     expect(BOOKED).toContain("Delete booking");
   });
 
@@ -101,8 +102,8 @@ describe("saved and booked pages", () => {
     expect(CHECKLIST).toContain("bg-mint-solid text-navy");
     expect(CHECKLIST).toContain("book-${item.event_id}-${step.id}");
     expect(CHECKLIST).toContain("(opens in a new tab)");
-    expect(CHECKLIST).toContain("Book for us");
-    expect(CHECKLIST).toContain("Booking checklist");
+    expect(CHECKLIST).toContain("Registration checklist");
+    expect(CHECKLIST).not.toContain("Book for us");
   });
 
   it("pastes confirmations into a dashed panel with kept hooks", () => {

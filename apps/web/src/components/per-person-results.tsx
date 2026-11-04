@@ -131,7 +131,7 @@ interface PerPersonResultsProps extends CardProps {
 function RankBadge({ reranked }: { reranked: boolean }) {
   return (
     <Badge tone={reranked ? "lavender" : "neutral"} solid={reranked}>
-      {reranked ? "AI-ranked" : "match order"}
+      {reranked ? "Picked for your family" : "Best matches"}
     </Badge>
   );
 }

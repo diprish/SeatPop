@@ -40,8 +40,8 @@ import {
 
 const HERO_STEPS = [
   { circle: "bg-blush-solid", label: "Tell us who's coming" },
-  { circle: "bg-lemon-solid", label: "We match every age" },
-  { circle: "bg-mint-solid", label: "Register on the official page and get reminded" },
+  { circle: "bg-lemon-solid", label: "See what fits each person" },
+  { circle: "bg-mint-solid", label: "Register on the official page, and we'll remind you" },
 ];
 
 /**
@@ -252,7 +252,7 @@ export default function Home() {
               aria-controls="shortcut-panel"
               onClick={() => setShowShortcut((show) => !show)}
             >
-              Or describe your family (shortcut)
+              Or just tell us about your family
             </Button>
             <section
               id="shortcut-panel"
@@ -260,14 +260,14 @@ export default function Home() {
               className={showShortcut ? "mt-2" : "hidden"}
             >
               <label htmlFor="hh-text" className="text-sm font-bold">
-                Or describe your family (shortcut)
+                Tell us about your family
               </label>
               <textarea
                 id="hh-text"
                 rows={3}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Two kids (7 and 10) who love music, Saturday mornings, under $25, near K1S. Don't include names."
+                placeholder="Two kids, 7 and 10, who love music. Saturday mornings, under $25, near K1S. No names needed."
                 className="mt-1 min-h-[44px] w-full rounded-xl border border-line bg-surface p-2 text-sm text-ink placeholder:text-faint"
               />
               <Button
@@ -275,7 +275,7 @@ export default function Home() {
                 onClick={() => void parse()}
                 disabled={busy !== null || text.trim() === ""}
               >
-                {busy === "parse" ? "Parsing…" : "Parse and search"}
+                {busy === "parse" ? "Finding activities…" : "Find activities"}
               </Button>
             </section>
           </div>
@@ -296,7 +296,7 @@ export default function Home() {
         >
           {reloading && (
             <p className="text-sm text-muted" role="status">
-              Finding picks…
+              Finding activities…
             </p>
           )}
 
@@ -311,7 +311,7 @@ export default function Home() {
           {busy === "search" && items.length === 0 && (
             <div className="mt-4">
               <p className="text-sm text-muted" role="status">
-                Searching…
+                Finding activities…
               </p>
               <div aria-hidden="true" className="mt-2 space-y-4">
                 <Skeleton tone="blush" className="h-36" />

@@ -54,11 +54,12 @@ describe("nav and remaining shell markup", () => {
   it("tabs the small screens with icons, labels, and safe-area padding", () => {
     expect(NAV).toContain("fixed inset-x-0 bottom-0");
     expect(NAV).toContain("pb-[env(safe-area-inset-bottom)]");
-    expect(NAV).toContain("grid-cols-5");
+    expect(NAV).toContain("grid-cols-4");
     expect(NAV).toContain("bg-primary px-4 py-1 text-white dark:text-navy");
-    for (const label of ["For you", "Explore", "Saved", "Booked", "Trust"]) {
+    for (const label of ["For you", "Explore", "Saved", "Booked"]) {
       expect(NAV).toContain(label);
     }
+    expect(NAV).not.toContain("/trust");
   });
 
   it("keeps the theme toggle behavior and labels", () => {
@@ -68,11 +69,12 @@ describe("nav and remaining shell markup", () => {
     expect(NAV).toContain("aria-pressed={dark}");
   });
 
-  it("credits data, the hackathon, trust, and the repo in the footer", () => {
+  it("credits data, the hackathon, how-we-check, and the repo in the footer", () => {
     expect(FOOTER).toContain("GeoNames");
     expect(FOOTER).toContain("CC BY 4.0");
     expect(FOOTER).toContain("Meta Global AI Developer Hackathon");
     expect(FOOTER).toContain('href="/trust"');
+    expect(FOOTER).toContain("How we check");
     expect(FOOTER).toContain("https://github.com/diprish/SeatPop");
     expect(FOOTER).toContain("pb-28 lg:pb-8");
   });

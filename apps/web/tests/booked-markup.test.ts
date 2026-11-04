@@ -11,9 +11,9 @@ const SOURCE = readFileSync(
 
 describe("booked tab markup", () => {
   it("offers download, delete, and an honest empty state", () => {
-    expect(SOURCE).toContain("Download .ics");
+    expect(SOURCE).toContain("Download calendar file");
     expect(SOURCE).toContain("Delete booking");
-    expect(SOURCE).toContain("No bookings yet.");
+    expect(SOURCE).toContain("Nothing booked yet.");
     expect(SOURCE).toContain('href="/saved"');
   });
 

@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDistance,
   formatReasonDates,
+  formatReasonMarks,
   formatRegistrationBadge,
   formatWhenRange,
   formatWindowOpens,
@@ -11,7 +12,6 @@ import {
   priceBadgeClass,
   priceBadgeLabel,
   priceTone,
-  splitReasonMarks,
   truncateQuote,
 } from "../src/lib/format";
 
@@ -132,7 +132,8 @@ describe("priceBadgeLabel", () => {
     expect(priceBadgeLabel("free (per OPL)")).toBe("Free · per OPL policy");
     expect(priceBadgeLabel("Free")).toBe("Free");
     expect(priceBadgeLabel("$12.00")).toBe("$12.00");
-    expect(priceBadgeLabel("Price not stated")).toBe("Price not stated");
+    expect(priceBadgeLabel("Price not stated")).toBe("Price not listed");
+    expect(priceBadgeLabel("price not stated")).toBe("Price not listed");
   });
 });
 
@@ -222,21 +223,22 @@ describe("formatDistance", () => {
   });
 });
 
-describe("splitReasonMarks", () => {
-  it("splits literal (stated)/(inferred) marks for styling", () => {
-    expect(splitReasonMarks("Free crafts (stated), kids love it (inferred)")).toEqual([
-      { text: "Free crafts ", mark: null },
-      { text: "(stated)", mark: "stated" },
-      { text: ", kids love it ", mark: null },
-      { text: "(inferred)", mark: "inferred" },
-    ]);
+describe("formatReasonMarks", () => {
+  it("rewrites literal (stated)/(inferred) marks as plain words", () => {
+    expect(
+      formatReasonMarks("Free crafts (stated), kids love it (inferred)"),
+    ).toBe("Free crafts (per the listing), kids love it (our guess)");
   });
 
   it("passes unmarked reasons through untouched", () => {
-    expect(splitReasonMarks("Just a reason")).toEqual([
-      { text: "Just a reason", mark: null },
-    ]);
-    expect(splitReasonMarks("")).toEqual([]);
+    expect(formatReasonMarks("Just a reason")).toBe("Just a reason");
+    expect(formatReasonMarks("")).toBe("");
+  });
+
+  it("reads the raw unstated-price label as not listed", () => {
+    expect(formatReasonMarks("Storytime, Price not stated (stated)")).toBe(
+      "Storytime, Price not listed (per the listing)",
+    );
   });
 });
 

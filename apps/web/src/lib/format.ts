@@ -127,12 +127,14 @@ export function isPolicyPrice(priceLabel: string): boolean {
 }
 
 /**
- * Card badge text: policy free reads "Free · per OPL policy";
- * everything else shows the SQL label verbatim ("Free", "$12.00",
- * "Price not stated").
+ * Card badge text: policy free reads "Free · per OPL policy"; an
+ * unstated price reads "Price not listed"; everything else shows the
+ * SQL label verbatim ("Free", "$12.00").
  */
 export function priceBadgeLabel(priceLabel: string): string {
-  return isPolicyPrice(priceLabel) ? POLICY_BADGE_LABEL : priceLabel;
+  if (isPolicyPrice(priceLabel)) return POLICY_BADGE_LABEL;
+  if (priceLabel.toLowerCase() === "price not stated") return "Price not listed";
+  return priceLabel;
 }
 
 const MONTHS_WORD = /\b[Mm][Oo][Nn][Tt][Hh][Ss]?(?![a-z])/;
@@ -211,29 +213,15 @@ export function formatReasonDates(reason: string, timezone: string): string {
   );
 }
 
-export interface ReasonPart {
-  text: string;
-  mark: "stated" | "inferred" | null;
-}
-
-/** Splits a reason on its literal (stated)/(inferred) marks for styling. */
-export function splitReasonMarks(reason: string): ReasonPart[] {
-  const parts: ReasonPart[] = [];
-  const re = /\((stated|inferred)\)/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(reason)) !== null) {
-    if (match.index > last) {
-      parts.push({ text: reason.slice(last, match.index), mark: null });
-    }
-    parts.push({
-      text: match[0],
-      mark: match[1] === "inferred" ? "inferred" : "stated",
-    });
-    last = match.index + match[0].length;
-  }
-  if (last < reason.length) {
-    parts.push({ text: reason.slice(last), mark: null });
-  }
-  return parts.filter((part) => part.text !== "");
+/**
+ * Display-only reason rewrite: the model's literal (stated)/(inferred)
+ * marks become plain parenthetical words in place, and the raw
+ * unstated-price label reads "Price not listed". Anything else passes
+ * through untouched.
+ */
+export function formatReasonMarks(reason: string): string {
+  return reason
+    .replace(/\(stated\)/g, "(per the listing)")
+    .replace(/\(inferred\)/g, "(our guess)")
+    .replace(/price not stated/gi, "Price not listed");
 }

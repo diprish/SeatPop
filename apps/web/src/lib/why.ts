@@ -10,7 +10,7 @@ import type { EventDetailView, RecommendItemView } from "./api";
 import { isPolicyPrice, priceBadgeLabel } from "./format";
 
 /**
- * "Why this?" rows: each matched field with its value and, when the
+ * "Why this pick?" rows: each matched field with its value and, when the
  * detail payload is loaded, the verbatim evidence quote behind it.
  * Client-safe and fully tested; every row states only what the data
  * says (a null detail simply yields null quotes).
@@ -117,13 +117,13 @@ export function computeWhy(
   });
 
   if (item.distance_km !== null) {
-    const limit =
-      prefs.max_distance_km !== undefined && prefs.fsa
-        ? ` (limit ${prefs.max_distance_km} km from ${prefs.fsa})`
-        : " (no limit set)";
+    const detail =
+      prefs.fsa !== undefined
+        ? `${item.distance_km.toFixed(1)} km from ${prefs.fsa}`
+        : `${item.distance_km.toFixed(1)} km away`;
     rows.push({
       field: "Distance",
-      detail: `${item.distance_km.toFixed(1)} km away${limit}`,
+      detail,
       quote: null,
     });
   }

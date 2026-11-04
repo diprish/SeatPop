@@ -49,7 +49,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   const supabase = publicSupabase();
   if (!supabase) {
-    return page("Reminders unavailable", "SeatPop is not configured right now. Try again later.");
+    return page("Reminders unavailable", "Reminders aren't available right now. Try again later.");
   }
   const base = supabase.url.replace(/\/$/, "");
   const anonKey = supabase.anonKey;

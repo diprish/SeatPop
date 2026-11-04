@@ -14,11 +14,11 @@ import {
   ageLine,
   formatDistance,
   formatReasonDates,
+  formatReasonMarks,
   formatRegistrationBadge,
   formatWhenRange,
   isPolicyPrice,
   priceBadgeLabel,
-  splitReasonMarks,
 } from "@/lib/format";
 import WhySheet from "@/components/why-sheet";
 import WorthIt from "@/components/worth-it";
@@ -169,7 +169,7 @@ export default function EventCard({
             aria-expanded={datesOpen}
             onClick={() => setDatesOpen((open) => !open)}
           >
-            +{item.more_dates.length} more date
+            {item.more_dates.length} more date
             {item.more_dates.length === 1 ? "" : "s"}
           </Chip>
           {datesOpen && (
@@ -204,26 +204,9 @@ export default function EventCard({
             />
           )}
           <p className="text-sm">
-            {splitReasonMarks(formatReasonDates(item.reason, item.timezone)).map(
-              (part, index) =>
-                part.mark ? (
-                  <span
-                    key={index}
-                    className={
-                      part.mark === "stated"
-                        ? "text-xs font-semibold text-green-800 dark:text-green-300"
-                        : "text-xs font-semibold text-amber-800 dark:text-amber-300"
-                    }
-                  >
-                    {part.text}
-                  </span>
-                ) : (
-                  <span key={index}>{part.text}</span>
-                ),
-            )}{" "}
-            <span className="text-xs text-muted">
-              {item.reasonFromModel ? "(AI reason)" : "(match)"}
-            </span>
+            {formatReasonMarks(
+              formatReasonDates(item.reason, item.timezone),
+            )}
           </p>
         </div>
       </div>
@@ -258,7 +241,7 @@ export default function EventCard({
           className={ACTION}
         >
           <Icon name="sparkle" className="h-4 w-4" />
-          Why this?
+          Why this pick?
         </button>
         <a
           className={ACTION}

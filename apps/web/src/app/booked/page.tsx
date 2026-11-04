@@ -71,8 +71,8 @@ export default function BookedPage() {
             end: times.end,
             location: entry.item.venue_name,
             description: entry.confirmation_id
-              ? `Confirmation ${entry.confirmation_id} · Booked via SeatPop`
-              : "Booked via SeatPop",
+              ? `Confirmation ${entry.confirmation_id} · Tracked in SeatPop`
+              : "Tracked in SeatPop",
             url: entry.item.source_url,
           },
           new Date().toISOString(),
@@ -80,8 +80,8 @@ export default function BookedPage() {
         "END:VCALENDAR",
       ].join("\r\n");
       downloadIcs(`booking-${entry.booking_id.slice(0, 8)}.ics`, ics);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "download failed");
+    } catch {
+      setError("Couldn't download the calendar file. Try again.");
     }
   }
 
@@ -90,8 +90,8 @@ export default function BookedPage() {
     try {
       await deleteBookingApi(entry.booking_id, entry.delete_token);
       setBookings(deleteBookingLocal(loadBookings(), eventId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "booking delete failed");
+    } catch {
+      setError("Couldn't delete that booking. Try again.");
     }
   }
 
@@ -101,7 +101,7 @@ export default function BookedPage() {
       await navigator.clipboard.writeText(feedUrl);
       setCopied(true);
     } catch {
-      setError("copy failed — select the URL manually");
+      setError("Couldn't copy — select the URL manually.");
     }
   }
 
@@ -124,10 +124,13 @@ export default function BookedPage() {
           >
             <Icon name="ticket" className="h-8 w-8 text-sky-ink" />
           </span>
-          <p className="mt-3">No bookings yet.</p>
+          <p className="mt-3">
+            Nothing booked yet. Save an activity, then mark it booked once
+            you&apos;ve registered.
+          </p>
           <p className="mt-1">
             <Link className="underline" href="/saved">
-              Book from a saved event
+              Go to Saved
             </Link>
           </p>
         </Card>
@@ -173,7 +176,7 @@ export default function BookedPage() {
                     className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
                   >
                     <Icon name="calendar" className="h-4 w-4" />
-                    Download .ics
+                    Download calendar file
                   </button>
                   <button
                     type="button"

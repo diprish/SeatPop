@@ -34,7 +34,7 @@ export function toggleBand(
 }
 
 export const OTTAWA_FSA_MESSAGE =
-  "That doesn't look like an Ottawa postal area (for example K2S).";
+  "That doesn't look like an Ottawa postal code (for example K2S).";
 
 /** Uppercase, no whitespace, FSA prefix ("K2S 1A1" -> "K2S"). */
 export function normaliseFsaInput(raw: string): string {
@@ -67,7 +67,7 @@ export function distanceAreaError(
   prefs: Preferences,
 ): string | undefined {
   if (prefs.max_distance_km !== undefined && prefs.fsa === undefined) {
-    return "Add a postal area to use Within.";
+    return "Add a postal code to use How far.";
   }
   return undefined;
 }
@@ -92,13 +92,13 @@ export function countTimeSlots(
   );
 }
 
-/** Disclosure summary: "Any time" or "N time slots selected". */
+/** Disclosure summary: "Days and times" or "N times selected". */
 export function timeSlotsSummary(
   availability: Preferences["availability"],
 ): string {
   const count = countTimeSlots(availability);
-  if (count === 0) return "Any time";
-  return count === 1 ? "1 time slot selected" : `${count} time slots selected`;
+  if (count === 0) return "Days and times";
+  return count === 1 ? "1 time selected" : `${count} times selected`;
 }
 
 export const WITHIN_KM = [2, 5, 10, 25] as const;

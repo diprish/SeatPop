@@ -51,15 +51,15 @@ describe("about page markup", () => {
     expect(ABOUT).toContain(
       "Activities for every age in your household, matched to each person",
     );
-    expect(ABOUT).toContain("and verified against the listing.");
+    expect(ABOUT).toContain("and checked against the listing.");
     expect(ABOUT).toContain('title: "How it works"');
   });
 
   it("keeps the three pillar headings", () => {
     for (const title of [
-      "The AI proposes, a verifier disposes",
-      "Hard rules live in the database",
-      "Ranking you can inspect",
+      "We check every fact against the listing",
+      "Your limits are rules, not suggestions",
+      "See why we picked it",
     ]) {
       expect(ABOUT).toContain(title);
     }
@@ -78,9 +78,12 @@ describe("about page markup", () => {
     }
     expect(ABOUT).toContain("Baseten · public text only");
     expect(ABOUT).toContain("Meta Model API");
-    expect(ABOUT).toContain("Ottawa only, and mostly library programs so far.");
-    expect(ABOUT).toContain("transcribed by hand");
+    expect(ABOUT).toContain("Under the hood");
+    expect(ABOUT).toContain("<details");
+    expect(ABOUT).toContain("Mostly library programs, plus a few City recreation");
+    expect(ABOUT).toContain("entered by hand");
     expect(ABOUT).toContain("See the measured accuracy");
+    expect(ABOUT).toContain("Only age groups, never names");
   });
 
   it("links every href to a real route or an https URL", () => {

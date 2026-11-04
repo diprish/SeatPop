@@ -69,7 +69,7 @@ describe("household form logic", () => {
     expect(fsaFieldError("K9V")).toBe(OTTAWA_FSA_MESSAGE);
     expect(fsaFieldError("M5V")).toBe(OTTAWA_FSA_MESSAGE);
     expect(OTTAWA_FSA_MESSAGE).toBe(
-      "That doesn't look like an Ottawa postal area (for example K2S).",
+      "That doesn't look like an Ottawa postal code (for example K2S).",
     );
   });
 
@@ -103,7 +103,7 @@ describe("household form logic", () => {
   it("requires an area for a distance cap", () => {
     expect(distanceAreaError(SAMPLE_HOUSEHOLD)).toBeUndefined();
     const { fsa: _dropped, ...noFsa } = SAMPLE_HOUSEHOLD;
-    expect(distanceAreaError(noFsa)).toBe("Add a postal area to use Within.");
+    expect(distanceAreaError(noFsa)).toBe("Add a postal code to use How far.");
     const noCap = { ...noFsa, max_distance_km: undefined };
     expect(distanceAreaError(noCap)).toBeUndefined();
   });
@@ -118,11 +118,11 @@ describe("household form logic", () => {
 
   it("counts time slots and summarizes the disclosure", () => {
     expect(countTimeSlots(undefined)).toBe(0);
-    expect(timeSlotsSummary(undefined)).toBe("Any time");
-    expect(timeSlotsSummary({ sat: ["morning"] })).toBe("1 time slot selected");
+    expect(timeSlotsSummary(undefined)).toBe("Days and times");
+    expect(timeSlotsSummary({ sat: ["morning"] })).toBe("1 time selected");
     expect(
       timeSlotsSummary({ sat: ["morning", "evening"], sun: ["morning"] }),
-    ).toBe("3 time slots selected");
+    ).toBe("3 times selected");
   });
 
   it("keeps off-list distances selectable", () => {

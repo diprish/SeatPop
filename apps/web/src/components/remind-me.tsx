@@ -44,8 +44,8 @@ export default function RemindMe({ item }: RemindMeProps) {
       setReminder(saveReminderLocal(loadReminders(), item.event_id, local)[item.event_id] ?? null);
       setFormOpen(false);
       setEmail("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "reminder failed");
+    } catch {
+      setError("Couldn't set that reminder. Try again.");
     } finally {
       setBusy(false);
     }
@@ -59,8 +59,8 @@ export default function RemindMe({ item }: RemindMeProps) {
       await deleteReminderApi(reminder.id, reminder.token);
       setReminder(null);
       deleteReminderLocal(loadReminders(), item.event_id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "reminder delete failed");
+    } catch {
+      setError("Couldn't delete that reminder. Try again.");
     } finally {
       setBusy(false);
     }
