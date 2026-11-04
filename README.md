@@ -67,9 +67,9 @@ Wonder (labeled model-graded; 11 of 20 households graded).
 
 | | Mean NDCG@10 |
 | --- | --- |
-| **Reranked (Muse Spark)** | **0.859** |
-| Stage-2 order only | 0.770 |
-| Date order | 0.719 |
+| **Reranked (Muse Spark)** | **0.875** |
+| Stage-2 order only | 0.779 |
+| Date order | 0.738 |
 
 Constraint violations in every top 10: **0**. Distance mismatches: **0**.
 Policy probe ok, and the no-key fallback is proven by a key-removed run.
