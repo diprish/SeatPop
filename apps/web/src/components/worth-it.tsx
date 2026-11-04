@@ -6,6 +6,7 @@ import {
   fetchVotesSummary,
   getMyVote,
   setMyVote,
+  VOTES_UNAVAILABLE_COPY,
   VOTE_TAGS,
   type VotesSummary,
 } from "@/lib/votes";
@@ -62,8 +63,10 @@ export default function WorthIt({
       setMyVoteState(direction);
       setSummary(await fetchVotesSummary(eventId));
       setLoadFailed(false);
-    } catch (error) {
-      setVoteError(error instanceof Error ? error.message : "vote failed");
+    } catch {
+      // Any vote failure (votes_unavailable or network) maps to the calm
+      // copy; raw server strings never reach users. Buttons stay enabled.
+      setVoteError(VOTES_UNAVAILABLE_COPY);
     } finally {
       setBusy(false);
     }
@@ -88,7 +91,7 @@ export default function WorthIt({
       )}
       {loadFailed && (
         <p className="mt-1 text-sm text-muted">
-          Couldn&apos;t load votes.{" "}
+          {VOTES_UNAVAILABLE_COPY}{" "}
           <button
             type="button"
             onClick={() => {

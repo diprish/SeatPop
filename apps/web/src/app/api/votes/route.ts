@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { voteSeriesKey } from "@seatpop/worker/recommend";
-import { voteCreateError } from "@/lib/create-errors";
+import { voteCreateError } from "../../../lib/create-errors";
 import {
   clientIp,
   publicSupabase,
   routeLimiter,
-} from "@/lib/recommend-server";
-import { VOTE_TAGS, type VoteTag } from "@/lib/votes";
-import { voterHashFor } from "@/lib/voter-hash";
+} from "../../../lib/recommend-server";
+import { VOTE_TAGS, type VoteTag } from "../../../lib/votes";
+import { voterHashFor } from "../../../lib/voter-hash";
 
 /**
  * Worth-it votes, keyed by event series (one vote per device per
@@ -22,6 +22,9 @@ import { voterHashFor } from "@/lib/voter-hash";
  */
 
 const limiter = routeLimiter();
+
+/** Stable code for missing votes config (salt or Supabase); never internal wording. */
+const VOTES_UNAVAILABLE = "votes_unavailable";
 
 const TagSchema = z
   .string()
@@ -131,10 +134,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
   const supabase = publicSupabase();
   if (!supabase) {
-    return NextResponse.json(
-      { error: "votes are not configured on this server" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
   }
   const base = supabase.url.replace(/\/$/, "");
   try {
@@ -182,17 +182,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const salt = process.env["VOTE_SALT"]?.trim();
   if (!salt) {
-    return NextResponse.json(
-      { error: "votes are not configured on this server" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
   }
   const supabase = publicSupabase();
   if (!supabase) {
-    return NextResponse.json(
-      { error: "votes are not configured on this server" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: VOTES_UNAVAILABLE }, { status: 503 });
   }
   const base = supabase.url.replace(/\/$/, "");
   try {

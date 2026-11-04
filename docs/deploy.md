@@ -21,8 +21,13 @@ secret manager; `.env` is git-ignored and never committed):
   ledger locations. On ephemeral filesystems leave the defaults; the
   cache just starts cold.
 - `VOTE_SALT` (required for voting): random server salt for worth-it
-  voter hashes (e.g. `openssl rand -hex 32`). Without it, casting votes
-  500s while counts still read.
+  voter hashes. Generate with `openssl rand -hex 32` and set it in the
+  Vercel project's Production and Preview environments (env changes
+  need a redeploy to take effect). Without it the votes API answers
+  503 `votes_unavailable`, the card shows "Voting is temporarily
+  unavailable.", and `GET /health` reports `"votes": false`. Never
+  change it after launch (changing it makes every device look like a
+  new voter).
 
 Explicitly NOT needed by the web app: `SUPABASE_SERVICE_ROLE_KEY`
 (worker scripts only — it never appears in `apps/web`, audited),

@@ -129,6 +129,8 @@ npx supabase db push   # linked project; applies supabase/migrations
 npm run dev --workspace @seatpop/web   # http://localhost:3000
 ```
 
+For worth-it votes, also set `VOTE_SALT` in `.env` (generate with `openssl rand -hex 32`).
+
 Without Supabase credentials the app still runs but shows
 not-configured states instead of data. Gates:
 `npm run typecheck && npm run lint && npm test`. To serve a production

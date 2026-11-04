@@ -7,6 +7,12 @@
  * hash is stored, and it is never logged.
  */
 
+/**
+ * Calm, user-facing copy for any voting outage (missing config or a
+ * failed request). Shown verbatim; raw server strings never reach users.
+ */
+export const VOTES_UNAVAILABLE_COPY = "Voting is temporarily unavailable.";
+
 export const VOTE_TAGS = [
   "good for toddlers",
   "good for older kids",
