@@ -17,7 +17,7 @@ Your World"). Guest-first: results with no sign-up.
 - **Trust page (evals, rendered live):** https://seat-pop.vercel.app/trust
 - **About:** https://seat-pop.vercel.app/about
 
-![For you, desktop](docs/screenshots/01-for-you.png)
+<img src="docs/screenshots/01-for-you.png" width="880" alt="For you, desktop: form and per-person columns">
 
 <p>
   <img src="docs/screenshots/02-for-you-mobile.png" width="260" alt="Mobile: Kids tab with a pick">
@@ -83,7 +83,7 @@ editing labels or thresholds. Full report and failure analysis:
 drafted by AI and reviewed by the author, and the grades are model-graded:
 treat the numbers as a regression guard, not a benchmark claim.
 
-![Trust page](docs/screenshots/06-trust.png)
+<img src="docs/screenshots/06-trust.png" width="880" alt="How we check page: plain-language summary of the eval results">
 
 ## Meta models and tools
 
