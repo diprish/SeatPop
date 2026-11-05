@@ -8,9 +8,14 @@ the ones that work for everyone together. Every price, age range and
 date shown is backed by a verbatim quote from the official listing, with
 a link to it. It is about *what is coming next and when registration
 opens*, not live seat counts, which would need tight, time-sensitive
-integration with every booking site. Save anything you like and SeatPop
-emails one reminder an hour before registration opens when the date is
-known, otherwise the day before the event.
+integration with every booking site.
+
+**Email reminders.** Save a pick and add your email, and SeatPop emails
+you one hour before registration opens (for City courses with a
+published registration window), or the day before the event otherwise.
+A scheduled job checks every 15 minutes, each email has a one-click
+delete link, and the address is stored only for that reminder and never
+sent to a model.
 
 Built for the Meta Global AI Developer Hackathon (Indie track, "Build for
 Your World"). Guest-first: results with no sign-up.
@@ -147,6 +152,12 @@ build: `npm run build --workspace @seatpop/web` then
   (with quote and link) rather than crawled; the crawler covers sources
   whose robots.txt and terms allow it.
 - Ages stated as "less than N" are stored with N as the upper bound.
+- Reminder emails go out through Resend's shared test sender until a
+  domain is verified, so right now they are delivered only to the
+  project owner's address. Everything else (scheduling, sending, the
+  delete link) is built and tested.
+- A reminder needs an event more than a day away: a day-before reminder
+  for something starting sooner would already be in the past.
 - Not a booking tool: SeatPop links to the official page to register.
 
 ## Attribution
