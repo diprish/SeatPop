@@ -41,7 +41,7 @@ import {
 const HERO_STEPS = [
   { circle: "bg-blush-solid", label: "Tell us who's coming" },
   { circle: "bg-lemon-solid", label: "See what fits each person" },
-  { circle: "bg-mint-solid", label: "Register on the official page, and we'll remind you" },
+  { circle: "bg-mint-solid", label: "Save it, and we'll email you before registration opens" },
 ];
 
 /**
@@ -211,7 +211,8 @@ export default function Home() {
         </h1>
         <p className="mt-2 text-muted">
           Free and paid activities for every age in Ottawa, matched to each
-          person, with registration dates so you never miss one.
+          person, with an email reminder before registration opens so you
+          never miss it.
         </p>
         <ol className="mt-4 grid gap-2 sm:grid-cols-3">
           {HERO_STEPS.map((step, index) => (

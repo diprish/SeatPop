@@ -6,6 +6,7 @@ import { formatWindowOpens } from "@/lib/format";
 import {
   deleteReminderApi,
   deleteReminderLocal,
+  friendlyReminderError,
   loadReminders,
   postReminder,
   saveReminderLocal,
@@ -44,8 +45,8 @@ export default function RemindMe({ item }: RemindMeProps) {
       setReminder(saveReminderLocal(loadReminders(), item.event_id, local)[item.event_id] ?? null);
       setFormOpen(false);
       setEmail("");
-    } catch {
-      setError("Couldn't set that reminder. Try again.");
+    } catch (error) {
+      setError(friendlyReminderError(error));
     } finally {
       setBusy(false);
     }
@@ -67,15 +68,17 @@ export default function RemindMe({ item }: RemindMeProps) {
   }
 
   if (reminder) {
-    const when = formatWindowOpens(reminder.remind_at, false) ?? "soon";
+    const when = formatWindowOpens(reminder.remind_at, false);
+    const confirmation =
+      reminder.basis === "registration_window"
+        ? when === null
+          ? "We'll email you ahead of time"
+          : `We'll email you before registration opens, ${when}`
+        : "We'll email you the day before";
     return (
       <div className="mt-2 text-sm">
-        <p>
-          Reminder set · {when}
-          {reminder.basis === "registration_window"
-            ? " (1 hour before registration opens)"
-            : " (1 day before it starts)"}
-        </p>
+        <p className="font-semibold">Reminder set</p>
+        <p className="mt-1">{confirmation}</p>
         <button
           type="button"
           onClick={() => void remove()}
@@ -96,13 +99,14 @@ export default function RemindMe({ item }: RemindMeProps) {
   if (!formOpen) {
     return (
       <div className="mt-2 text-sm">
+        <p className="font-semibold">Add a reminder</p>
         <button
           type="button"
           onClick={() => {
             setFormOpen(true);
             setError("");
           }}
-          className="inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
+          className="mt-1 inline-flex min-h-[44px] items-center rounded-full border-2 border-line px-4 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
         >
           Remind me
         </button>
@@ -118,7 +122,8 @@ export default function RemindMe({ item }: RemindMeProps) {
         void create();
       }}
     >
-      <label htmlFor={`remind-email-${item.event_id}`} className="block font-semibold">
+      <p className="font-semibold">Add a reminder</p>
+      <label htmlFor={`remind-email-${item.event_id}`} className="mt-1 block font-semibold">
         Email for this reminder only
       </label>
       <input

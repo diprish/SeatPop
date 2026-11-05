@@ -86,6 +86,13 @@ describe("about page markup", () => {
     expect(ABOUT).toContain("Only age groups, never names");
   });
 
+  it("explains the email reminder and the address promise", () => {
+    expect(ABOUT).toContain("Never miss registration");
+    expect(ABOUT).toContain("one email reminder an hour");
+    expect(ABOUT).toContain("Reminders are email only, and we");
+    expect(ABOUT).toContain("never share your address.");
+  });
+
   it("links every href to a real route or an https URL", () => {
     const links = hrefs(ABOUT);
     expect(links.length).toBeGreaterThan(0);

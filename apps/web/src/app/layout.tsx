@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s · SeatPop",
   },
   description:
-    "Find activities in Ottawa that fit everyone in your family, with registration dates so you never miss one.",
+    "Find activities in Ottawa that fit everyone in your family, and get an email reminder before registration opens.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",

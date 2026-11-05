@@ -6,7 +6,6 @@ import type { Preferences } from "@seatpop/shared";
 import BookingCapture from "@/components/booking-capture";
 import BookingChecklist from "@/components/booking-checklist";
 import EventCard from "@/components/event-card";
-import RemindMe from "@/components/remind-me";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
@@ -122,7 +121,7 @@ export default function SavedPage() {
             <Icon name="heart" className="h-8 w-8 text-blush-ink" />
           </span>
           <p className="mt-3 text-sm text-muted">
-            Nothing saved yet. Tap Save on an activity you like.
+            Save activities you like, and we&apos;ll remind you before registration opens.
           </p>
         </Card>
       )}
@@ -138,7 +137,6 @@ export default function SavedPage() {
                 onToggleSave={(item) => void toggleSave(item)}
                 onNotForUs={(item, reason) => void hide(item, reason)}
               />
-              <RemindMe item={entry.item} />
               <BookingChecklist item={entry.item} />
               <BookingCapture item={entry.item} />
             </div>

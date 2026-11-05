@@ -90,4 +90,8 @@ describe("event card markup", () => {
     expect(CARD).toContain("<WhySheet item={item} prefs={prefs}");
     expect(CARD).not.toContain("neutral-");
   });
+
+  it("mounts the reminder entry under the actions", () => {
+    expect(CARD).toContain("<RemindMe item={item} />");
+  });
 });

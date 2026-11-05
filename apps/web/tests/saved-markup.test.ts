@@ -73,8 +73,9 @@ describe("saved and booked pages", () => {
   it("softens the empty panels with icons and kept links", () => {
     expect(SAVED).toContain("bg-blush-tint");
     expect(SAVED).toContain('name="heart"');
-    expect(SAVED).toContain("Nothing saved yet.");
-    expect(SAVED).toContain("Tap Save on an activity you like.");
+    expect(SAVED).toContain(
+      "Save activities you like, and we&apos;ll remind you before registration opens.",
+    );
     expect(BOOKED).toContain("bg-sky-tint");
     expect(BOOKED).toContain('name="ticket"');
     expect(BOOKED).toContain("Nothing booked yet.");
@@ -128,5 +129,20 @@ describe("remind-me consent markup", () => {
     expect(REMIND).toContain('type="email"');
     expect(REMIND).toContain("Delete reminder");
     expect(REMIND).toContain("deleteReminderApi(reminder.id, reminder.token)");
+  });
+
+  it("routes create failures through the friendly error mapper", () => {
+    expect(REMIND).toContain("friendlyReminderError(error)");
+  });
+
+  it("states the reminder status and the real email timing", () => {
+    expect(REMIND).toContain("Add a reminder");
+    expect(REMIND).toContain("Reminder set");
+    expect(REMIND).toContain(
+      "We'll email you before registration opens, ${when}",
+    );
+    expect(REMIND).toContain("We'll email you the day before");
+    expect(REMIND).toContain("We'll email you ahead of time");
+    expect(REMIND).not.toContain("Reminder set ·");
   });
 });

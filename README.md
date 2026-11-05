@@ -8,7 +8,9 @@ the ones that work for everyone together. Every price, age range and
 date shown is backed by a verbatim quote from the official listing, with
 a link to it. It is about *what is coming next and when registration
 opens*, not live seat counts, which would need tight, time-sensitive
-integration with every booking site.
+integration with every booking site. Save anything you like and SeatPop
+emails one reminder an hour before registration opens when the date is
+known, otherwise the day before the event.
 
 Built for the Meta Global AI Developer Hackathon (Indie track, "Build for
 Your World"). Guest-first: results with no sign-up.

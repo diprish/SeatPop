@@ -20,6 +20,7 @@ import {
   isPolicyPrice,
   priceBadgeLabel,
 } from "@/lib/format";
+import RemindMe from "@/components/remind-me";
 import WhySheet from "@/components/why-sheet";
 import WorthIt from "@/components/worth-it";
 import { Badge } from "@/components/ui/Badge";
@@ -254,6 +255,7 @@ export default function EventCard({
           Official page
         </a>
       </div>
+      <RemindMe item={item} />
       {hideOpen && (
         <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Reason">
           {NOT_FOR_US_REASONS.map((reason) => (

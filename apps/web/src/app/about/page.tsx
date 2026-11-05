@@ -149,6 +149,18 @@ export default function AboutPage() {
       </section>
 
       <section className="mt-8">
+        <h2 className="text-xl font-extrabold">Never miss registration</h2>
+        <Card className="mt-3">
+          <p className="text-sm">
+            Save any activity and we&apos;ll send one email reminder an hour
+            before registration opens when we know the date, otherwise the
+            day before the event starts. Reminders are email only, and we
+            never share your address.
+          </p>
+        </Card>
+      </section>
+
+      <section className="mt-8">
         <h2 className="text-xl font-extrabold">Your privacy</h2>
         <Card className="mt-3">
           <p className="text-sm">{PRIVACY_COPY}</p>
